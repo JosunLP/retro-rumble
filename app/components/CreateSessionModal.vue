@@ -1,9 +1,18 @@
 <template>
-  <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+  <div 
+    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="create-session-title"
+  >
     <div class="bg-white rounded-card max-w-md w-full p-6 animate-bounce-in">
       <div class="flex justify-between items-center mb-6">
-        <h2>{{ $t('session.create') }}</h2>
-        <button @click="$emit('close')" class="text-secondary-400 hover:text-secondary-600">
+        <h2 id="create-session-title">{{ $t('session.create') }}</h2>
+        <button 
+          @click="$emit('close')" 
+          class="text-secondary-400 hover:text-secondary-600"
+          aria-label="Close"
+        >
           <Icon name="heroicons:x-mark" class="w-6 h-6" />
         </button>
       </div>
@@ -39,14 +48,14 @@
         <!-- Facilitator Name -->
         <div>
           <label class="block text-sm font-medium text-secondary-700 mb-2">
-            Your Name
+            {{ $t('session.yourName') }}
           </label>
           <input
             v-model="form.facilitatorName"
             type="text"
             required
             class="input-field"
-            placeholder="Your name"
+            :placeholder="$t('session.yourNamePlaceholder')"
           />
         </div>
 
@@ -74,7 +83,7 @@
             class="w-4 h-4 text-primary-600 rounded focus:ring-primary-500"
           />
           <label for="anonymous" class="ml-2 text-sm text-secondary-700">
-            Enable anonymous mode
+            {{ $t('session.enableAnonymous') }}
           </label>
         </div>
 
@@ -99,18 +108,25 @@ const form = ref({
 })
 
 const createSession = () => {
-  // Generate session ID
-  const sessionId = Math.random().toString(36).substring(2, 8).toUpperCase()
-  
-  // Store session data in localStorage (temporary, will be replaced with API)
-  const sessionData = {
-    id: sessionId,
-    ...form.value,
-    createdAt: new Date().toISOString(),
+  try {
+    // Generate session ID using cryptographically secure random UUID
+    const sessionId = crypto.randomUUID().replace(/-/g, '').substring(0, 6).toUpperCase()
+    
+    // Store session data in localStorage (temporary, will be replaced with API)
+    const sessionData = {
+      id: sessionId,
+      ...form.value,
+      createdAt: new Date().toISOString(),
+    }
+    localStorage.setItem(`session-${sessionId}`, JSON.stringify(sessionData))
+    
+    // Navigate to session
+    navigateTo(`/session/${sessionId}`)
+  } catch (error) {
+    console.error('Failed to create session:', error)
+    if (typeof window !== 'undefined' && typeof window.alert === 'function') {
+      window.alert('Failed to create session. Please check your browser storage settings and try again.')
+    }
   }
-  localStorage.setItem(`session-${sessionId}`, JSON.stringify(sessionData))
-  
-  // Navigate to session
-  navigateTo(`/session/${sessionId}`)
 }
 </script>

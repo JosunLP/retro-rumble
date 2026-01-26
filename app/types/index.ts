@@ -104,11 +104,97 @@ export type WSMessageType =
   | 'participant-left'
 
 /**
- * WebSocket message interface
+ * WebSocket message payloads
  */
-export interface WSMessage {
-  type: WSMessageType
-  payload: any
-  sessionId: string
-  timestamp: Date
+export interface JoinPayload {
+  participant: Participant
 }
+
+export interface LeavePayload {
+  participantId: string
+}
+
+export interface CardAddedPayload {
+  card: RetroCard
+}
+
+export interface CardUpdatedPayload {
+  card: RetroCard
+}
+
+export interface CardDeletedPayload {
+  cardId: string
+}
+
+export interface VoteChangedPayload extends VoteEvent {}
+
+export interface PhaseChangedPayload {
+  phase: SessionPhase
+}
+
+export interface ParticipantJoinedPayload {
+  participant: Participant
+}
+
+export interface ParticipantLeftPayload {
+  participantId: string
+}
+
+/**
+ * WebSocket message type (discriminated union for type safety)
+ */
+export type WSMessage =
+  | {
+      type: 'join'
+      payload: JoinPayload
+      sessionId: string
+      timestamp: Date
+    }
+  | {
+      type: 'leave'
+      payload: LeavePayload
+      sessionId: string
+      timestamp: Date
+    }
+  | {
+      type: 'card-added'
+      payload: CardAddedPayload
+      sessionId: string
+      timestamp: Date
+    }
+  | {
+      type: 'card-updated'
+      payload: CardUpdatedPayload
+      sessionId: string
+      timestamp: Date
+    }
+  | {
+      type: 'card-deleted'
+      payload: CardDeletedPayload
+      sessionId: string
+      timestamp: Date
+    }
+  | {
+      type: 'vote-changed'
+      payload: VoteChangedPayload
+      sessionId: string
+      timestamp: Date
+    }
+  | {
+      type: 'phase-changed'
+      payload: PhaseChangedPayload
+      sessionId: string
+      timestamp: Date
+    }
+  | {
+      type: 'participant-joined'
+      payload: ParticipantJoinedPayload
+      sessionId: string
+      timestamp: Date
+    }
+  | {
+      type: 'participant-left'
+      payload: ParticipantLeftPayload
+      sessionId: string
+      timestamp: Date
+    }

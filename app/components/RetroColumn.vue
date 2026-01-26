@@ -43,6 +43,8 @@
         class="retro-card"
         :class="cardColorClass"
       >
+        <!-- card.content is user-generated. It is intentionally rendered via text interpolation
+             so Vue escapes HTML. Do NOT use v-html or any unescaped rendering with this field. -->
         <p class="text-sm mb-3">{{ card.content }}</p>
         
         <div class="flex justify-between items-center text-xs text-secondary-600">

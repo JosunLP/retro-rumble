@@ -18,7 +18,7 @@
           <Icon name="heroicons:plus-circle" class="w-16 h-16 mx-auto mb-4 text-primary-600" />
           <h3 class="mb-2">{{ $t('session.create') }}</h3>
           <p class="text-secondary-600">
-            Start a new retrospective session
+            {{ $t('session.createDescription') }}
           </p>
         </div>
 
@@ -27,7 +27,7 @@
           <Icon name="heroicons:arrow-right-circle" class="w-16 h-16 mx-auto mb-4 text-accent-600" />
           <h3 class="mb-2">{{ $t('session.join') }}</h3>
           <p class="text-secondary-600">
-            Join an existing session
+            {{ $t('session.joinDescription') }}
           </p>
         </div>
       </div>
@@ -37,22 +37,22 @@
         <div class="flex items-start space-x-3">
           <Icon name="heroicons:shield-check" class="w-8 h-8 text-success-600 flex-shrink-0" />
           <div>
-            <h4 class="mb-1">Secure</h4>
-            <p class="text-sm text-secondary-600">End-to-end encrypted sessions</p>
+            <h4 class="mb-1">{{ $t('features.secure.title') }}</h4>
+            <p class="text-sm text-secondary-600">{{ $t('features.secure.description') }}</p>
           </div>
         </div>
         <div class="flex items-start space-x-3">
           <Icon name="heroicons:sparkles" class="w-8 h-8 text-primary-600 flex-shrink-0" />
           <div>
-            <h4 class="mb-1">Simple</h4>
-            <p class="text-sm text-secondary-600">No registration required</p>
+            <h4 class="mb-1">{{ $t('features.simple.title') }}</h4>
+            <p class="text-sm text-secondary-600">{{ $t('features.simple.description') }}</p>
           </div>
         </div>
         <div class="flex items-start space-x-3">
           <Icon name="heroicons:eye-slash" class="w-8 h-8 text-accent-600 flex-shrink-0" />
           <div>
-            <h4 class="mb-1">Anonymous</h4>
-            <p class="text-sm text-secondary-600">Optional anonymous participation</p>
+            <h4 class="mb-1">{{ $t('features.anonymous.title') }}</h4>
+            <p class="text-sm text-secondary-600">{{ $t('features.anonymous.description') }}</p>
           </div>
         </div>
       </div>

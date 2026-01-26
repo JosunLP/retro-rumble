@@ -32,11 +32,14 @@
               v-for="phase in phases"
               :key="phase"
               @click="changePhase(phase)"
+              :disabled="!isFacilitator"
               :class="[
                 'px-4 py-2 rounded-lg font-medium transition-colors',
                 currentPhase === phase
                   ? 'bg-primary-600 text-white'
-                  : 'bg-secondary-100 text-secondary-700 hover:bg-secondary-200'
+                  : isFacilitator 
+                    ? 'bg-secondary-100 text-secondary-700 hover:bg-secondary-200' 
+                    : 'bg-secondary-100 text-secondary-400 cursor-not-allowed'
               ]"
             >
               {{ $t(`retro.phases.${phase}`) }}
@@ -115,16 +118,16 @@
 </template>
 
 <script setup lang="ts">
-import type { RetroCard, RetroCardType, SessionPhase } from '~/types'
+import type { RetroCard, RetroCardType, SessionPhase, RetroSession, Participant } from '~/types'
 
 const route = useRoute()
 const sessionId = route.params.id as string
 
 // Session state
-const session = ref<any>(null)
+const session = ref<RetroSession | null>(null)
 const currentPhase = ref<SessionPhase>('writing')
 const currentUserId = ref<string>('')
-const participants = ref<any[]>([])
+const participants = ref<Participant[]>([])
 const cards = ref<RetroCard[]>([])
 
 // Load session data
@@ -133,40 +136,74 @@ onMounted(() => {
 })
 
 const loadSession = () => {
-  const sessionData = localStorage.getItem(`session-${sessionId}`)
-  if (sessionData) {
-    session.value = JSON.parse(sessionData)
+  try {
+    const sessionData = localStorage.getItem(`session-${sessionId}`)
+    if (sessionData) {
+      session.value = JSON.parse(sessionData)
+    }
+  } catch (error) {
+    console.error('Failed to load session data:', error)
+    session.value = null
   }
   
-  // Generate or get user ID
+  // Generate or get user ID using crypto API
   let userId = localStorage.getItem('userId')
   if (!userId) {
-    userId = Math.random().toString(36).substring(2, 15)
-    localStorage.setItem('userId', userId)
+    userId = crypto.randomUUID()
+    try {
+      localStorage.setItem('userId', userId)
+    } catch (error) {
+      console.error('Failed to store user ID:', error)
+    }
   }
   currentUserId.value = userId
   
   // Load cards
-  const cardsData = localStorage.getItem(`cards-${sessionId}`)
-  if (cardsData) {
-    cards.value = JSON.parse(cardsData)
+  try {
+    const cardsData = localStorage.getItem(`cards-${sessionId}`)
+    if (cardsData) {
+      cards.value = JSON.parse(cardsData)
+    }
+  } catch (error) {
+    console.error('Failed to load cards:', error)
+    cards.value = []
   }
   
-  // Add current user to participants
+  // Add current user to participants with all required fields
   const userName = route.query.name as string || session.value?.facilitatorName || 'Anonymous'
   const isAnonymous = route.query.anonymous === 'true'
+  
+  // Determine if this user is the facilitator
+  const isFacilitatorUser = !session.value || session.value.facilitatorName === userName
   
   participants.value = [{
     id: userId,
     name: isAnonymous ? 'Anonymous' : userName,
+    role: isFacilitatorUser ? 'facilitator' : 'participant',
+    isAnonymous: isAnonymous,
+    sessionId: sessionId,
+    joinedAt: new Date(),
     isOnline: true,
   }]
+  
+  // Set session facilitator ID if this is a new session
+  if (session.value && !session.value.facilitatorId) {
+    session.value.facilitatorId = userId
+  }
 }
 
 // Phases
 const phases: SessionPhase[] = ['writing', 'grouping', 'voting', 'discussion', 'completed']
 
+// Check if current user is facilitator
+const isFacilitator = computed(() => {
+  if (!session.value) return false
+  return session.value.facilitatorId === currentUserId.value
+})
+
 const changePhase = (phase: SessionPhase) => {
+  // Only the facilitator can change the session phase
+  if (!isFacilitator.value) return
   currentPhase.value = phase
 }
 
@@ -179,18 +216,31 @@ const actionCards = computed(() => cards.value.filter(c => c.type === 'action'))
 const canAddCards = computed(() => currentPhase.value === 'writing')
 const canVote = computed(() => currentPhase.value === 'voting')
 
-// Votes
+// Votes - recalculated dynamically to prevent race conditions
+const getVotesRemainingForCurrentUser = (): number => {
+  const maxVotesPerUser = session.value?.maxVotes || 3
+  
+  if (typeof maxVotesPerUser !== 'number' || maxVotesPerUser <= 0) {
+    return 0
+  }
+  
+  const userVotes = cards.value.reduce((count, c) => {
+    return c.voterIds.includes(currentUserId.value) ? count + 1 : count
+  }, 0)
+  
+  const remaining = maxVotesPerUser - userVotes
+  return remaining > 0 ? remaining : 0
+}
+
 const votesRemaining = computed(() => {
   if (!canVote.value) return null
-  const maxVotes = session.value?.maxVotes || 3
-  const usedVotes = cards.value.filter(c => c.voterIds?.includes(currentUserId.value)).length
-  return maxVotes - usedVotes
+  return getVotesRemainingForCurrentUser()
 })
 
 // Actions
 const addCard = (data: { type: RetroCardType, content: string }) => {
   const newCard: RetroCard = {
-    id: Math.random().toString(36).substring(2, 15),
+    id: crypto.randomUUID(),
     type: data.type,
     content: data.content,
     authorId: currentUserId.value,
@@ -211,14 +261,15 @@ const toggleVote = (cardId: string) => {
   if (!card) return
   
   const hasVoted = card.voterIds.includes(currentUserId.value)
+  const votesRemainingForUser = getVotesRemainingForCurrentUser()
   
   if (hasVoted) {
     // Remove vote
     card.voterIds = card.voterIds.filter(id => id !== currentUserId.value)
     card.votes--
   } else {
-    // Add vote
-    if (votesRemaining.value && votesRemaining.value > 0) {
+    // Add vote - check votes remaining
+    if (votesRemainingForUser > 0) {
       card.voterIds.push(currentUserId.value)
       card.votes++
     }
@@ -228,7 +279,14 @@ const toggleVote = (cardId: string) => {
 }
 
 const saveCards = () => {
-  localStorage.setItem(`cards-${sessionId}`, JSON.stringify(cards.value))
+  try {
+    localStorage.setItem(`cards-${sessionId}`, JSON.stringify(cards.value))
+  } catch (error) {
+    console.error('Failed to save cards to localStorage:', error)
+    if (typeof window !== 'undefined' && typeof window.alert === 'function') {
+      window.alert('Your cards could not be saved. Please check your browser storage settings and try again.')
+    }
+  }
 }
 
 const leaveSession = () => {

@@ -27,7 +27,26 @@
     "maxVotes": "Maximale Stimmen pro Teilnehmer",
     "facilitator": "Moderator",
     "participant": "Teilnehmer",
-    "observer": "Beobachter"
+    "observer": "Beobachter",
+    "yourName": "Ihr Name",
+    "yourNamePlaceholder": "Ihr Name",
+    "enableAnonymous": "Anonymen Modus aktivieren",
+    "createDescription": "Eine neue Retrospektive starten",
+    "joinDescription": "Einer bestehenden Sitzung beitreten"
+  },
+  "features": {
+    "secure": {
+      "title": "Sicher",
+      "description": "Nur lokale Datenspeicherung"
+    },
+    "simple": {
+      "title": "Einfach",
+      "description": "Keine Registrierung erforderlich"
+    },
+    "anonymous": {
+      "title": "Anonym",
+      "description": "Optionale anonyme Teilnahme"
+    }
   },
   "retro": {
     "phases": {

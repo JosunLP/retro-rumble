@@ -79,19 +79,11 @@ export class Session implements RetroSession {
     if (cardIndex !== -1) {
       const currentCard = this.cards[cardIndex]
       if (currentCard) {
-        this.cards[cardIndex] = { 
-          ...currentCard, 
-          ...updates, 
+        this.cards[cardIndex] = {
+          ...currentCard,
+          ...updates,
           id: currentCard.id,
-          type: updates.type ?? currentCard.type,
-          content: updates.content ?? currentCard.content,
-          authorId: updates.authorId ?? currentCard.authorId,
-          authorName: updates.authorName ?? currentCard.authorName,
-          votes: updates.votes ?? currentCard.votes,
-          voterIds: updates.voterIds ?? currentCard.voterIds,
-          status: updates.status ?? currentCard.status,
-          createdAt: updates.createdAt ?? currentCard.createdAt,
-          updatedAt: new Date() 
+          updatedAt: new Date(),
         }
         this.updatedAt = new Date()
       }
