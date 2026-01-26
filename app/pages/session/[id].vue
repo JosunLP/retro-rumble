@@ -39,7 +39,7 @@
                   : 'bg-secondary-100 text-secondary-700 hover:bg-secondary-200'
               ]"
             >
-              {{ $t(\`retro.phases.\${phase}\`) }}
+              {{ $t(`retro.phases.${phase}`) }}
             </button>
           </div>
           <div class="text-sm text-secondary-600">
@@ -133,7 +133,7 @@ onMounted(() => {
 })
 
 const loadSession = () => {
-  const sessionData = localStorage.getItem(\`session-\${sessionId}\`)
+  const sessionData = localStorage.getItem(`session-${sessionId}`)
   if (sessionData) {
     session.value = JSON.parse(sessionData)
   }
@@ -147,7 +147,7 @@ const loadSession = () => {
   currentUserId.value = userId
   
   // Load cards
-  const cardsData = localStorage.getItem(\`cards-\${sessionId}\`)
+  const cardsData = localStorage.getItem(`cards-${sessionId}`)
   if (cardsData) {
     cards.value = JSON.parse(cardsData)
   }
@@ -228,7 +228,7 @@ const toggleVote = (cardId: string) => {
 }
 
 const saveCards = () => {
-  localStorage.setItem(\`cards-\${sessionId}\`, JSON.stringify(cards.value))
+  localStorage.setItem(`cards-${sessionId}`, JSON.stringify(cards.value))
 }
 
 const leaveSession = () => {
