@@ -1,0 +1,63 @@
+{
+  "app": {
+    "name": "Retro Rumble",
+    "tagline": "Simple, Secure, Anonymous Retrospectives"
+  },
+  "common": {
+    "create": "Create",
+    "join": "Join",
+    "leave": "Leave",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "close": "Close",
+    "submit": "Submit",
+    "loading": "Loading...",
+    "anonymous": "Anonymous"
+  },
+  "session": {
+    "title": "Session Title",
+    "description": "Description (optional)",
+    "create": "Create New Session",
+    "join": "Join Session",
+    "sessionCode": "Session Code",
+    "enterCode": "Enter session code",
+    "anonymous": "Join Anonymously",
+    "maxVotes": "Max votes per participant",
+    "facilitator": "Facilitator",
+    "participant": "Participant",
+    "observer": "Observer"
+  },
+  "retro": {
+    "phases": {
+      "writing": "Writing",
+      "grouping": "Grouping",
+      "voting": "Voting",
+      "discussion": "Discussion",
+      "completed": "Completed"
+    },
+    "columns": {
+      "positive": "What went well",
+      "improve": "What to improve",
+      "action": "Action items"
+    },
+    "addCard": "Add a card",
+    "cardPlaceholder": "Enter your thought...",
+    "votes": "votes",
+    "votesRemaining": "votes remaining",
+    "noCards": "No cards yet. Be the first to add one!"
+  },
+  "participants": {
+    "title": "Participants",
+    "online": "online",
+    "offline": "offline",
+    "you": "You"
+  },
+  "errors": {
+    "sessionNotFound": "Session not found",
+    "invalidCode": "Invalid session code",
+    "connectionError": "Connection error. Please try again.",
+    "generic": "An error occurred. Please try again."
+  }
+}

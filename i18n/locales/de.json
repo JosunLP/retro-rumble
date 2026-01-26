@@ -1,0 +1,63 @@
+{
+  "app": {
+    "name": "Retro Rumble",
+    "tagline": "Einfache, Sichere, Anonyme Retrospektiven"
+  },
+  "common": {
+    "create": "Erstellen",
+    "join": "Beitreten",
+    "leave": "Verlassen",
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "delete": "Löschen",
+    "edit": "Bearbeiten",
+    "close": "Schließen",
+    "submit": "Absenden",
+    "loading": "Lädt...",
+    "anonymous": "Anonym"
+  },
+  "session": {
+    "title": "Sitzungstitel",
+    "description": "Beschreibung (optional)",
+    "create": "Neue Sitzung erstellen",
+    "join": "Sitzung beitreten",
+    "sessionCode": "Sitzungscode",
+    "enterCode": "Sitzungscode eingeben",
+    "anonymous": "Anonym beitreten",
+    "maxVotes": "Maximale Stimmen pro Teilnehmer",
+    "facilitator": "Moderator",
+    "participant": "Teilnehmer",
+    "observer": "Beobachter"
+  },
+  "retro": {
+    "phases": {
+      "writing": "Schreiben",
+      "grouping": "Gruppieren",
+      "voting": "Abstimmen",
+      "discussion": "Diskussion",
+      "completed": "Abgeschlossen"
+    },
+    "columns": {
+      "positive": "Was lief gut",
+      "improve": "Was zu verbessern",
+      "action": "Aktionspunkte"
+    },
+    "addCard": "Karte hinzufügen",
+    "cardPlaceholder": "Geben Sie Ihren Gedanken ein...",
+    "votes": "Stimmen",
+    "votesRemaining": "Stimmen übrig",
+    "noCards": "Noch keine Karten. Seien Sie der Erste, der eine hinzufügt!"
+  },
+  "participants": {
+    "title": "Teilnehmer",
+    "online": "online",
+    "offline": "offline",
+    "you": "Sie"
+  },
+  "errors": {
+    "sessionNotFound": "Sitzung nicht gefunden",
+    "invalidCode": "Ungültiger Sitzungscode",
+    "connectionError": "Verbindungsfehler. Bitte versuchen Sie es erneut.",
+    "generic": "Ein Fehler ist aufgetreten. Bitte versuchen Sie es erneut."
+  }
+}

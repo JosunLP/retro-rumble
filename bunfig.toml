@@ -1,0 +1,7 @@
+[install]
+# Install dependencies in node_modules
+backend = "hardlink"
+
+[install.cache]
+# Cache directory for faster installs
+dir = "~/.bun/install/cache"
