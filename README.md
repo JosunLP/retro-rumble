@@ -10,7 +10,7 @@ A modern, secure, and anonymous scrum retrospective application built with Nuxt 
 - **Phase Management**: Writing → Grouping → Voting → Discussion → Completed
 - **Responsive Design**: Works seamlessly on desktop and mobile devices
 - **No Registration**: Create and join sessions instantly with a simple code
-- **Privacy-Focused**: Sessions are temporary and data is not permanently stored
+- **Privacy-Focused**: Session data is stored locally in your browser (via localStorage) and persists until you or your browser clear it; no long-term server-side storage
 
 ## 🛠️ Technology Stack
 
@@ -21,6 +21,8 @@ A modern, secure, and anonymous scrum retrospective application built with Nuxt 
 - **Icons**: [@nuxt/icon](https://icones.js.org/) with Heroicons
 - **Fonts**: [@nuxt/fonts](https://fonts.nuxtjs.org/)
 - **i18n**: [@nuxtjs/i18n](https://i18n.nuxtjs.org/) (English & German)
+- **Content**: [@nuxt/content](https://content.nuxt.com/) (requires better-sqlite3)
+- **Security**: DOMPurify (prepared for future rich text features)
 
 ## 📁 Project Structure
 

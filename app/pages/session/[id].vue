@@ -140,6 +140,10 @@ const loadSession = () => {
     const sessionData = localStorage.getItem(`session-${sessionId}`)
     if (sessionData) {
       session.value = JSON.parse(sessionData)
+      // Initialize currentPhase from the loaded session, if a phase was saved
+      if (session.value && session.value.phase) {
+        currentPhase.value = session.value.phase as SessionPhase
+      }
     }
   } catch (error) {
     console.error('Failed to load session data:', error)
@@ -171,6 +175,17 @@ const loadSession = () => {
     cards.value = []
   }
   
+  // Set session facilitator ID if this is a new session or legacy session without one,
+  // and persist the updated session so the facilitator cannot be reassigned on next load.
+  if (session.value && !session.value.facilitatorId) {
+    session.value.facilitatorId = userId
+    try {
+      localStorage.setItem(`session-${sessionId}`, JSON.stringify(session.value))
+    } catch (error) {
+      console.error('Failed to persist updated session data:', error)
+    }
+  }
+  
   // Add current user to participants with all required fields
   const userName = route.query.name as string || 'Anonymous'
   const isAnonymous = route.query.anonymous === 'true'
@@ -184,20 +199,9 @@ const loadSession = () => {
     role: isFacilitatorUser ? 'facilitator' : 'participant',
     isAnonymous: isAnonymous,
     sessionId: sessionId,
-    joinedAt: new Date(),
+    joinedAt: new Date().toISOString(),
     isOnline: true,
   }]
-  
-  // Set session facilitator ID if this is a new session or legacy session without one,
-  // and persist the updated session so the facilitator cannot be reassigned on next load.
-  if (session.value && !session.value.facilitatorId) {
-    session.value.facilitatorId = userId
-    try {
-      localStorage.setItem(`session-${sessionId}`, JSON.stringify(session.value))
-    } catch (error) {
-      console.error('Failed to persist updated session data:', error)
-    }
-  }
 }
 
 // Phases
@@ -213,6 +217,16 @@ const changePhase = (phase: SessionPhase) => {
   // Only the facilitator can change the session phase
   if (!isFacilitator.value) return
   currentPhase.value = phase
+  
+  // Persist phase change to session
+  if (session.value) {
+    session.value.phase = phase
+    try {
+      localStorage.setItem(`session-${sessionId}`, JSON.stringify(session.value))
+    } catch (error) {
+      console.error('Failed to persist phase change:', error)
+    }
+  }
 }
 
 // Card filtering
@@ -226,7 +240,8 @@ const canVote = computed(() => currentPhase.value === 'voting')
 
 // Votes - recalculated dynamically to prevent race conditions
 const getVotesRemainingForCurrentUser = (): number => {
-  const maxVotesPerUser = session.value?.maxVotesPerParticipant || 3
+  // Support legacy sessions with maxVotes field
+  const maxVotesPerUser = session.value?.maxVotesPerParticipant ?? (session.value as any)?.maxVotes ?? 3
   
   if (typeof maxVotesPerUser !== 'number' || maxVotesPerUser <= 0) {
     return 0
@@ -256,8 +271,8 @@ const addCard = (data: { type: RetroCardType, content: string }) => {
     votes: 0,
     voterIds: [],
     status: 'active',
-    createdAt: new Date(),
-    updatedAt: new Date(),
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
   }
   
   cards.value.push(newCard)

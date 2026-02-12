@@ -137,6 +137,11 @@ const createSession = () => {
       localStorage.setItem('userId', facilitatorId)
     } catch (error) {
       console.error('Failed to store facilitator ID:', error)
+      // Treat this as a hard failure - without userId, facilitator permissions will be lost
+      if (typeof window !== 'undefined' && typeof window.alert === 'function') {
+        window.alert('Failed to create session. Please check your browser storage settings and try again.')
+      }
+      return
     }
     
     // Navigate to session with facilitator name

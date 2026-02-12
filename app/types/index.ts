@@ -35,8 +35,8 @@ export interface RetroCard {
   voterIds: string[]
   groupId?: string
   status: CardStatus
-  createdAt: Date
-  updatedAt: Date
+  createdAt: string // ISO 8601 string
+  updatedAt: string // ISO 8601 string
 }
 
 /**
@@ -48,7 +48,7 @@ export interface Participant {
   role: ParticipantRole
   isAnonymous: boolean
   sessionId: string
-  joinedAt: Date
+  joinedAt: string // ISO 8601 string
   isOnline: boolean
 }
 
@@ -65,8 +65,8 @@ export interface RetroSession {
   cards: RetroCard[]
   maxVotesPerParticipant: number
   isAnonymousMode: boolean
-  createdAt: Date
-  updatedAt: Date
+  createdAt: string // ISO 8601 string
+  updatedAt: string // ISO 8601 string
 }
 
 /**

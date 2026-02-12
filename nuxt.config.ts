@@ -26,16 +26,6 @@ export default defineNuxtConfig({
   },
 
   /**
-   * Nitro Server Configuration
-   * WebSocket support for real-time collaboration
-   */
-  nitro: {
-    experimental: {
-      websocket: true,
-    },
-  },
-
-  /**
    * Tailwind CSS Configuration
    */
   tailwindcss: {

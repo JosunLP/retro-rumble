@@ -41,7 +41,7 @@
           <input
             v-model="form.name"
             type="text"
-            required
+            :required="!form.isAnonymous"
             class="input-field"
             :placeholder="$t('session.yourNamePlaceholder')"
           />
