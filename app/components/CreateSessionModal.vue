@@ -9,15 +9,15 @@
       <div class="flex justify-between items-center mb-6">
         <h2 id="create-session-title">{{ $t('session.create') }}</h2>
         <button 
-          @click="$emit('close')" 
-          class="text-secondary-400 hover:text-secondary-600"
+          class="text-secondary-400 hover:text-secondary-600" 
           aria-label="Close"
+          @click="$emit('close')"
         >
           <Icon name="heroicons:x-mark" class="w-6 h-6" />
         </button>
       </div>
 
-      <form @submit.prevent="createSession" class="space-y-4">
+      <form class="space-y-4" @submit.prevent="createSession">
         <!-- Session Title -->
         <div>
           <label for="session-title" class="block text-sm font-medium text-secondary-700 mb-2">
@@ -30,7 +30,7 @@
             required
             class="input-field"
             :placeholder="$t('session.title')"
-          />
+          >
         </div>
 
         <!-- Description -->
@@ -59,7 +59,7 @@
             required
             class="input-field"
             :placeholder="$t('session.yourNamePlaceholder')"
-          />
+          >
         </div>
 
         <!-- Max Votes -->
@@ -75,17 +75,17 @@
             max="10"
             required
             class="input-field"
-          />
+          >
         </div>
 
         <!-- Anonymous Mode -->
         <div class="flex items-center">
           <input
+            id="anonymous"
             v-model="form.isAnonymous"
             type="checkbox"
-            id="anonymous"
             class="w-4 h-4 text-primary-600 rounded focus:ring-primary-500"
-          />
+          >
           <label for="anonymous" class="ml-2 text-sm text-secondary-700">
             {{ $t('session.enableAnonymous') }}
           </label>

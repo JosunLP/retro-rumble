@@ -9,8 +9,8 @@
     <!-- Add Card Button -->
     <button
       v-if="canAdd"
-      @click="showAddForm = true"
       class="w-full btn-secondary mb-4 flex items-center justify-center space-x-2"
+      @click="showAddForm = true"
     >
       <Icon name="heroicons:plus" class="w-4 h-4" />
       <span>{{ $t('retro.addCard') }}</span>
@@ -26,10 +26,10 @@
         autofocus
       />
       <div class="flex space-x-2">
-        <button @click="submitCard" class="btn-primary flex-1">
+        <button class="btn-primary flex-1" @click="submitCard">
           {{ $t('common.submit') }}
         </button>
-        <button @click="cancelAdd" class="btn-secondary">
+        <button class="btn-secondary" @click="cancelAdd">
           {{ $t('common.cancel') }}
         </button>
       </div>
@@ -53,13 +53,13 @@
           <!-- Vote Button -->
           <button
             v-if="canVote"
-            @click="$emit('vote', card.id)"
             :class="[
               'flex items-center space-x-1 px-2 py-1 rounded transition-colors',
               hasVoted(card) 
                 ? 'bg-primary-600 text-white' 
                 : 'bg-secondary-100 hover:bg-secondary-200 text-secondary-700'
             ]"
+            @click="$emit('vote', card.id)"
           >
             <Icon name="heroicons:heart-solid" class="w-4 h-4" />
             <span>{{ card.votes }}</span>

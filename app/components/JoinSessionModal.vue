@@ -9,15 +9,15 @@
       <div class="flex justify-between items-center mb-6">
         <h2 id="join-session-title">{{ $t('session.join') }}</h2>
         <button 
-          @click="$emit('close')" 
-          class="text-secondary-400 hover:text-secondary-600"
+          class="text-secondary-400 hover:text-secondary-600" 
           aria-label="Close"
+          @click="$emit('close')"
         >
           <Icon name="heroicons:x-mark" class="w-6 h-6" />
         </button>
       </div>
 
-      <form @submit.prevent="joinSession" class="space-y-4">
+      <form class="space-y-4" @submit.prevent="joinSession">
         <!-- Session Code -->
         <div>
           <label class="block text-sm font-medium text-secondary-700 mb-2">
@@ -30,7 +30,7 @@
             class="input-field uppercase"
             :placeholder="$t('session.enterCode')"
             maxlength="8"
-          />
+          >
         </div>
 
         <!-- Participant Name -->
@@ -44,17 +44,17 @@
             :required="!form.isAnonymous"
             class="input-field"
             :placeholder="$t('session.yourNamePlaceholder')"
-          />
+          >
         </div>
 
         <!-- Anonymous Mode -->
         <div class="flex items-center">
           <input
+            id="join-anonymous"
             v-model="form.isAnonymous"
             type="checkbox"
-            id="join-anonymous"
             class="w-4 h-4 text-primary-600 rounded focus:ring-primary-500"
-          />
+          >
           <label for="join-anonymous" class="ml-2 text-sm text-secondary-700">
             {{ $t('session.anonymous') }}
           </label>

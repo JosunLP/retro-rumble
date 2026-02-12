@@ -17,7 +17,7 @@
               <p class="text-lg font-bold text-primary-600">{{ sessionId }}</p>
             </div>
             <!-- Leave Button -->
-            <button @click="leaveSession" class="btn-secondary">
+            <button class="btn-secondary" @click="leaveSession">
               {{ $t('common.leave') }}
             </button>
           </div>
@@ -31,7 +31,6 @@
             <button
               v-for="phase in phases"
               :key="phase"
-              @click="changePhase(phase)"
               :disabled="!isFacilitator"
               :class="[
                 'px-4 py-2 rounded-lg font-medium transition-colors',
@@ -41,6 +40,7 @@
                     ? 'bg-secondary-100 text-secondary-700 hover:bg-secondary-200' 
                     : 'bg-secondary-100 text-secondary-400 cursor-not-allowed'
               ]"
+              @click="changePhase(phase)"
             >
               {{ $t(`retro.phases.${phase}`) }}
             </button>
