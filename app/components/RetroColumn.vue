@@ -137,8 +137,18 @@ const sortedCards = computed(() => {
 
 // Check if current user has voted
 const hasVoted = (card: RetroCard) => {
-  const userId = localStorage.getItem('userId')
-  return userId && card.voterIds?.includes(userId)
+  // Guard against SSR and environments without localStorage
+  if (typeof window === 'undefined') {
+    return false
+  }
+
+  try {
+    const userId = window.localStorage.getItem('userId')
+    return !!userId && card.voterIds?.includes(userId)
+  } catch {
+    // If accessing localStorage fails, treat as not voted
+    return false
+  }
 }
 
 const submitCard = () => {

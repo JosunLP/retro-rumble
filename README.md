@@ -8,7 +8,6 @@ A modern, secure, and anonymous scrum retrospective application built with Nuxt 
 - **Anonymous Mode**: Optional anonymous participation for honest feedback
 - **Voting System**: Vote on the most important cards with a configurable vote limit
 - **Phase Management**: Writing → Grouping → Voting → Discussion → Completed
-- **Real-time Collaboration**: See participants join and contribute in real-time
 - **Responsive Design**: Works seamlessly on desktop and mobile devices
 - **No Registration**: Create and join sessions instantly with a simple code
 - **Privacy-Focused**: Sessions are temporary and data is not permanently stored
@@ -45,7 +44,6 @@ retro-rumble/
 ├── i18n/locales/          # Internationalization
 │   ├── en.json
 │   └── de.json
-├── server/                # Backend API (future)
 ├── public/                # Static assets
 ├── nuxt.config.ts         # Nuxt configuration
 ├── tailwind.config.ts     # Tailwind configuration
@@ -112,7 +110,7 @@ bun run preview
 - **No Account Required**: Start using immediately without registration
 - **Anonymous Mode**: Participate without revealing your identity
 - **Client-Side Storage**: Session data stored locally for privacy
-- **Input Sanitization**: All user input is sanitized (DOMPurify)
+- **Input Handling**: User input is rendered using Vue's escaped text interpolation (no raw HTML)
 - **Temporary Sessions**: No permanent data storage
 
 ## 📖 Architecture

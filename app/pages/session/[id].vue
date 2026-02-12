@@ -147,14 +147,16 @@ const loadSession = () => {
   }
   
   // Generate or get user ID using crypto API
-  let userId = localStorage.getItem('userId')
-  if (!userId) {
-    userId = crypto.randomUUID()
-    try {
+  let userId = ''
+  try {
+    userId = localStorage.getItem('userId') || ''
+    if (!userId) {
+      userId = crypto.randomUUID()
       localStorage.setItem('userId', userId)
-    } catch (error) {
-      console.error('Failed to store user ID:', error)
     }
+  } catch (error) {
+    console.error('Failed to access user ID in localStorage:', error)
+    userId = crypto.randomUUID()
   }
   currentUserId.value = userId
   
@@ -170,11 +172,11 @@ const loadSession = () => {
   }
   
   // Add current user to participants with all required fields
-  const userName = route.query.name as string || session.value?.facilitatorName || 'Anonymous'
+  const userName = route.query.name as string || 'Anonymous'
   const isAnonymous = route.query.anonymous === 'true'
   
-  // Determine if this user is the facilitator
-  const isFacilitatorUser = !session.value || session.value.facilitatorName === userName
+  // Determine if this user is the facilitator based on facilitatorId
+  const isFacilitatorUser = session.value?.facilitatorId === userId
   
   participants.value = [{
     id: userId,
@@ -186,9 +188,15 @@ const loadSession = () => {
     isOnline: true,
   }]
   
-  // Set session facilitator ID if this is a new session
+  // Set session facilitator ID if this is a new session or legacy session without one,
+  // and persist the updated session so the facilitator cannot be reassigned on next load.
   if (session.value && !session.value.facilitatorId) {
     session.value.facilitatorId = userId
+    try {
+      localStorage.setItem(`session-${sessionId}`, JSON.stringify(session.value))
+    } catch (error) {
+      console.error('Failed to persist updated session data:', error)
+    }
   }
 }
 
@@ -218,7 +226,7 @@ const canVote = computed(() => currentPhase.value === 'voting')
 
 // Votes - recalculated dynamically to prevent race conditions
 const getVotesRemainingForCurrentUser = (): number => {
-  const maxVotesPerUser = session.value?.maxVotes || 3
+  const maxVotesPerUser = session.value?.maxVotesPerParticipant || 3
   
   if (typeof maxVotesPerUser !== 'number' || maxVotesPerUser <= 0) {
     return 0

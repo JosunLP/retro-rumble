@@ -112,16 +112,34 @@ const createSession = () => {
     // Generate session ID using cryptographically secure random UUID
     const sessionId = crypto.randomUUID().replace(/-/g, '').substring(0, 6).toUpperCase()
     
-    // Store session data in localStorage (temporary, will be replaced with API)
+    // Generate facilitator ID
+    const facilitatorId = crypto.randomUUID()
+    
+    // Store session data in localStorage matching RetroSession shape
     const sessionData = {
       id: sessionId,
-      ...form.value,
+      title: form.value.title,
+      description: form.value.description,
+      phase: 'writing' as const,
+      facilitatorId: facilitatorId,
+      participants: [],
+      cards: [],
+      maxVotesPerParticipant: form.value.maxVotes,
+      isAnonymousMode: form.value.isAnonymous,
       createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     }
     localStorage.setItem(`session-${sessionId}`, JSON.stringify(sessionData))
     
-    // Navigate to session
-    navigateTo(`/session/${sessionId}`)
+    // Store facilitator ID for this user
+    try {
+      localStorage.setItem('userId', facilitatorId)
+    } catch (error) {
+      console.error('Failed to store facilitator ID:', error)
+    }
+    
+    // Navigate to session with facilitator name
+    navigateTo(`/session/${sessionId}?name=${encodeURIComponent(form.value.facilitatorName)}`)
   } catch (error) {
     console.error('Failed to create session:', error)
     if (typeof window !== 'undefined' && typeof window.alert === 'function') {
