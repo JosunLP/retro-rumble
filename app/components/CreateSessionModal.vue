@@ -131,7 +131,8 @@ const createSession = () => {
     }
     localStorage.setItem(`session-${sessionId}`, JSON.stringify(sessionData))
     
-    // Store facilitator ID for this user
+    // Store facilitator ID as the user's ID for this browser
+    // This ID persists across all sessions the user creates or joins
     try {
       localStorage.setItem('userId', facilitatorId)
     } catch (error) {

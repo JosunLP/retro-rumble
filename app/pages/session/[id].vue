@@ -155,7 +155,7 @@ const loadSession = () => {
       localStorage.setItem('userId', userId)
     }
   } catch (error) {
-    console.error('Failed to access user ID in localStorage:', error)
+    console.error('Failed to access localStorage, using temporary user ID:', error)
     userId = crypto.randomUUID()
   }
   currentUserId.value = userId
