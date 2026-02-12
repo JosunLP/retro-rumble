@@ -29,7 +29,7 @@
             required
             class="input-field uppercase"
             :placeholder="$t('session.enterCode')"
-            maxlength="6"
+            maxlength="8"
           />
         </div>
 
