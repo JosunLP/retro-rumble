@@ -20,10 +20,11 @@
       <form class="space-y-4" @submit.prevent="joinSession">
         <!-- Session Code -->
         <div>
-          <label class="block text-sm font-medium text-secondary-700 mb-2">
+          <label for="session-code" class="block text-sm font-medium text-secondary-700 mb-2">
             {{ $t('session.sessionCode') }}
           </label>
           <input
+            id="session-code"
             v-model="form.sessionCode"
             type="text"
             required
@@ -35,10 +36,11 @@
 
         <!-- Participant Name -->
         <div>
-          <label class="block text-sm font-medium text-secondary-700 mb-2">
+          <label for="participant-name" class="block text-sm font-medium text-secondary-700 mb-2">
             {{ $t('session.yourName') }}
           </label>
           <input
+            id="participant-name"
             v-model="form.name"
             type="text"
             :required="!form.isAnonymous"
