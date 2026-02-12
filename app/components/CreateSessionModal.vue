@@ -97,7 +97,7 @@
 </template>
 
 <script setup lang="ts">
-const emit = defineEmits(['close'])
+defineEmits(['close'])
 
 const form = ref({
   title: '',
@@ -115,6 +115,19 @@ const createSession = () => {
     // Generate facilitator ID
     const facilitatorId = crypto.randomUUID()
     
+    // Store facilitator ID as the user's ID for this browser first
+    // This ID persists across all sessions the user creates or joins
+    try {
+      localStorage.setItem('userId', facilitatorId)
+    } catch (error) {
+      console.error('Failed to store facilitator ID:', error)
+      // Treat this as a hard failure - without userId, facilitator permissions will be lost
+      if (typeof window !== 'undefined' && typeof window.alert === 'function') {
+        window.alert('Failed to create session. Please check your browser storage settings and try again.')
+      }
+      return
+    }
+    
     // Store session data in localStorage matching RetroSession shape
     const sessionData = {
       id: sessionId,
@@ -131,23 +144,17 @@ const createSession = () => {
     }
     localStorage.setItem(`session-${sessionId}`, JSON.stringify(sessionData))
     
-    // Store facilitator ID as the user's ID for this browser
-    // This ID persists across all sessions the user creates or joins
-    try {
-      localStorage.setItem('userId', facilitatorId)
-    } catch (error) {
-      console.error('Failed to store facilitator ID:', error)
-      // Treat this as a hard failure - without userId, facilitator permissions will be lost
-      if (typeof window !== 'undefined' && typeof window.alert === 'function') {
-        window.alert('Failed to create session. Please check your browser storage settings and try again.')
-      }
-      return
-    }
-    
     // Navigate to session with facilitator name
     navigateTo(`/session/${sessionId}?name=${encodeURIComponent(form.value.facilitatorName)}`)
   } catch (error) {
     console.error('Failed to create session:', error)
+    // Clean up the session if it was created
+    try {
+      const sessionId = crypto.randomUUID().replace(/-/g, '').substring(0, 6).toUpperCase()
+      localStorage.removeItem(`session-${sessionId}`)
+    } catch {
+      // Ignore cleanup errors
+    }
     if (typeof window !== 'undefined' && typeof window.alert === 'function') {
       window.alert('Failed to create session. Please check your browser storage settings and try again.')
     }

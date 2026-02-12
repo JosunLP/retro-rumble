@@ -14,8 +14,8 @@ export class Session implements RetroSession {
   cards: RetroCard[]
   maxVotesPerParticipant: number
   isAnonymousMode: boolean
-  createdAt: Date
-  updatedAt: Date
+  createdAt: string
+  updatedAt: string
 
   constructor(
     id: string,
@@ -34,8 +34,8 @@ export class Session implements RetroSession {
     this.cards = []
     this.maxVotesPerParticipant = maxVotesPerParticipant
     this.isAnonymousMode = isAnonymousMode
-    this.createdAt = new Date()
-    this.updatedAt = new Date()
+    this.createdAt = new Date().toISOString()
+    this.updatedAt = new Date().toISOString()
   }
 
   /**
@@ -83,9 +83,9 @@ export class Session implements RetroSession {
           ...currentCard,
           ...updates,
           id: currentCard.id,
-          updatedAt: new Date(),
+          updatedAt: new Date().toISOString(),
         }
-        this.updatedAt = new Date()
+        this.updatedAt = new Date().toISOString()
       }
     }
   }

@@ -5,7 +5,7 @@
       <div class="bg-white rounded-card shadow-md p-4 mb-6">
         <div class="flex justify-between items-center">
           <div>
-            <h2 class="text-2xl font-bold">{{ session?.title || 'Loading...' }}</h2>
+            <h2 class="text-2xl font-bold">{{ session?.title || $t('common.loading') }}</h2>
             <p v-if="session?.description" class="text-secondary-600 text-sm mt-1">
               {{ session.description }}
             </p>
@@ -13,7 +13,7 @@
           <div class="flex items-center space-x-4">
             <!-- Session Code -->
             <div class="text-right">
-              <p class="text-xs text-secondary-600">Session Code</p>
+              <p class="text-xs text-secondary-600">{{ $t('session.sessionCode') }}</p>
               <p class="text-lg font-bold text-primary-600">{{ sessionId }}</p>
             </div>
             <!-- Leave Button -->
@@ -144,10 +144,17 @@ const loadSession = () => {
       if (session.value && session.value.phase) {
         currentPhase.value = session.value.phase as SessionPhase
       }
+    } else {
+      // No session found - navigate back to home
+      console.error('Session not found')
+      navigateTo('/')
+      return
     }
   } catch (error) {
     console.error('Failed to load session data:', error)
     session.value = null
+    navigateTo('/')
+    return
   }
   
   // Generate or get user ID using crypto API
@@ -289,14 +296,19 @@ const toggleVote = (cardId: string) => {
   if (hasVoted) {
     // Remove vote
     card.voterIds = card.voterIds.filter(id => id !== currentUserId.value)
-    card.votes--
   } else {
     // Add vote - check votes remaining
     if (votesRemainingForUser > 0) {
       card.voterIds.push(currentUserId.value)
-      card.votes++
+    } else {
+      // No votes remaining; do not change the card
+      return
     }
   }
+  
+  // Derive votes from voterIds and clamp at 0 to avoid negative values
+  card.votes = Math.max(0, card.voterIds.length)
+  card.updatedAt = new Date().toISOString()
   
   saveCards()
 }

@@ -75,7 +75,7 @@
 </template>
 
 <script setup lang="ts">
-const emit = defineEmits(['close'])
+defineEmits(['close'])
 const { t } = useI18n()
 
 const form = ref({

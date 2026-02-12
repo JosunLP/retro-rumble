@@ -10,7 +10,7 @@ export class ParticipantClass implements Participant {
   role: ParticipantRole
   isAnonymous: boolean
   sessionId: string
-  joinedAt: Date
+  joinedAt: string
   isOnline: boolean
 
   constructor(
@@ -19,14 +19,15 @@ export class ParticipantClass implements Participant {
     sessionId: string,
     role: ParticipantRole = 'participant',
     isAnonymous: boolean = false,
+    isOnline: boolean = true,
   ) {
     this.id = id
     this.name = name
     this.role = role
     this.isAnonymous = isAnonymous
     this.sessionId = sessionId
-    this.joinedAt = new Date()
-    this.isOnline = true
+    this.joinedAt = new Date().toISOString()
+    this.isOnline = isOnline
   }
 
   /**

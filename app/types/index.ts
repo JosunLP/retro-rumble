@@ -77,7 +77,7 @@ export interface CardGroup {
   title: string
   cardIds: string[]
   sessionId: string
-  createdAt: Date
+  createdAt: string // ISO 8601 string
 }
 
 /**
@@ -148,53 +148,53 @@ export type WSMessage =
       type: 'join'
       payload: JoinPayload
       sessionId: string
-      timestamp: Date
+      timestamp: string // ISO 8601 string
     }
   | {
       type: 'leave'
       payload: LeavePayload
       sessionId: string
-      timestamp: Date
+      timestamp: string // ISO 8601 string
     }
   | {
       type: 'card-added'
       payload: CardAddedPayload
       sessionId: string
-      timestamp: Date
+      timestamp: string // ISO 8601 string
     }
   | {
       type: 'card-updated'
       payload: CardUpdatedPayload
       sessionId: string
-      timestamp: Date
+      timestamp: string // ISO 8601 string
     }
   | {
       type: 'card-deleted'
       payload: CardDeletedPayload
       sessionId: string
-      timestamp: Date
+      timestamp: string // ISO 8601 string
     }
   | {
       type: 'vote-changed'
       payload: VoteChangedPayload
       sessionId: string
-      timestamp: Date
+      timestamp: string // ISO 8601 string
     }
   | {
       type: 'phase-changed'
       payload: PhaseChangedPayload
       sessionId: string
-      timestamp: Date
+      timestamp: string // ISO 8601 string
     }
   | {
       type: 'participant-joined'
       payload: ParticipantJoinedPayload
       sessionId: string
-      timestamp: Date
+      timestamp: string // ISO 8601 string
     }
   | {
       type: 'participant-left'
       payload: ParticipantLeftPayload
       sessionId: string
-      timestamp: Date
+      timestamp: string // ISO 8601 string
     }
