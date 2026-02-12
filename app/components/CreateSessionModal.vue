@@ -20,10 +20,11 @@
       <form @submit.prevent="createSession" class="space-y-4">
         <!-- Session Title -->
         <div>
-          <label class="block text-sm font-medium text-secondary-700 mb-2">
+          <label for="session-title" class="block text-sm font-medium text-secondary-700 mb-2">
             {{ $t('session.title') }}
           </label>
           <input
+            id="session-title"
             v-model="form.title"
             type="text"
             required
@@ -34,10 +35,11 @@
 
         <!-- Description -->
         <div>
-          <label class="block text-sm font-medium text-secondary-700 mb-2">
+          <label for="session-description" class="block text-sm font-medium text-secondary-700 mb-2">
             {{ $t('session.description') }}
           </label>
           <textarea
+            id="session-description"
             v-model="form.description"
             rows="3"
             class="input-field"
@@ -47,10 +49,11 @@
 
         <!-- Facilitator Name -->
         <div>
-          <label class="block text-sm font-medium text-secondary-700 mb-2">
+          <label for="facilitator-name" class="block text-sm font-medium text-secondary-700 mb-2">
             {{ $t('session.yourName') }}
           </label>
           <input
+            id="facilitator-name"
             v-model="form.facilitatorName"
             type="text"
             required
@@ -61,10 +64,11 @@
 
         <!-- Max Votes -->
         <div>
-          <label class="block text-sm font-medium text-secondary-700 mb-2">
+          <label for="max-votes" class="block text-sm font-medium text-secondary-700 mb-2">
             {{ $t('session.maxVotes') }}
           </label>
           <input
+            id="max-votes"
             v-model.number="form.maxVotes"
             type="number"
             min="1"
@@ -108,10 +112,20 @@ const form = ref({
 })
 
 const createSession = () => {
+  // Ensure we're in a browser environment with localStorage
+  if (typeof window === 'undefined' || !('localStorage' in window) || !window.localStorage) {
+    console.error('localStorage is not available')
+    if (typeof window !== 'undefined' && typeof window.alert === 'function') {
+      window.alert('Session storage is not available. Please check your browser settings.')
+    }
+    return
+  }
+  
+  // Generate session ID using cryptographically secure random UUID
+  // Using 8 characters for better uniqueness (16^8 ≈ 4.3 billion possible IDs)
+  const sessionId = crypto.randomUUID().replace(/-/g, '').substring(0, 8).toUpperCase()
+  
   try {
-    // Generate session ID using cryptographically secure random UUID
-    const sessionId = crypto.randomUUID().replace(/-/g, '').substring(0, 6).toUpperCase()
-    
     // Generate facilitator ID
     const facilitatorId = crypto.randomUUID()
     
@@ -122,7 +136,7 @@ const createSession = () => {
     } catch (error) {
       console.error('Failed to store facilitator ID:', error)
       // Treat this as a hard failure - without userId, facilitator permissions will be lost
-      if (typeof window !== 'undefined' && typeof window.alert === 'function') {
+      if (typeof window.alert === 'function') {
         window.alert('Failed to create session. Please check your browser storage settings and try again.')
       }
       return
@@ -142,7 +156,22 @@ const createSession = () => {
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     }
-    localStorage.setItem(`session-${sessionId}`, JSON.stringify(sessionData))
+    
+    try {
+      localStorage.setItem(`session-${sessionId}`, JSON.stringify(sessionData))
+    } catch (error) {
+      console.error('Failed to store session data:', error)
+      // Clean up userId since session creation failed
+      try {
+        localStorage.removeItem('userId')
+      } catch {
+        // Ignore cleanup errors
+      }
+      if (typeof window.alert === 'function') {
+        window.alert('Failed to create session. Please check your browser storage settings and try again.')
+      }
+      return
+    }
     
     // Navigate to session with facilitator name
     navigateTo(`/session/${sessionId}?name=${encodeURIComponent(form.value.facilitatorName)}`)
@@ -150,13 +179,13 @@ const createSession = () => {
     console.error('Failed to create session:', error)
     // Clean up the session if it was created
     try {
-      const sessionId = crypto.randomUUID().replace(/-/g, '').substring(0, 6).toUpperCase()
       localStorage.removeItem(`session-${sessionId}`)
+      localStorage.removeItem('userId')
     } catch {
       // Ignore cleanup errors
     }
-    if (typeof window !== 'undefined' && typeof window.alert === 'function') {
-      window.alert('Failed to create session. Please check your browser storage settings and try again.')
+    if (typeof window.alert === 'function') {
+      window.alert('Failed to create session. Please check your browser settings and try again.')
     }
   }
 }

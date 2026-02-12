@@ -44,7 +44,7 @@ export class Session implements RetroSession {
   addParticipant(participant: Participant): void {
     if (!this.participants.find(p => p.id === participant.id)) {
       this.participants.push(participant)
-      this.updatedAt = new Date()
+      this.updatedAt = new Date().toISOString()
     }
   }
 
@@ -53,7 +53,7 @@ export class Session implements RetroSession {
    */
   removeParticipant(participantId: string): void {
     this.participants = this.participants.filter(p => p.id !== participantId)
-    this.updatedAt = new Date()
+    this.updatedAt = new Date().toISOString()
   }
 
   /**
@@ -68,7 +68,7 @@ export class Session implements RetroSession {
    */
   addCard(card: RetroCard): void {
     this.cards.push(card)
-    this.updatedAt = new Date()
+    this.updatedAt = new Date().toISOString()
   }
 
   /**
@@ -95,7 +95,7 @@ export class Session implements RetroSession {
    */
   deleteCard(cardId: string): void {
     this.cards = this.cards.filter(c => c.id !== cardId)
-    this.updatedAt = new Date()
+    this.updatedAt = new Date().toISOString()
   }
 
   /**
@@ -110,7 +110,7 @@ export class Session implements RetroSession {
    */
   setPhase(phase: SessionPhase): void {
     this.phase = phase
-    this.updatedAt = new Date()
+    this.updatedAt = new Date().toISOString()
   }
 
   /**

@@ -89,10 +89,17 @@ const error = ref('')
 const joinSession = () => {
   error.value = ''
   
+  // Ensure we're in a browser environment with localStorage
+  if (typeof window === 'undefined' || !('localStorage' in window) || !window.localStorage) {
+    console.error('localStorage is not available')
+    error.value = 'Session storage is not available. Please check your browser settings.'
+    return
+  }
+  
   try {
     // Check if session exists in localStorage
     const sessionCode = form.value.sessionCode.toUpperCase()
-    const sessionData = localStorage.getItem(`session-${sessionCode}`)
+    const sessionData = window.localStorage.getItem(`session-${sessionCode}`)
     
     if (!sessionData) {
       error.value = t('errors.sessionNotFound')

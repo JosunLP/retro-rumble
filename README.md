@@ -119,8 +119,7 @@ bun run preview
 
 The project follows DRY and OOP principles inspired by [planning-poker](https://github.com/JosunLP/planning-poker):
 
-- **Composables**: Reusable logic in `composables/`
-- **Utility Classes**: `Participant` and `Session` classes for business logic
+- **Utility Classes**: `Participant` and `Session` classes for business logic in `utils/`
 - **Types**: Central TypeScript definitions in `types/`
 - **Components**: Reusable Vue components with clear responsibilities
 
