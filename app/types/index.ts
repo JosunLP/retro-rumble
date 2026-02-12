@@ -126,7 +126,7 @@ export interface CardDeletedPayload {
   cardId: string
 }
 
-export interface VoteChangedPayload extends VoteEvent {}
+export type VoteChangedPayload = VoteEvent
 
 export interface PhaseChangedPayload {
   phase: SessionPhase

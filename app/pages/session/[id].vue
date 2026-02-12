@@ -120,6 +120,9 @@
 <script setup lang="ts">
 import type { RetroCard, RetroCardType, SessionPhase, RetroSession, Participant } from '~/types'
 
+// Type to support legacy sessions that used 'maxVotes' instead of 'maxVotesPerParticipant'
+type LegacyRetroSession = RetroSession & { maxVotes?: number }
+
 const route = useRoute()
 const sessionId = route.params.id as string
 
@@ -248,7 +251,8 @@ const canVote = computed(() => currentPhase.value === 'voting')
 // Votes - recalculated dynamically to prevent race conditions
 const getVotesRemainingForCurrentUser = (): number => {
   // Support legacy sessions with maxVotes field
-  const maxVotesPerUser = session.value?.maxVotesPerParticipant ?? (session.value as any)?.maxVotes ?? 3
+  const legacySession = session.value as LegacyRetroSession | null
+  const maxVotesPerUser = session.value?.maxVotesPerParticipant ?? legacySession?.maxVotes ?? 3
   
   if (typeof maxVotesPerUser !== 'number' || maxVotesPerUser <= 0) {
     return 0
