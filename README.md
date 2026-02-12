@@ -94,7 +94,7 @@ bun run preview
 ### Joining a Session
 
 1. Click "Join Session" on the landing page
-2. Enter the 6-character session code
+2. Enter the 8-character session code
 3. Enter your name
 4. Optionally join anonymously
 5. Start adding cards and voting!
