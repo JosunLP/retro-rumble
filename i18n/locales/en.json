@@ -95,10 +95,8 @@
     "description": "Download your retro results to share with the team or archive them.",
     "format": {
       "json": "JSON",
-      "csv": "CSV",
       "markdown": "Markdown",
-      "png": "Image (PNG)",
-      "pdf": "PDF"
+      "png": "Image (PNG)"
     }
   },
   "common": {

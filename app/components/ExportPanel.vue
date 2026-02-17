@@ -3,14 +3,13 @@
  * ExportPanel Component
  *
  * Provides download buttons for exporting retro results
- * in various formats: JSON, CSV, Markdown, PNG, PDF.
+ * in various formats: JSON, Markdown, PNG.
  */
 
 import type { IRetroSession } from '~/types';
 
 const { t } = useI18n();
-const { exportJSON, exportCSV, exportMarkdown, exportPNG, exportPDF } =
-  useExport();
+const { exportJSON, exportMarkdown, exportPNG } = useExport();
 
 interface Props {
   session: IRetroSession;
@@ -28,12 +27,6 @@ const formats = [
     bgColor: 'bg-accent-50 hover:bg-accent-100 border-accent-200',
   },
   {
-    id: 'csv',
-    icon: 'heroicons:table-cells',
-    color: 'text-success-600',
-    bgColor: 'bg-success-50 hover:bg-success-100 border-success-200',
-  },
-  {
     id: 'markdown',
     icon: 'heroicons:document-text',
     color: 'text-secondary-600',
@@ -45,12 +38,6 @@ const formats = [
     color: 'text-primary-600',
     bgColor: 'bg-primary-50 hover:bg-primary-100 border-primary-200',
   },
-  {
-    id: 'pdf',
-    icon: 'heroicons:document-arrow-down',
-    color: 'text-error-600',
-    bgColor: 'bg-error-50 hover:bg-error-100 border-error-200',
-  },
 ] as const;
 
 async function handleExport(format: string): Promise<void> {
@@ -60,17 +47,11 @@ async function handleExport(format: string): Promise<void> {
       case 'json':
         exportJSON(props.session);
         break;
-      case 'csv':
-        exportCSV(props.session);
-        break;
       case 'markdown':
         exportMarkdown(props.session);
         break;
       case 'png':
         await exportPNG(props.session);
-        break;
-      case 'pdf':
-        await exportPDF(props.session);
         break;
     }
   } finally {
@@ -95,7 +76,7 @@ async function handleExport(format: string): Promise<void> {
       {{ t('export.description') }}
     </p>
 
-    <div class="grid grid-cols-2 sm:grid-cols-5 gap-3">
+    <div class="grid grid-cols-3 gap-3">
       <button
         v-for="fmt in formats"
         :key="fmt.id"

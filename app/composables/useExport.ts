@@ -3,10 +3,8 @@
  *
  * Provides methods for exporting retro session results in multiple formats:
  * - JSON (structured data)
- * - CSV (spreadsheet-compatible)
  * - Markdown (human-readable)
- * - PNG/SVG image (visual snapshot via html2canvas-style rendering)
- * - PDF (printable document)
+ * - PNG image (high-quality HiDPI Canvas rendering with groups, votes, stats)
  */
 
 import type { IRetroCard, IRetroSession, RetroColumnType } from '~/types';
@@ -14,7 +12,7 @@ import type { IRetroCard, IRetroSession, RetroColumnType } from '~/types';
 /**
  * Export format type
  */
-export type ExportFormat = 'json' | 'csv' | 'markdown' | 'png' | 'pdf';
+export type ExportFormat = 'json' | 'markdown' | 'png';
 
 /**
  * Column label helper
@@ -33,6 +31,18 @@ function columnLabel(column: RetroColumnType, locale: string): string {
     },
   };
   return labels[locale]?.[column] ?? labels['en']![column];
+}
+
+/**
+ * Column emoji helper
+ */
+function columnEmoji(column: RetroColumnType): string {
+  const map: Record<RetroColumnType, string> = {
+    'went-well': '✅',
+    'to-improve': '⚠️',
+    'action-items': '⚡',
+  };
+  return map[column];
 }
 
 /**
@@ -163,72 +173,6 @@ export function useExport() {
   }
 
   // ============================================
-  // CSV Export
-  // ============================================
-
-  function exportCSV(session: IRetroSession): void {
-    const loc = locale.value;
-    const rows: string[][] = [];
-
-    // Header
-    rows.push([
-      loc === 'de' ? 'Spalte' : 'Column',
-      loc === 'de' ? 'Inhalt' : 'Content',
-      loc === 'de' ? 'Stimmen' : 'Votes',
-      loc === 'de' ? 'Gruppe' : 'Group',
-    ]);
-
-    // Cards sorted by column then votes
-    for (const col of ['went-well', 'to-improve', 'action-items'] as const) {
-      const cards = session.cards
-        .filter((c) => c.column === col)
-        .sort((a, b) => b.votes - a.votes);
-      for (const card of cards) {
-        const group = card.groupId
-          ? (session.groups.find((g) => g.id === card.groupId)?.title ?? '')
-          : '';
-        rows.push([
-          columnLabel(col, loc),
-          card.content,
-          String(card.votes),
-          group,
-        ]);
-      }
-    }
-
-    // Empty row then action items
-    rows.push([]);
-    rows.push([
-      loc === 'de' ? 'Maßnahme' : 'Action Item',
-      loc === 'de' ? 'Zuständig' : 'Assignee',
-      loc === 'de' ? 'Fällig' : 'Due Date',
-      loc === 'de' ? 'Erledigt' : 'Done',
-    ]);
-    for (const action of session.actionItems) {
-      rows.push([
-        action.text,
-        action.assignee ?? '',
-        action.dueDate ?? '',
-        action.done
-          ? loc === 'de'
-            ? 'Ja'
-            : 'Yes'
-          : loc === 'de'
-            ? 'Nein'
-            : 'No',
-      ]);
-    }
-
-    const csv = rows
-      .map((row) =>
-        row.map((cell) => `"${cell.replace(/"/g, '""')}"`).join(',')
-      )
-      .join('\n');
-
-    downloadFile(csv, `${safeFilename(session)}.csv`, 'text/csv');
-  }
-
-  // ============================================
   // Markdown Export
   // ============================================
 
@@ -246,7 +190,6 @@ export function useExport() {
     );
     lines.push('');
 
-    // Columns
     for (const col of ['went-well', 'to-improve', 'action-items'] as const) {
       lines.push(`## ${columnLabel(col, loc)}`);
       lines.push('');
@@ -256,7 +199,6 @@ export function useExport() {
         (c) => c.column === col && !c.groupId
       );
 
-      // Groups
       for (const group of groups) {
         lines.push(`### ${group.title}`);
         const groupCards = group.cardIds
@@ -273,7 +215,6 @@ export function useExport() {
         lines.push('');
       }
 
-      // Ungrouped
       const sortedUngrouped = [...ungroupedCards].sort(
         (a, b) => b.votes - a.votes
       );
@@ -287,7 +228,6 @@ export function useExport() {
       lines.push('');
     }
 
-    // Action Items
     if (session.actionItems.length > 0) {
       lines.push(
         `## ${loc === 'de' ? 'Vereinbarte Maßnahmen' : 'Committed Action Items'}`
@@ -306,7 +246,6 @@ export function useExport() {
       lines.push('');
     }
 
-    // Statistics
     const stats = buildStatistics(session);
     lines.push(`## ${loc === 'de' ? 'Statistik' : 'Statistics'}`);
     lines.push('');
@@ -333,385 +272,664 @@ export function useExport() {
   }
 
   // ============================================
-  // PNG Image Export (Canvas-based)
+  // PNG Image Export (high-quality HiDPI Canvas)
   // ============================================
 
   async function exportPNG(session: IRetroSession): Promise<void> {
     const canvas = renderToCanvas(session);
-    canvas.toBlob((blob) => {
-      if (blob) {
-        downloadFile(blob, `${safeFilename(session)}.png`, 'image/png');
-      }
-    }, 'image/png');
+    return new Promise<void>((resolve) => {
+      canvas.toBlob(
+        (blob) => {
+          if (blob) {
+            downloadFile(blob, `${safeFilename(session)}.png`, 'image/png');
+          }
+          resolve();
+        },
+        'image/png',
+        1.0
+      );
+    });
   }
 
-  function renderToCanvas(session: IRetroSession): HTMLCanvasElement {
-    const loc = locale.value;
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d')!;
+  // ---- Canvas Rendering Engine ----
 
-    // Layout constants
-    const padding = 40;
-    const colWidth = 340;
-    const colGap = 20;
-    const cardHeight = 60;
-    const cardGap = 8;
-    const headerHeight = 100;
-    const footerHeight = 60;
-    const actionSectionHeight = computeActionSectionHeight(session);
+  /** Pixel ratio for crisp HiDPI output */
+  const DPR =
+    typeof window !== 'undefined'
+      ? Math.min(window.devicePixelRatio ?? 1, 3)
+      : 2;
 
-    const columns: RetroColumnType[] = [
-      'went-well',
-      'to-improve',
-      'action-items',
-    ];
-    const maxCardsInCol = Math.max(
-      ...columns.map(
-        (col) => session.cards.filter((c) => c.column === col).length
-      ),
-      1
-    );
-    const bodyHeight = maxCardsInCol * (cardHeight + cardGap) + 40;
-
-    canvas.width = padding * 2 + colWidth * 3 + colGap * 2;
-    canvas.height =
-      headerHeight +
-      bodyHeight +
-      actionSectionHeight +
-      footerHeight +
-      padding * 2;
-
-    // Background
-    ctx.fillStyle = '#f8fafc';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    // Header
-    ctx.fillStyle = '#1e293b';
-    ctx.font = 'bold 28px system-ui, sans-serif';
-    ctx.fillText(session.name, padding, padding + 32);
-
-    ctx.fillStyle = '#64748b';
-    ctx.font = '14px system-ui, sans-serif';
-    ctx.fillText(
-      `${new Date(session.createdAt).toLocaleDateString(loc === 'de' ? 'de-DE' : 'en-US')} · ${session.participants.length} ${loc === 'de' ? 'Teilnehmer' : 'Participants'}`,
-      padding,
-      padding + 56
-    );
-
-    // Columns
-    const colColors: Record<
+  /** Design tokens matching the Tailwind palette */
+  const COLORS = {
+    bg: '#f1f5f9',
+    headerBg: '#0f172a',
+    headerFg: '#ffffff',
+    headerSub: '#94a3b8',
+    cardText: '#1e293b',
+    cardTextMuted: '#64748b',
+    badgeBg: '#6366f1',
+    badgeFg: '#ffffff',
+    groupLabelBg: '#e2e8f0',
+    groupLabelFg: '#475569',
+    actionDone: '#16a34a',
+    actionOpen: '#94a3b8',
+    footerFg: '#94a3b8',
+    divider: '#cbd5e1',
+    statBg: '#ffffff',
+    statValue: '#4f46e5',
+    statLabel: '#64748b',
+    columns: {
+      'went-well': {
+        bg: '#f0fdf4',
+        headerBg: '#15803d',
+        headerFg: '#ffffff',
+        cardBg: '#ffffff',
+        cardBorder: '#bbf7d0',
+        accent: '#22c55e',
+      },
+      'to-improve': {
+        bg: '#fffbeb',
+        headerBg: '#a16207',
+        headerFg: '#ffffff',
+        cardBg: '#ffffff',
+        cardBorder: '#fde68a',
+        accent: '#eab308',
+      },
+      'action-items': {
+        bg: '#eff6ff',
+        headerBg: '#1d4ed8',
+        headerFg: '#ffffff',
+        cardBg: '#ffffff',
+        cardBorder: '#bfdbfe',
+        accent: '#3b82f6',
+      },
+    } as Record<
       RetroColumnType,
       {
         bg: string;
         headerBg: string;
         headerFg: string;
         cardBg: string;
-        border: string;
+        cardBorder: string;
+        accent: string;
       }
-    > = {
-      'went-well': {
-        bg: '#f0fdf4',
-        headerBg: '#dcfce7',
-        headerFg: '#15803d',
-        cardBg: '#ecfdf5',
-        border: '#86efac',
-      },
-      'to-improve': {
-        bg: '#fffbeb',
-        headerBg: '#fef3c7',
-        headerFg: '#a16207',
-        cardBg: '#fefce8',
-        border: '#fcd34d',
-      },
-      'action-items': {
-        bg: '#f0f9ff',
-        headerBg: '#e0f2fe',
-        headerFg: '#0369a1',
-        cardBg: '#ecfeff',
-        border: '#7dd3fc',
-      },
-    };
+    >,
+  };
 
-    const colStartY = headerHeight + padding;
+  /** Fonts */
+  const FONT = {
+    title: 'bold 26px "Inter", "Segoe UI", system-ui, sans-serif',
+    subtitle: '15px "Inter", "Segoe UI", system-ui, sans-serif',
+    colHeader: 'bold 14px "Inter", "Segoe UI", system-ui, sans-serif',
+    colCount: '12px "Inter", "Segoe UI", system-ui, sans-serif',
+    groupLabel: 'bold 12px "Inter", "Segoe UI", system-ui, sans-serif',
+    cardText: '14px "Inter", "Segoe UI", system-ui, sans-serif',
+    voteBadge: 'bold 11px "Inter", "Segoe UI", system-ui, sans-serif',
+    groupTag: '11px "Inter", "Segoe UI", system-ui, sans-serif',
+    actionTitle: 'bold 16px "Inter", "Segoe UI", system-ui, sans-serif',
+    actionText: '14px "Inter", "Segoe UI", system-ui, sans-serif',
+    actionAssignee: 'bold 12px "Inter", "Segoe UI", system-ui, sans-serif',
+    statValue: 'bold 22px "Inter", "Segoe UI", system-ui, sans-serif',
+    statLabel: '11px "Inter", "Segoe UI", system-ui, sans-serif',
+    footer: '12px "Inter", "Segoe UI", system-ui, sans-serif',
+  };
 
-    for (let i = 0; i < columns.length; i++) {
-      const col = columns[i]!;
-      const x = padding + i * (colWidth + colGap);
-      const colors = colColors[col];
+  /** Layout constants (logical pixels) */
+  const L = {
+    padding: 48,
+    colGap: 24,
+    colWidth: 360,
+    colHeaderH: 44,
+    colRadius: 14,
+    cardPadX: 14,
+    cardPadY: 10,
+    cardGap: 6,
+    cardRadius: 10,
+    cardMinH: 46,
+    cardLineH: 20,
+    headerH: 90,
+    statBarH: 70,
+    footerH: 50,
+    groupHeaderH: 28,
+    groupGap: 12,
+    actionRowH: 36,
+  };
 
-      // Column background
-      roundRect(ctx, x, colStartY, colWidth, bodyHeight, 12, colors.bg);
-
-      // Column header
-      roundRect(ctx, x, colStartY, colWidth, 36, 12, colors.headerBg, true);
-      ctx.fillStyle = colors.headerFg;
-      ctx.font = 'bold 14px system-ui, sans-serif';
-      ctx.fillText(columnLabel(col, loc), x + 12, colStartY + 24);
-
-      // Cards
-      const cards = session.cards
-        .filter((c) => c.column === col)
-        .sort((a, b) => b.votes - a.votes);
-
-      for (let j = 0; j < cards.length; j++) {
-        const card = cards[j]!;
-        const cy = colStartY + 44 + j * (cardHeight + cardGap);
-
-        // Card background
-        roundRect(ctx, x + 8, cy, colWidth - 16, cardHeight, 8, colors.cardBg);
-
-        // Card border
-        ctx.strokeStyle = colors.border;
-        ctx.lineWidth = 1;
-        ctx.stroke();
-
-        // Card text (truncate if too long)
-        ctx.fillStyle = '#1e293b';
-        ctx.font = '13px system-ui, sans-serif';
-        const maxTextWidth = colWidth - 70;
-        let text = card.content;
-        while (ctx.measureText(text).width > maxTextWidth && text.length > 3) {
-          text = text.slice(0, -4) + '...';
-        }
-        ctx.fillText(text, x + 16, cy + 22);
-
-        // Vote badge
-        if (card.votes > 0) {
-          ctx.fillStyle = '#6366f1';
-          ctx.font = 'bold 12px system-ui, sans-serif';
-          ctx.fillText(`👍 ${card.votes}`, x + 16, cy + 44);
-        }
-
-        // Group badge
-        if (card.groupId) {
-          const group = session.groups.find((g) => g.id === card.groupId);
-          if (group) {
-            ctx.fillStyle = '#94a3b8';
-            ctx.font = '11px system-ui, sans-serif';
-            const groupLabel = `[${group.title}]`;
-            const tw = ctx.measureText(groupLabel).width;
-            ctx.fillText(groupLabel, x + colWidth - 24 - tw, cy + 44);
-          }
-        }
+  /** Word-wrap helper: returns lines that fit within maxWidth */
+  function wrapText(
+    ctx: CanvasRenderingContext2D,
+    text: string,
+    maxWidth: number
+  ): string[] {
+    const words = text.split(/\s+/);
+    const lines: string[] = [];
+    let line = '';
+    for (const word of words) {
+      const test = line ? `${line} ${word}` : word;
+      if (ctx.measureText(test).width > maxWidth && line) {
+        lines.push(line);
+        line = word;
+      } else {
+        line = test;
       }
     }
+    if (line) lines.push(line);
+    return lines.length ? lines : [''];
+  }
 
-    // Action Items Section
-    if (session.actionItems.length > 0) {
-      const actY = colStartY + bodyHeight + 20;
+  /** Measure the height of a single card (with text wrapping). */
+  function measureCardHeight(
+    ctx: CanvasRenderingContext2D,
+    card: IRetroCard,
+    textWidth: number
+  ): number {
+    ctx.font = FONT.cardText;
+    const lines = wrapText(ctx, card.content, textWidth);
+    const textH = lines.length * L.cardLineH;
+    const metaH = card.votes > 0 || card.groupId ? 20 : 0;
+    return Math.max(L.cardMinH, L.cardPadY * 2 + textH + metaH);
+  }
 
-      ctx.fillStyle = '#1e293b';
-      ctx.font = 'bold 18px system-ui, sans-serif';
-      ctx.fillText(
-        loc === 'de' ? 'Vereinbarte Maßnahmen' : 'Committed Action Items',
-        padding,
-        actY + 20
-      );
+  /** Measure the total height of a column (header + groups + cards). */
+  function measureColumnHeight(
+    ctx: CanvasRenderingContext2D,
+    session: IRetroSession,
+    col: RetroColumnType,
+    textWidth: number
+  ): number {
+    let h = L.colHeaderH + 12;
 
-      for (let i = 0; i < session.actionItems.length; i++) {
-        const action = session.actionItems[i]!;
-        const ay = actY + 36 + i * 28;
-        const checkbox = action.done ? '✅' : '⬜';
-        ctx.fillStyle = '#334155';
-        ctx.font = '14px system-ui, sans-serif';
-        ctx.fillText(
-          `${checkbox} ${action.text}${action.assignee ? ` → ${action.assignee}` : ''}`,
-          padding + 8,
-          ay
-        );
-      }
-    }
-
-    // Footer
-    ctx.fillStyle = '#94a3b8';
-    ctx.font = '12px system-ui, sans-serif';
-    ctx.fillText(
-      `Retro Rumble · ${new Date().toLocaleDateString(loc === 'de' ? 'de-DE' : 'en-US')}`,
-      padding,
-      canvas.height - 20
+    const groups = session.groups.filter((g) => g.column === col);
+    const ungroupedCards = session.cards.filter(
+      (c) => c.column === col && !c.groupId
     );
 
-    return canvas;
+    for (const group of groups) {
+      h += L.groupHeaderH;
+      const cards = group.cardIds
+        .map((id) => session.cards.find((c) => c.id === id))
+        .filter((c): c is IRetroCard => !!c);
+      for (const card of cards) {
+        h += measureCardHeight(ctx, card, textWidth - 16) + L.cardGap;
+      }
+      h += L.groupGap;
+    }
+
+    for (const card of ungroupedCards) {
+      h += measureCardHeight(ctx, card, textWidth) + L.cardGap;
+    }
+
+    return h + 12;
   }
 
+  /** Compute action items section height. */
   function computeActionSectionHeight(session: IRetroSession): number {
     if (session.actionItems.length === 0) return 0;
-    return 60 + session.actionItems.length * 28;
+    return 52 + session.actionItems.length * L.actionRowH + 16;
   }
 
-  function roundRect(
+  /** Draw a filled rounded rectangle. */
+  function fillRoundRect(
     ctx: CanvasRenderingContext2D,
     x: number,
     y: number,
     w: number,
     h: number,
     r: number,
-    fillColor: string,
-    topOnly = false
+    color: string
   ): void {
     ctx.beginPath();
-    if (topOnly) {
-      ctx.moveTo(x + r, y);
-      ctx.arcTo(x + w, y, x + w, y + h, r);
-      ctx.lineTo(x + w, y + h);
-      ctx.lineTo(x, y + h);
-      ctx.arcTo(x, y, x + r, y, r);
-    } else {
-      ctx.moveTo(x + r, y);
-      ctx.arcTo(x + w, y, x + w, y + h, r);
-      ctx.arcTo(x + w, y + h, x, y + h, r);
-      ctx.arcTo(x, y + h, x, y, r);
-      ctx.arcTo(x, y, x + r, y, r);
-    }
-    ctx.closePath();
-    ctx.fillStyle = fillColor;
+    ctx.roundRect(x, y, w, h, r);
+    ctx.fillStyle = color;
     ctx.fill();
   }
 
-  // ============================================
-  // PDF Export (via canvas → image in PDF structure)
-  // ============================================
+  /** Draw a stroked rounded rectangle. */
+  function strokeRoundRect(
+    ctx: CanvasRenderingContext2D,
+    x: number,
+    y: number,
+    w: number,
+    h: number,
+    r: number,
+    color: string,
+    lineWidth = 1
+  ): void {
+    ctx.beginPath();
+    ctx.roundRect(x, y, w, h, r);
+    ctx.strokeStyle = color;
+    ctx.lineWidth = lineWidth;
+    ctx.stroke();
+  }
 
-  async function exportPDF(session: IRetroSession): Promise<void> {
-    // Generate a simple PDF by embedding the canvas as an image
-    // Using a minimal PDF generator to avoid heavy dependencies
-    const canvas = renderToCanvas(session);
-    const imgDataUrl = canvas.toDataURL('image/png');
-
-    // Fetch the image as a blob for embedding
-    const response = await fetch(imgDataUrl);
-    const imgBlob = await response.blob();
-    const imgArrayBuffer = await imgBlob.arrayBuffer();
-    const imgBytes = new Uint8Array(imgArrayBuffer);
-
-    const pdf = buildMinimalPDF(
-      imgBytes,
-      canvas.width,
-      canvas.height
-    ) as BlobPart;
-    downloadFile(
-      new Blob([pdf], { type: 'application/pdf' }),
-      `${safeFilename(session)}.pdf`,
-      'application/pdf'
-    );
+  /** Draw a pill-shaped badge. Returns badge width. */
+  function drawBadge(
+    ctx: CanvasRenderingContext2D,
+    text: string,
+    x: number,
+    y: number,
+    bgColor: string,
+    fgColor: string,
+    font: string
+  ): number {
+    ctx.font = font;
+    const tw = ctx.measureText(text).width;
+    const pw = tw + 14;
+    const ph = 20;
+    fillRoundRect(ctx, x, y - ph / 2, pw, ph, ph / 2, bgColor);
+    ctx.fillStyle = fgColor;
+    ctx.fillText(text, x + 7, y + 4);
+    return pw;
   }
 
   /**
-   * Builds a minimal valid PDF with a single PNG image.
-   * No external libraries needed.
+   * Draw a single card and return the new Y position below it.
    */
-  function buildMinimalPDF(
-    pngBytes: Uint8Array,
-    imgWidth: number,
-    imgHeight: number
-  ): Uint8Array {
-    // Scale image to fit A4 landscape (842 x 595 points)
-    const pageWidth = 842;
-    const pageHeight = 595;
-    const margin = 20;
-    const availW = pageWidth - margin * 2;
-    const availH = pageHeight - margin * 2;
-    const scale = Math.min(availW / imgWidth, availH / imgHeight);
-    const w = Math.round(imgWidth * scale);
-    const h = Math.round(imgHeight * scale);
-    const xOff = Math.round((pageWidth - w) / 2);
-    const yOff = Math.round((pageHeight - h) / 2);
-
-    const encoder = new TextEncoder();
-
-    // PDF objects
-    const objects: string[] = [];
-
-    // 1: Catalog
-    objects.push('1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n');
-    // 2: Pages
-    objects.push(
-      `2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n`
-    );
-    // 3: Page
-    objects.push(
-      `3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${pageWidth} ${pageHeight}] /Contents 4 0 R /Resources << /XObject << /Img 5 0 R >> >> >>\nendobj\n`
-    );
-    // 4: Content stream
-    const contentStream = `q ${w} 0 0 ${h} ${xOff} ${yOff} cm /Img Do Q`;
-    objects.push(
-      `4 0 obj\n<< /Length ${contentStream.length} >>\nstream\n${contentStream}\nendstream\nendobj\n`
-    );
-    // 5: Image XObject
-    objects.push(
-      `5 0 obj\n<< /Type /XObject /Subtype /Image /Width ${imgWidth} /Height ${imgHeight} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /FlateDecode /Length ${pngBytes.length} >>\nstream\n`
-    );
-    // Image stream is binary - handled separately
-
-    // Build PDF byte array
-    const header = '%PDF-1.4\n';
-    const headerBytes = encoder.encode(header);
-
-    // Calculate offsets for xref
-    const objBytes = objects.map((o) => encoder.encode(o));
-    const offsets: number[] = [];
-    let pos = headerBytes.length;
-
-    // Objects 1-4
-    for (let i = 0; i < 4; i++) {
-      offsets.push(pos);
-      pos += objBytes[i]!.length;
+  function drawCard(
+    ctx: CanvasRenderingContext2D,
+    card: IRetroCard,
+    session: IRetroSession,
+    x: number,
+    y: number,
+    w: number,
+    textWidth: number,
+    cc: {
+      cardBg: string;
+      cardBorder: string;
+      accent: string;
     }
-    // Object 5 (image - split)
-    offsets.push(pos);
-    pos += objBytes[4]!.length;
-    pos += pngBytes.length;
-    const endstreamEndobj = encoder.encode('\nendstream\nendobj\n');
-    pos += endstreamEndobj.length;
+  ): number {
+    const h = measureCardHeight(ctx, card, textWidth);
 
-    const xrefOffset = pos;
+    // Card shadow
+    ctx.save();
+    ctx.shadowColor = 'rgba(0,0,0,0.06)';
+    ctx.shadowBlur = 6;
+    ctx.shadowOffsetY = 2;
+    fillRoundRect(ctx, x, y, w, h, L.cardRadius, cc.cardBg);
+    ctx.restore();
 
-    // Build xref table
-    const xrefLines = ['xref\n', `0 6\n`, '0000000000 65535 f \n'];
-    for (const offset of offsets) {
-      xrefLines.push(`${String(offset).padStart(10, '0')} 00000 n \n`);
-    }
-    const trailer = `trailer\n<< /Size 6 /Root 1 0 R >>\nstartxref\n${xrefOffset}\n%%EOF\n`;
-    const xrefTrailer = encoder.encode(xrefLines.join('') + trailer);
+    // Card border
+    strokeRoundRect(ctx, x, y, w, h, L.cardRadius, cc.cardBorder);
 
-    // Concatenate
-    const totalLength =
-      headerBytes.length +
-      objBytes.reduce((sum, b) => sum + b.length, 0) +
-      pngBytes.length +
-      endstreamEndobj.length +
-      xrefTrailer.length;
+    // Left accent bar
+    ctx.save();
+    ctx.beginPath();
+    ctx.roundRect(x, y, 4, h, [L.cardRadius, 0, 0, L.cardRadius]);
+    ctx.clip();
+    fillRoundRect(ctx, x, y, 4, h, 0, cc.accent);
+    ctx.restore();
 
-    const result = new Uint8Array(totalLength);
-    let offset = 0;
-
-    result.set(headerBytes, offset);
-    offset += headerBytes.length;
-
-    for (let i = 0; i < 4; i++) {
-      result.set(objBytes[i]!, offset);
-      offset += objBytes[i]!.length;
+    // Card text (wrapped)
+    ctx.font = FONT.cardText;
+    ctx.fillStyle = COLORS.cardText;
+    const lines = wrapText(ctx, card.content, textWidth);
+    for (let li = 0; li < lines.length; li++) {
+      ctx.fillText(
+        lines[li]!,
+        x + L.cardPadX + 4,
+        y + L.cardPadY + 14 + li * L.cardLineH
+      );
     }
 
-    result.set(objBytes[4]!, offset);
-    offset += objBytes[4]!.length;
+    // Meta row: votes + group tag
+    const metaY = y + L.cardPadY + lines.length * L.cardLineH + 4;
 
-    result.set(pngBytes, offset);
-    offset += pngBytes.length;
+    if (card.votes > 0) {
+      drawBadge(
+        ctx,
+        `👍 ${card.votes}`,
+        x + L.cardPadX + 4,
+        metaY + 6,
+        COLORS.badgeBg,
+        COLORS.badgeFg,
+        FONT.voteBadge
+      );
+    }
 
-    result.set(endstreamEndobj, offset);
-    offset += endstreamEndobj.length;
+    if (card.groupId) {
+      const group = session.groups.find((g) => g.id === card.groupId);
+      if (group) {
+        ctx.font = FONT.groupTag;
+        ctx.fillStyle = COLORS.groupLabelFg;
+        const tag = `[${group.title}]`;
+        const tw = ctx.measureText(tag).width;
+        ctx.fillText(tag, x + w - L.cardPadX - tw, metaY + 10);
+      }
+    }
 
-    result.set(xrefTrailer, offset);
+    return y + h + L.cardGap;
+  }
 
-    return result;
+  /**
+   * Main canvas renderer — high-quality retro board snapshot.
+   */
+  function renderToCanvas(session: IRetroSession): HTMLCanvasElement {
+    const loc = locale.value;
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d')!;
+
+    const columns: RetroColumnType[] = [
+      'went-well',
+      'to-improve',
+      'action-items',
+    ];
+    const textWidth = L.colWidth - L.cardPadX * 2 - 16;
+
+    // Pre-measure column heights
+    const colHeights = columns.map((col) =>
+      measureColumnHeight(ctx, session, col, textWidth)
+    );
+    const maxColH = Math.max(...colHeights, 120);
+
+    const actionH = computeActionSectionHeight(session);
+    const stats = buildStatistics(session);
+
+    // Canvas dimensions (logical)
+    const logicalW = L.padding * 2 + L.colWidth * 3 + L.colGap * 2;
+    const logicalH =
+      L.headerH +
+      L.statBarH +
+      16 +
+      maxColH +
+      (actionH > 0 ? 24 + actionH : 0) +
+      L.footerH +
+      L.padding;
+
+    // Apply DPR for crisp HiDPI rendering
+    canvas.width = Math.round(logicalW * DPR);
+    canvas.height = Math.round(logicalH * DPR);
+    canvas.style.width = `${logicalW}px`;
+    canvas.style.height = `${logicalH}px`;
+    ctx.scale(DPR, DPR);
+
+    // ---- Background ----
+    fillRoundRect(ctx, 0, 0, logicalW, logicalH, 0, COLORS.bg);
+
+    // ---- Header bar ----
+    fillRoundRect(ctx, 0, 0, logicalW, L.headerH, 0, COLORS.headerBg);
+
+    ctx.fillStyle = COLORS.headerFg;
+    ctx.font = FONT.title;
+    ctx.fillText(session.name, L.padding, 38);
+
+    ctx.fillStyle = COLORS.headerSub;
+    ctx.font = FONT.subtitle;
+    const dateStr = new Date(session.createdAt).toLocaleDateString(
+      loc === 'de' ? 'de-DE' : 'en-US',
+      { year: 'numeric', month: 'long', day: 'numeric' }
+    );
+    const participantNames = session.participants.map((p) => p.name).join(', ');
+    ctx.fillText(
+      `${dateStr}  ·  ${session.participants.length} ${loc === 'de' ? 'Teilnehmer' : 'Participants'}: ${participantNames}`,
+      L.padding,
+      62
+    );
+
+    // ---- Stats bar ----
+    const statY = L.headerH + 12;
+    const statW = (logicalW - L.padding * 2 - L.colGap * 3) / 4;
+    const statItems = [
+      {
+        value: String(stats.totalCards),
+        label: loc === 'de' ? 'Karten' : 'Cards',
+      },
+      {
+        value: String(stats.totalVotes),
+        label: loc === 'de' ? 'Stimmen' : 'Votes',
+      },
+      {
+        value: String(stats.totalGroups),
+        label: loc === 'de' ? 'Gruppen' : 'Groups',
+      },
+      {
+        value: `${stats.completedActions}/${stats.totalActions}`,
+        label: loc === 'de' ? 'Maßnahmen' : 'Actions',
+      },
+    ];
+    for (let i = 0; i < statItems.length; i++) {
+      const sx = L.padding + i * (statW + L.colGap);
+      fillRoundRect(ctx, sx, statY, statW, L.statBarH, 10, COLORS.statBg);
+      ctx.fillStyle = COLORS.statValue;
+      ctx.font = FONT.statValue;
+      ctx.textAlign = 'center';
+      ctx.fillText(statItems[i]!.value, sx + statW / 2, statY + 30);
+      ctx.fillStyle = COLORS.statLabel;
+      ctx.font = FONT.statLabel;
+      ctx.fillText(statItems[i]!.label, sx + statW / 2, statY + 50);
+    }
+    ctx.textAlign = 'left';
+
+    // ---- Columns ----
+    const colStartY = statY + L.statBarH + 16;
+
+    for (let ci = 0; ci < columns.length; ci++) {
+      const col = columns[ci]!;
+      const cc = COLORS.columns[col];
+      const cx = L.padding + ci * (L.colWidth + L.colGap);
+
+      // Column container
+      fillRoundRect(
+        ctx,
+        cx,
+        colStartY,
+        L.colWidth,
+        maxColH,
+        L.colRadius,
+        cc.bg
+      );
+      strokeRoundRect(
+        ctx,
+        cx,
+        colStartY,
+        L.colWidth,
+        maxColH,
+        L.colRadius,
+        cc.cardBorder
+      );
+
+      // Column header (clipped top corners)
+      ctx.save();
+      ctx.beginPath();
+      ctx.roundRect(cx, colStartY, L.colWidth, L.colHeaderH, [
+        L.colRadius,
+        L.colRadius,
+        0,
+        0,
+      ]);
+      ctx.clip();
+      fillRoundRect(
+        ctx,
+        cx,
+        colStartY,
+        L.colWidth,
+        L.colHeaderH,
+        0,
+        cc.headerBg
+      );
+      ctx.restore();
+
+      // Column title with emoji
+      ctx.fillStyle = cc.headerFg;
+      ctx.font = FONT.colHeader;
+      const emoji = columnEmoji(col);
+      ctx.fillText(
+        `${emoji}  ${columnLabel(col, loc)}`,
+        cx + 14,
+        colStartY + 28
+      );
+
+      // Column card count (right-aligned in header)
+      const colCards = session.cards.filter((c) => c.column === col);
+      ctx.font = FONT.colCount;
+      ctx.fillStyle = cc.headerFg;
+      ctx.globalAlpha = 0.7;
+      const countText = `${colCards.length}`;
+      const countW = ctx.measureText(countText).width;
+      ctx.fillText(countText, cx + L.colWidth - 14 - countW, colStartY + 28);
+      ctx.globalAlpha = 1;
+
+      // ---- Render cards ----
+      let curY = colStartY + L.colHeaderH + 10;
+
+      // Grouped cards
+      const groups = session.groups.filter((g) => g.column === col);
+      for (const group of groups) {
+        // Group label bar
+        fillRoundRect(
+          ctx,
+          cx + 10,
+          curY,
+          L.colWidth - 20,
+          L.groupHeaderH,
+          6,
+          COLORS.groupLabelBg
+        );
+        ctx.fillStyle = COLORS.groupLabelFg;
+        ctx.font = FONT.groupLabel;
+        ctx.fillText(`📁  ${group.title}`, cx + 18, curY + 18);
+        curY += L.groupHeaderH + 4;
+
+        const groupCards = group.cardIds
+          .map((id) => session.cards.find((c) => c.id === id))
+          .filter((c): c is IRetroCard => !!c)
+          .sort((a, b) => b.votes - a.votes);
+
+        for (const card of groupCards) {
+          curY = drawCard(
+            ctx,
+            card,
+            session,
+            cx + 18,
+            curY,
+            L.colWidth - 36,
+            textWidth - 16,
+            cc
+          );
+        }
+        curY += L.groupGap;
+      }
+
+      // Ungrouped cards
+      const ungrouped = colCards
+        .filter((c) => !c.groupId)
+        .sort((a, b) => b.votes - a.votes);
+
+      for (const card of ungrouped) {
+        curY = drawCard(
+          ctx,
+          card,
+          session,
+          cx + 10,
+          curY,
+          L.colWidth - 20,
+          textWidth,
+          cc
+        );
+      }
+    }
+
+    // ---- Action Items ----
+    if (session.actionItems.length > 0) {
+      const actY = colStartY + maxColH + 24;
+      const actW = logicalW - L.padding * 2;
+
+      fillRoundRect(
+        ctx,
+        L.padding,
+        actY,
+        actW,
+        actionH,
+        L.colRadius,
+        '#ffffff'
+      );
+      strokeRoundRect(
+        ctx,
+        L.padding,
+        actY,
+        actW,
+        actionH,
+        L.colRadius,
+        COLORS.divider
+      );
+
+      ctx.fillStyle = COLORS.cardText;
+      ctx.font = FONT.actionTitle;
+      ctx.fillText(
+        `📋  ${loc === 'de' ? 'Vereinbarte Maßnahmen' : 'Committed Action Items'}`,
+        L.padding + 16,
+        actY + 28
+      );
+
+      // Divider line
+      ctx.beginPath();
+      ctx.moveTo(L.padding + 16, actY + 40);
+      ctx.lineTo(logicalW - L.padding - 16, actY + 40);
+      ctx.strokeStyle = COLORS.divider;
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      for (let i = 0; i < session.actionItems.length; i++) {
+        const action = session.actionItems[i]!;
+        const ay = actY + 52 + i * L.actionRowH;
+
+        const checkIcon = action.done ? '✅' : '⬜';
+        const actionTextColor = action.done
+          ? COLORS.cardTextMuted
+          : COLORS.cardText;
+
+        ctx.font = FONT.actionText;
+        ctx.fillStyle = actionTextColor;
+        ctx.fillText(`${checkIcon}  ${action.text}`, L.padding + 20, ay + 14);
+
+        // Assignee badge
+        if (action.assignee) {
+          const checkColor = action.done
+            ? COLORS.actionDone
+            : COLORS.actionOpen;
+          ctx.font = FONT.actionAssignee;
+          const assigneeW = ctx.measureText(action.assignee).width;
+          drawBadge(
+            ctx,
+            action.assignee,
+            logicalW - L.padding - 16 - assigneeW - 20,
+            ay + 10,
+            checkColor + '20',
+            checkColor,
+            FONT.actionAssignee
+          );
+        }
+      }
+    }
+
+    // ---- Footer ----
+    const footerY = logicalH - L.footerH;
+
+    ctx.beginPath();
+    ctx.moveTo(L.padding, footerY);
+    ctx.lineTo(logicalW - L.padding, footerY);
+    ctx.strokeStyle = COLORS.divider;
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    ctx.fillStyle = COLORS.footerFg;
+    ctx.font = FONT.footer;
+    ctx.fillText(
+      `Retro Rumble  ·  ${new Date().toLocaleDateString(loc === 'de' ? 'de-DE' : 'en-US', { year: 'numeric', month: 'long', day: 'numeric' })}`,
+      L.padding,
+      footerY + 24
+    );
+
+    const footerRight = `${session.participants.length} ${loc === 'de' ? 'Teilnehmer' : 'participants'}  ·  ${session.cards.length} ${loc === 'de' ? 'Karten' : 'cards'}`;
+    const frW = ctx.measureText(footerRight).width;
+    ctx.fillText(footerRight, logicalW - L.padding - frW, footerY + 24);
+
+    return canvas;
   }
 
   return {
     exportJSON,
-    exportCSV,
     exportMarkdown,
     exportPNG,
-    exportPDF,
   };
 }

@@ -95,10 +95,8 @@
     "description": "Lade deine Retro-Ergebnisse herunter, um sie mit dem Team zu teilen oder zu archivieren.",
     "format": {
       "json": "JSON",
-      "csv": "CSV",
       "markdown": "Markdown",
-      "png": "Bild (PNG)",
-      "pdf": "PDF"
+      "png": "Bild (PNG)"
     }
   },
   "common": {
