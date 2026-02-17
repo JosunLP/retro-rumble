@@ -1,0 +1,183 @@
+/**
+ * Global CSS for Retro Rumble
+ *
+ * Imports Tailwind CSS directives and defines
+ * custom utility classes and base styles.
+ */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/**
+ * Base styles for the document
+ */
+@layer base {
+  html {
+    @apply scroll-smooth;
+  }
+
+  body {
+    @apply bg-secondary-50 text-secondary-900 antialiased;
+    background-image:
+      radial-gradient(circle at top right, #e0f2fe 0%, transparent 25%),
+      radial-gradient(circle at bottom left, #f0fdf4 0%, transparent 25%);
+    background-attachment: fixed;
+  }
+
+  :focus-visible {
+    @apply outline-2 outline-primary-500 outline-offset-2;
+  }
+}
+
+/**
+ * Reusable component classes
+ */
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center px-4 py-2
+           font-medium rounded-lg transition-all duration-200
+           focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-primary {
+    @apply btn bg-primary-600 text-white
+           hover:bg-primary-700
+           focus-visible:ring-primary-500;
+  }
+
+  .btn-secondary {
+    @apply btn bg-secondary-200 text-secondary-900
+           hover:bg-secondary-300
+           focus-visible:ring-secondary-500;
+  }
+
+  .btn-success {
+    @apply btn bg-success-600 text-white
+           hover:bg-success-700
+           focus-visible:ring-success-500;
+  }
+
+  .btn-warning {
+    @apply btn bg-warning-600 text-white
+           hover:bg-warning-700
+           focus-visible:ring-warning-500;
+  }
+
+  .btn-error {
+    @apply btn bg-error-600 text-white
+           hover:bg-error-700
+           focus-visible:ring-error-500;
+  }
+
+  .btn-sm {
+    @apply px-3 py-1.5 text-sm;
+  }
+
+  .input {
+    @apply w-full px-4 py-2
+           border border-secondary-300 rounded-lg
+           bg-white text-secondary-900
+           placeholder:text-secondary-400
+           focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent
+           transition-all duration-200;
+  }
+
+  .card-container {
+    @apply bg-white rounded-xl shadow-sm p-6 border border-secondary-200;
+  }
+
+  .retro-card {
+    @apply relative p-3 rounded-lg border shadow-sm
+           transition-all duration-200
+           hover:shadow-md;
+  }
+
+  .retro-card-well {
+    @apply retro-card bg-success-50 border-success-200;
+  }
+
+  .retro-card-improve {
+    @apply retro-card bg-warning-50 border-warning-200;
+  }
+
+  .retro-card-action {
+    @apply retro-card bg-primary-50 border-primary-200;
+  }
+}
+
+/**
+ * Utility extensions
+ */
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  .scrollbar-thin {
+    scrollbar-width: thin;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .scrollbar-thumb-secondary-300::-webkit-scrollbar-thumb {
+    background-color: rgb(203 213 225);
+    border-radius: 9999px;
+  }
+
+  .scrollbar-track-secondary-100::-webkit-scrollbar-track {
+    background-color: rgb(241 245 249);
+    border-radius: 9999px;
+  }
+}
+
+/**
+ * Transitions
+ */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+.slide-up-enter-active,
+.slide-up-leave-active {
+  transition: all 0.3s ease-out;
+}
+
+.slide-up-enter-from {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.slide-up-leave-to {
+  opacity: 0;
+  transform: translateY(-20px);
+}
+
+.list-enter-active,
+.list-leave-active {
+  transition: all 0.3s ease;
+}
+
+.list-enter-from,
+.list-leave-to {
+  opacity: 0;
+  transform: translateX(-20px);
+}

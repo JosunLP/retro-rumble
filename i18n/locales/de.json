@@ -1,0 +1,73 @@
+{
+  "app": {
+    "name": "Retro Rumble",
+    "tagline": "Anonyme Scrum-Retrospektiven für agile Teams"
+  },
+  "connection": {
+    "connected": "Verbunden",
+    "connecting": "Verbinde...",
+    "disconnected": "Getrennt",
+    "error": "Verbindungsfehler"
+  },
+  "home": {
+    "welcome": "Starte deine Retro",
+    "subtitle": "Erstelle oder tritt einer Retrospektive bei – anonym, sicher, einfach.",
+    "newSession": "Neue Session",
+    "joinSession": "Session beitreten"
+  },
+  "form": {
+    "sessionName": "Session-Name",
+    "sessionNamePlaceholder": "z.B. Sprint 42 Retro",
+    "yourName": "Dein Name",
+    "yourNamePlaceholder": "z.B. Alex",
+    "maxVotes": "Max. Stimmen",
+    "timerMinutes": "Timer (Min.)",
+    "joinCode": "Beitrittscode",
+    "joinCodePlaceholder": "ABC123",
+    "createButton": "Retro starten",
+    "joinButton": "Retro beitreten"
+  },
+  "session": {
+    "joinCode": "Beitrittscode",
+    "participants": "Teilnehmer",
+    "info": {
+      "sessionLabel": "Session:"
+    }
+  },
+  "participants": {
+    "title": "Teilnehmer",
+    "host": "Host",
+    "you": "(du)"
+  },
+  "phase": {
+    "writing": "Schreiben",
+    "grouping": "Gruppieren",
+    "voting": "Abstimmen",
+    "discussing": "Diskutieren",
+    "previous": "Zurück",
+    "next": "Weiter"
+  },
+  "column": {
+    "went-well": "Was lief gut",
+    "to-improve": "Was verbessern",
+    "action-items": "Maßnahmen",
+    "empty": "Noch keine Karten"
+  },
+  "card": {
+    "placeholder": "Karte hinzufügen... (Strg+Enter zum Absenden)",
+    "edit": "Bearbeiten",
+    "delete": "Löschen"
+  },
+  "voting": {
+    "remaining": "Stimmen übrig"
+  },
+  "timer": {
+    "title": "Timer",
+    "start": "Start",
+    "stop": "Stopp"
+  },
+  "common": {
+    "cancel": "Abbrechen",
+    "save": "Speichern"
+  }
+}

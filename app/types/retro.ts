@@ -1,0 +1,184 @@
+/**
+ * TypeScript Type Definitions for Retro Rumble
+ *
+ * Central types for the entire application.
+ * Follows the Interface-First approach for better type safety.
+ */
+
+// ============================================
+// Constants
+// ============================================
+
+/**
+ * Join code configuration
+ * Uses characters that are not easily confused (no O/0, I/1/l)
+ */
+export const JOIN_CODE_LENGTH = 6;
+export const JOIN_CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+
+/**
+ * Retro column types
+ */
+export const RETRO_COLUMNS = [
+  'went-well',
+  'to-improve',
+  'action-items',
+] as const;
+export type RetroColumnType = (typeof RETRO_COLUMNS)[number];
+
+/**
+ * Retro session phases
+ */
+export const RETRO_PHASES = [
+  'writing',
+  'grouping',
+  'voting',
+  'discussing',
+] as const;
+export type RetroPhase = (typeof RETRO_PHASES)[number];
+
+// ============================================
+// Validation Functions
+// ============================================
+
+/**
+ * Validates a join code
+ */
+export function isValidJoinCode(code: string): boolean {
+  if (code.length !== JOIN_CODE_LENGTH) return false;
+  return code.split('').every((char) => JOIN_CODE_CHARS.includes(char));
+}
+
+/**
+ * Formats a join code (uppercase, only allowed characters)
+ */
+export function formatJoinCode(code: string): string {
+  return code
+    .toUpperCase()
+    .replace(/[^A-Z0-9]/g, '')
+    .slice(0, JOIN_CODE_LENGTH);
+}
+
+/**
+ * Validates a retro column type
+ */
+export function isValidColumnType(value: unknown): value is RetroColumnType {
+  return (
+    typeof value === 'string' &&
+    (RETRO_COLUMNS as readonly string[]).includes(value)
+  );
+}
+
+// ============================================
+// Core Interfaces
+// ============================================
+
+/**
+ * Represents a single retro card (anonymous note)
+ */
+export interface IRetroCard {
+  /** Unique ID of the card */
+  id: string;
+  /** Column the card belongs to */
+  column: RetroColumnType;
+  /** Card content text */
+  content: string;
+  /** Anonymous author ID (only used internally, never displayed) */
+  authorId: string;
+  /** Number of votes this card has received */
+  votes: number;
+  /** IDs of participants who voted for this card */
+  voterIds: string[];
+  /** Group ID if card is grouped */
+  groupId: string | null;
+  /** Creation timestamp */
+  createdAt: Date;
+}
+
+/**
+ * Represents a group of related retro cards
+ */
+export interface ICardGroup {
+  /** Unique ID of the group */
+  id: string;
+  /** Group title */
+  title: string;
+  /** Column the group belongs to */
+  column: RetroColumnType;
+  /** IDs of cards in this group */
+  cardIds: string[];
+}
+
+/**
+ * Represents a participant in a retro session
+ */
+export interface IParticipant {
+  /** Unique ID of the participant */
+  id: string;
+  /** Display name (can be anonymous alias) */
+  name: string;
+  /** Is the participant the session host? */
+  isHost: boolean;
+  /** Time of joining */
+  joinedAt: Date;
+}
+
+/**
+ * Represents a Retro Session
+ */
+export interface IRetroSession {
+  /** Unique session ID */
+  id: string;
+  /** Session name / title */
+  name: string;
+  /** Current phase of the retro */
+  phase: RetroPhase;
+  /** ID of the session host */
+  hostId: string;
+  /** All participants */
+  participants: IParticipant[];
+  /** All retro cards */
+  cards: IRetroCard[];
+  /** Card groups */
+  groups: ICardGroup[];
+  /** Maximum votes per participant */
+  maxVotesPerUser: number;
+  /** Timer duration in seconds (0 = no timer) */
+  timerDuration: number;
+  /** Timer remaining in seconds (null = timer not running) */
+  timerRemaining: number | null;
+  /** Is the timer currently running? */
+  timerRunning: boolean;
+  /** Creation timestamp */
+  createdAt: Date;
+  /** Last update timestamp */
+  updatedAt: Date;
+}
+
+/**
+ * Configuration for a retro session
+ */
+export interface IRetroConfig {
+  /** Maximum votes per participant */
+  maxVotesPerUser: number;
+  /** Default timer duration in seconds */
+  timerDuration: number;
+  /** Allow anonymous card submission */
+  anonymousCards: boolean;
+}
+
+/**
+ * Session state for client-side management
+ */
+export interface ISessionState {
+  /** Current session */
+  session: IRetroSession | null;
+  /** Current participant */
+  currentParticipant: IParticipant | null;
+  /** Is the current user the host? */
+  isHost: boolean;
+  /** Is connected to server? */
+  isConnected: boolean;
+  /** Error message */
+  error: string | null;
+}

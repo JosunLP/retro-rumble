@@ -1,0 +1,73 @@
+{
+  "app": {
+    "name": "Retro Rumble",
+    "tagline": "Anonymous Scrum Retrospectives for Agile Teams"
+  },
+  "connection": {
+    "connected": "Connected",
+    "connecting": "Connecting...",
+    "disconnected": "Disconnected",
+    "error": "Connection error"
+  },
+  "home": {
+    "welcome": "Start Your Retro",
+    "subtitle": "Create or join a retrospective session – anonymous, secure, simple.",
+    "newSession": "New Session",
+    "joinSession": "Join Session"
+  },
+  "form": {
+    "sessionName": "Session Name",
+    "sessionNamePlaceholder": "e.g. Sprint 42 Retro",
+    "yourName": "Your Name",
+    "yourNamePlaceholder": "e.g. Alex",
+    "maxVotes": "Max Votes",
+    "timerMinutes": "Timer (min)",
+    "joinCode": "Join Code",
+    "joinCodePlaceholder": "ABC123",
+    "createButton": "Start Retro",
+    "joinButton": "Join Retro"
+  },
+  "session": {
+    "joinCode": "Join Code",
+    "participants": "participants",
+    "info": {
+      "sessionLabel": "Session:"
+    }
+  },
+  "participants": {
+    "title": "Participants",
+    "host": "Host",
+    "you": "(you)"
+  },
+  "phase": {
+    "writing": "Write",
+    "grouping": "Group",
+    "voting": "Vote",
+    "discussing": "Discuss",
+    "previous": "Previous",
+    "next": "Next"
+  },
+  "column": {
+    "went-well": "What went well",
+    "to-improve": "What to improve",
+    "action-items": "Action Items",
+    "empty": "No cards yet"
+  },
+  "card": {
+    "placeholder": "Add a card... (Ctrl+Enter to submit)",
+    "edit": "Edit",
+    "delete": "Delete"
+  },
+  "voting": {
+    "remaining": "Votes remaining"
+  },
+  "timer": {
+    "title": "Timer",
+    "start": "Start",
+    "stop": "Stop"
+  },
+  "common": {
+    "cancel": "Cancel",
+    "save": "Save"
+  }
+}
