@@ -34,6 +34,7 @@ export const RETRO_PHASES = [
   'grouping',
   'voting',
   'discussing',
+  'summary',
 ] as const;
 export type RetroPhase = (typeof RETRO_PHASES)[number];
 
@@ -126,6 +127,22 @@ export interface IParticipant {
 /**
  * Represents a Retro Session
  */
+/**
+ * Represents an action item committed during the retro
+ */
+export interface IActionItem {
+  /** Unique ID */
+  id: string;
+  /** Action description */
+  text: string;
+  /** Assigned participant name (optional) */
+  assignee: string | null;
+  /** Due date (optional, ISO string) */
+  dueDate: string | null;
+  /** Completed flag */
+  done: boolean;
+}
+
 export interface IRetroSession {
   /** Unique session ID */
   id: string;
@@ -141,6 +158,8 @@ export interface IRetroSession {
   cards: IRetroCard[];
   /** Card groups */
   groups: ICardGroup[];
+  /** Committed action items */
+  actionItems: IActionItem[];
   /** Maximum votes per participant */
   maxVotesPerUser: number;
   /** Timer duration in seconds (0 = no timer) */

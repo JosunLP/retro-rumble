@@ -30,6 +30,7 @@ const phaseIcons: Record<RetroPhase, string> = {
   grouping: 'heroicons:rectangle-group',
   voting: 'heroicons:hand-thumb-up',
   discussing: 'heroicons:chat-bubble-left-right',
+  summary: 'heroicons:clipboard-document-check',
 };
 
 function nextPhase(): void {

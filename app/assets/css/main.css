@@ -105,6 +105,36 @@
   .retro-card-action {
     @apply retro-card bg-primary-50 border-primary-200;
   }
+
+  /* Drag & Drop Styles */
+  .card-cluster {
+    @apply transition-all duration-200;
+  }
+
+  .card-cluster.drag-over {
+    @apply ring-2 ring-accent-400 border-accent-400 scale-[1.02] shadow-lg;
+  }
+
+  .ungrouped-card[draggable='true'] {
+    touch-action: none;
+  }
+
+  .ungrouped-card[draggable='true']:hover {
+    @apply shadow-md;
+  }
+
+  .cluster-card[draggable='true'] {
+    touch-action: none;
+  }
+
+  .cluster-card[draggable='true']:hover {
+    @apply shadow-sm;
+  }
+
+  /* Drag ghost styling */
+  [draggable='true'] {
+    -webkit-user-drag: element;
+  }
 }
 
 /**

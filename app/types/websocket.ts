@@ -32,6 +32,10 @@ export type ClientMessageType =
   | 'group:remove-card'
   | 'group:rename'
   | 'group:delete'
+  | 'action:add'
+  | 'action:edit'
+  | 'action:delete'
+  | 'action:toggle'
   | 'timer:start'
   | 'timer:stop'
   | 'timer:set'
@@ -180,6 +184,31 @@ export interface TimerStopPayload {
 export interface TimerSetPayload {
   sessionId: string;
   duration: number;
+}
+
+export interface AddActionItemPayload {
+  sessionId: string;
+  text: string;
+  assignee?: string;
+  dueDate?: string;
+}
+
+export interface EditActionItemPayload {
+  sessionId: string;
+  actionId: string;
+  text: string;
+  assignee?: string;
+  dueDate?: string;
+}
+
+export interface DeleteActionItemPayload {
+  sessionId: string;
+  actionId: string;
+}
+
+export interface ToggleActionItemPayload {
+  sessionId: string;
+  actionId: string;
 }
 
 // ============================================

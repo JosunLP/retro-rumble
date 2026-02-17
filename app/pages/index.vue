@@ -29,10 +29,19 @@ const {
   deleteCard,
   voteCard,
   unvoteCard,
+  createGroup,
+  addCardToGroup,
+  removeCardFromGroup,
+  renameGroup,
+  deleteGroup,
   startTimer,
   stopTimer,
   setTimerDuration,
   leaveSession,
+  addActionItem,
+  editActionItem,
+  deleteActionItem,
+  toggleActionItem,
   clearError,
 } = useRetroSession();
 
@@ -232,9 +241,36 @@ function handleJoinSession(code: string, participantName: string): void {
             />
           </div>
 
-          <!-- Retro Board -->
+          <!-- Retro Board / Grouping Board / Summary -->
           <div class="lg:col-span-9">
+            <!-- Summary Phase: Show retro summary and export panel -->
+            <div v-if="currentPhase === 'summary'" class="space-y-6">
+              <RetroSummary
+                :session="session"
+                :is-host="isHost"
+                @add-action-item="addActionItem"
+                @edit-action-item="editActionItem"
+                @delete-action-item="deleteActionItem"
+                @toggle-action-item="toggleActionItem"
+              />
+              <ExportPanel :session="session" />
+            </div>
+
+            <!-- Grouping Phase: Show drag & drop clustering board -->
+            <GroupingBoard
+              v-else-if="currentPhase === 'grouping'"
+              :session="session"
+              :is-host="isHost"
+              @create-group="createGroup"
+              @add-card-to-group="addCardToGroup"
+              @remove-card-from-group="removeCardFromGroup"
+              @rename-group="renameGroup"
+              @delete-group="deleteGroup"
+            />
+
+            <!-- Other Phases: Show standard retro board -->
             <RetroBoard
+              v-else
               :session="session"
               :current-user-id="currentParticipant!.id"
               :is-host="isHost"

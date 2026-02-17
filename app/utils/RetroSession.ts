@@ -6,6 +6,7 @@
  */
 
 import type {
+  IActionItem,
   ICardGroup,
   IRetroCard,
   IRetroConfig,
@@ -29,6 +30,7 @@ export class RetroSession implements IRetroSession {
   public participants: Participant[];
   public cards: IRetroCard[];
   public groups: ICardGroup[];
+  public actionItems: IActionItem[];
   public maxVotesPerUser: number;
   public timerDuration: number;
   public timerRemaining: number | null;
@@ -47,6 +49,7 @@ export class RetroSession implements IRetroSession {
     this.participants = [];
     this.cards = [];
     this.groups = [];
+    this.actionItems = [];
     this.config = { ...DEFAULT_CONFIG, ...config };
     this.maxVotesPerUser = this.config.maxVotesPerUser;
     this.timerDuration = this.config.timerDuration;
@@ -402,6 +405,70 @@ export class RetroSession implements IRetroSession {
   }
 
   // ============================================
+  // Action Items
+  // ============================================
+
+  /**
+   * Adds a new action item
+   */
+  public addActionItem(
+    text: string,
+    assignee: string | null = null,
+    dueDate: string | null = null
+  ): IActionItem {
+    const item: IActionItem = {
+      id: crypto.randomUUID(),
+      text: text.trim(),
+      assignee,
+      dueDate,
+      done: false,
+    };
+    this.actionItems.push(item);
+    this.touch();
+    return item;
+  }
+
+  /**
+   * Edits an existing action item
+   */
+  public editActionItem(
+    actionId: string,
+    text: string,
+    assignee?: string | null,
+    dueDate?: string | null
+  ): boolean {
+    const item = this.actionItems.find((a) => a.id === actionId);
+    if (!item) return false;
+    item.text = text.trim();
+    if (assignee !== undefined) item.assignee = assignee;
+    if (dueDate !== undefined) item.dueDate = dueDate;
+    this.touch();
+    return true;
+  }
+
+  /**
+   * Deletes an action item
+   */
+  public deleteActionItem(actionId: string): boolean {
+    const idx = this.actionItems.findIndex((a) => a.id === actionId);
+    if (idx === -1) return false;
+    this.actionItems.splice(idx, 1);
+    this.touch();
+    return true;
+  }
+
+  /**
+   * Toggles an action item's done status
+   */
+  public toggleActionItem(actionId: string): boolean {
+    const item = this.actionItems.find((a) => a.id === actionId);
+    if (!item) return false;
+    item.done = !item.done;
+    this.touch();
+    return true;
+  }
+
+  // ============================================
   // Helpers
   // ============================================
 
@@ -439,6 +506,7 @@ export class RetroSession implements IRetroSession {
       participants: this.participants.map((p) => p.toJSON()),
       cards: this.cards,
       groups: this.groups,
+      actionItems: this.actionItems,
       maxVotesPerUser: this.maxVotesPerUser,
       timerDuration: this.timerDuration,
       timerRemaining: this.timerRemaining,
@@ -458,6 +526,7 @@ export class RetroSession implements IRetroSession {
       phase: data.phase,
       cards: data.cards ?? [],
       groups: data.groups ?? [],
+      actionItems: data.actionItems ?? [],
       maxVotesPerUser: data.maxVotesPerUser,
       timerDuration: data.timerDuration,
       timerRemaining: data.timerRemaining,

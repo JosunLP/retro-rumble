@@ -49,7 +49,7 @@ function getColumnCards(column: RetroColumnType): IRetroCard[] {
       :is-host="isHost"
       :remaining-votes="remainingVotes"
       @add-card="
-        (columnType: string, content: string) =>
+        (columnType: RetroColumnType, content: string) =>
           emit('addCard', columnType, content)
       "
       @edit-card="

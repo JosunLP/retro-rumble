@@ -7,13 +7,16 @@
 
 import type { Peer } from 'crossws';
 import type {
+  AddActionItemPayload,
   AddCardPayload,
   AddCardToGroupPayload,
   ClientMessage,
   CreateGroupPayload,
   CreateSessionPayload,
+  DeleteActionItemPayload,
   DeleteCardPayload,
   DeleteGroupPayload,
+  EditActionItemPayload,
   EditCardPayload,
   JoinSessionPayload,
   MoveCardPayload,
@@ -22,6 +25,7 @@ import type {
   RenameGroupPayload,
   ServerMessage,
   TimerSetPayload,
+  ToggleActionItemPayload,
   UnvoteCardPayload,
   VoteCardPayload,
 } from '../../app/types/websocket';
@@ -120,6 +124,24 @@ function handleMessage(peer: Peer, data: string): void {
         break;
       case 'group:delete':
         handleDeleteGroup(peer, message.payload as DeleteGroupPayload);
+        break;
+      case 'action:add':
+        handleAddActionItem(peer, message.payload as AddActionItemPayload);
+        break;
+      case 'action:edit':
+        handleEditActionItem(peer, message.payload as EditActionItemPayload);
+        break;
+      case 'action:delete':
+        handleDeleteActionItem(
+          peer,
+          message.payload as DeleteActionItemPayload
+        );
+        break;
+      case 'action:toggle':
+        handleToggleActionItem(
+          peer,
+          message.payload as ToggleActionItemPayload
+        );
         break;
       case 'timer:start':
         handleTimerStart(peer);
@@ -418,6 +440,86 @@ function handleDeleteGroup(peer: Peer, payload: DeleteGroupPayload): void {
     sendMessage(peer, 'session:error', {
       message: 'Could not delete group.',
       code: 'GROUP_DELETE_FAILED',
+    });
+    return;
+  }
+
+  broadcastToSession(session.id, 'session:updated', { session });
+}
+
+// ============================================
+// Action Item Handlers
+// ============================================
+
+function handleAddActionItem(peer: Peer, payload: AddActionItemPayload): void {
+  const session = sessionStore.addActionItem(
+    peer,
+    payload.text,
+    payload.assignee,
+    payload.dueDate
+  );
+
+  if (!session) {
+    sendMessage(peer, 'session:error', {
+      message: 'Could not add action item.',
+      code: 'ACTION_ADD_FAILED',
+    });
+    return;
+  }
+
+  broadcastToSession(session.id, 'session:updated', { session });
+}
+
+function handleEditActionItem(
+  peer: Peer,
+  payload: EditActionItemPayload
+): void {
+  const session = sessionStore.editActionItem(
+    peer,
+    payload.actionId,
+    payload.text,
+    payload.assignee,
+    payload.dueDate
+  );
+
+  if (!session) {
+    sendMessage(peer, 'session:error', {
+      message: 'Could not edit action item.',
+      code: 'ACTION_EDIT_FAILED',
+    });
+    return;
+  }
+
+  broadcastToSession(session.id, 'session:updated', { session });
+}
+
+function handleDeleteActionItem(
+  peer: Peer,
+  payload: DeleteActionItemPayload
+): void {
+  const session = sessionStore.deleteActionItem(peer, payload.actionId);
+
+  if (!session) {
+    sendMessage(peer, 'session:error', {
+      message: 'Could not delete action item.',
+      code: 'ACTION_DELETE_FAILED',
+    });
+    return;
+  }
+
+  broadcastToSession(session.id, 'session:updated', { session });
+}
+
+function handleToggleActionItem(
+  peer: Peer,
+  payload: ToggleActionItemPayload
+): void {
+  const session = sessionStore.toggleActionItem(peer, payload.actionId);
+
+  if (!session) {
+    sendMessage(peer, 'session:error', {
+      message: 'Could not toggle action item.',
+      code: 'ACTION_TOGGLE_FAILED',
     });
     return;
   }

@@ -44,6 +44,7 @@
     "grouping": "Group",
     "voting": "Vote",
     "discussing": "Discuss",
+    "summary": "Summary",
     "previous": "Previous",
     "next": "Next"
   },
@@ -58,6 +59,16 @@
     "edit": "Edit",
     "delete": "Delete"
   },
+  "grouping": {
+    "instructionsHost": "Drag cards onto each other to create groups. Drag cards into existing clusters or back to ungrouped area.",
+    "instructionsParticipant": "The host is grouping related cards into clusters. Groups will be visible in real time.",
+    "ungrouped": "Ungrouped",
+    "clusters": "Clusters",
+    "newGroupTitle": "New Group",
+    "clickToRename": "Click to rename",
+    "deleteGroup": "Delete group",
+    "removeFromGroup": "Remove from group"
+  },
   "voting": {
     "remaining": "Votes remaining"
   },
@@ -65,6 +76,30 @@
     "title": "Timer",
     "start": "Start",
     "stop": "Stop"
+  },
+  "summary": {
+    "totalCards": "Cards",
+    "totalVotes": "Votes",
+    "totalGroups": "Groups",
+    "actionsDone": "Actions done",
+    "cards": "cards",
+    "votes": "votes",
+    "actionItems": "Action Items",
+    "noActions": "No action items yet. Add commitments for the next sprint!",
+    "actionPlaceholder": "New action item...",
+    "assigneePlaceholder": "Assignee",
+    "addAction": "Add"
+  },
+  "export": {
+    "title": "Export Results",
+    "description": "Download your retro results to share with the team or archive them.",
+    "format": {
+      "json": "JSON",
+      "csv": "CSV",
+      "markdown": "Markdown",
+      "png": "Image (PNG)",
+      "pdf": "PDF"
+    }
   },
   "common": {
     "cancel": "Cancel",

@@ -44,6 +44,7 @@
     "grouping": "Gruppieren",
     "voting": "Abstimmen",
     "discussing": "Diskutieren",
+    "summary": "Zusammenfassung",
     "previous": "Zurück",
     "next": "Weiter"
   },
@@ -58,6 +59,16 @@
     "edit": "Bearbeiten",
     "delete": "Löschen"
   },
+  "grouping": {
+    "instructionsHost": "Ziehe Karten aufeinander, um Gruppen zu erstellen. Ziehe Karten in bestehende Cluster oder zurück in den ungruppierten Bereich.",
+    "instructionsParticipant": "Der Host gruppiert verwandte Karten zu Clustern. Gruppen werden in Echtzeit sichtbar.",
+    "ungrouped": "Ungruppiert",
+    "clusters": "Cluster",
+    "newGroupTitle": "Neue Gruppe",
+    "clickToRename": "Klicken zum Umbenennen",
+    "deleteGroup": "Gruppe löschen",
+    "removeFromGroup": "Aus Gruppe entfernen"
+  },
   "voting": {
     "remaining": "Stimmen übrig"
   },
@@ -65,6 +76,30 @@
     "title": "Timer",
     "start": "Start",
     "stop": "Stopp"
+  },
+  "summary": {
+    "totalCards": "Karten",
+    "totalVotes": "Stimmen",
+    "totalGroups": "Gruppen",
+    "actionsDone": "Erledigt",
+    "cards": "Karten",
+    "votes": "Stimmen",
+    "actionItems": "Maßnahmen",
+    "noActions": "Noch keine Maßnahmen. Füge Vereinbarungen für den nächsten Sprint hinzu!",
+    "actionPlaceholder": "Neue Maßnahme...",
+    "assigneePlaceholder": "Zuständig",
+    "addAction": "Hinzufügen"
+  },
+  "export": {
+    "title": "Ergebnisse exportieren",
+    "description": "Lade deine Retro-Ergebnisse herunter, um sie mit dem Team zu teilen oder zu archivieren.",
+    "format": {
+      "json": "JSON",
+      "csv": "CSV",
+      "markdown": "Markdown",
+      "png": "Bild (PNG)",
+      "pdf": "PDF"
+    }
   },
   "common": {
     "cancel": "Abbrechen",

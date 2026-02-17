@@ -405,6 +405,76 @@ class SessionStore {
   }
 
   // ============================================
+  // Action Items
+  // ============================================
+
+  /**
+   * Adds an action item
+   */
+  public addActionItem(
+    peer: Peer,
+    text: string,
+    assignee?: string,
+    dueDate?: string
+  ): IRetroSession | null {
+    const session = this.getSessionForPeer(peer);
+    if (!session) return null;
+
+    session.addActionItem(text, assignee ?? null, dueDate ?? null);
+    return session.toJSON();
+  }
+
+  /**
+   * Edits an action item (host only)
+   */
+  public editActionItem(
+    peer: Peer,
+    actionId: string,
+    text: string,
+    assignee?: string,
+    dueDate?: string
+  ): IRetroSession | null {
+    if (!this.isHost(peer)) return null;
+
+    const session = this.getSessionForPeer(peer);
+    if (!session) return null;
+
+    const success = session.editActionItem(
+      actionId,
+      text,
+      assignee ?? null,
+      dueDate ?? null
+    );
+    return success ? session.toJSON() : null;
+  }
+
+  /**
+   * Deletes an action item (host only)
+   */
+  public deleteActionItem(peer: Peer, actionId: string): IRetroSession | null {
+    if (!this.isHost(peer)) return null;
+
+    const session = this.getSessionForPeer(peer);
+    if (!session) return null;
+
+    const success = session.deleteActionItem(actionId);
+    return success ? session.toJSON() : null;
+  }
+
+  /**
+   * Toggles an action item's done status (host only)
+   */
+  public toggleActionItem(peer: Peer, actionId: string): IRetroSession | null {
+    if (!this.isHost(peer)) return null;
+
+    const session = this.getSessionForPeer(peer);
+    if (!session) return null;
+
+    const success = session.toggleActionItem(actionId);
+    return success ? session.toJSON() : null;
+  }
+
+  // ============================================
   // Helpers
   // ============================================
 

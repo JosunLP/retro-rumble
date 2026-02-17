@@ -14,7 +14,7 @@ const availableLocales = computed(() =>
 );
 
 function switchLocale(code: string): void {
-  setLocale(code);
+  setLocale(code as 'en' | 'de');
 }
 </script>
 

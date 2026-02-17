@@ -407,6 +407,46 @@ export function useRetroSession() {
     send('session:leave', { sessionId: state.value.session.id });
   }
 
+  function addActionItem(
+    text: string,
+    assignee?: string,
+    dueDate?: string
+  ): void {
+    if (!state.value.session) return;
+    send('action:add', {
+      sessionId: state.value.session.id,
+      text,
+      assignee,
+      dueDate,
+    });
+  }
+
+  function editActionItem(
+    actionId: string,
+    text: string,
+    assignee?: string,
+    dueDate?: string
+  ): void {
+    if (!state.value.session || !state.value.isHost) return;
+    send('action:edit', {
+      sessionId: state.value.session.id,
+      actionId,
+      text,
+      assignee,
+      dueDate,
+    });
+  }
+
+  function deleteActionItem(actionId: string): void {
+    if (!state.value.session || !state.value.isHost) return;
+    send('action:delete', { sessionId: state.value.session.id, actionId });
+  }
+
+  function toggleActionItem(actionId: string): void {
+    if (!state.value.session || !state.value.isHost) return;
+    send('action:toggle', { sessionId: state.value.session.id, actionId });
+  }
+
   function clearError(): void {
     state.value = { ...state.value, error: null };
   }
@@ -442,6 +482,10 @@ export function useRetroSession() {
     stopTimer,
     setTimerDuration,
     leaveSession,
+    addActionItem,
+    editActionItem,
+    deleteActionItem,
+    toggleActionItem,
     clearError,
   };
 }
