@@ -259,10 +259,10 @@ export class RetroSession implements IRetroSession {
   ): ICardGroup | null {
     if (this.phase !== 'grouping') return null;
 
-    // Verify all cards exist and are in the same column
+    // Verify all cards exist (cross-column grouping allowed)
     const validCards = cardIds.filter((id) => {
       const card = this.cards.find((c) => c.id === id);
-      return card && card.column === column && !card.groupId;
+      return card && !card.groupId;
     });
 
     if (validCards.length < 2) return null;
@@ -295,7 +295,7 @@ export class RetroSession implements IRetroSession {
     if (!group) return false;
 
     const card = this.cards.find((c) => c.id === cardId);
-    if (!card || card.column !== group.column || card.groupId) return false;
+    if (!card || card.groupId) return false;
 
     group.cardIds.push(cardId);
     card.groupId = groupId;

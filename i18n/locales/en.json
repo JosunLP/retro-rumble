@@ -60,14 +60,15 @@
     "delete": "Delete"
   },
   "grouping": {
-    "instructionsHost": "Drag cards onto each other to create groups. Drag cards into existing clusters or back to ungrouped area.",
-    "instructionsParticipant": "The host is grouping related cards into clusters. Groups will be visible in real time.",
-    "ungrouped": "Ungrouped",
-    "clusters": "Clusters",
+    "instructionsHost": "Drag cards onto each other to create groups. Drag away from a group to ungroup.",
+    "instructionsParticipant": "The host is organizing related cards into groups. Changes are visible in real time.",
     "newGroupTitle": "New Group",
     "clickToRename": "Click to rename",
     "deleteGroup": "Delete group",
-    "removeFromGroup": "Remove from group"
+    "removeFromGroup": "Remove from group",
+    "resetLayout": "Reset Layout",
+    "maximize": "Maximize",
+    "restore": "Restore"
   },
   "voting": {
     "remaining": "Votes remaining"

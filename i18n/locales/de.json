@@ -60,14 +60,15 @@
     "delete": "Löschen"
   },
   "grouping": {
-    "instructionsHost": "Ziehe Karten aufeinander, um Gruppen zu erstellen. Ziehe Karten in bestehende Cluster oder zurück in den ungruppierten Bereich.",
-    "instructionsParticipant": "Der Host gruppiert verwandte Karten zu Clustern. Gruppen werden in Echtzeit sichtbar.",
-    "ungrouped": "Ungruppiert",
-    "clusters": "Cluster",
+    "instructionsHost": "Ziehe Karten aufeinander, um Gruppen zu erstellen. Ziehe sie weg von einer Gruppe, um sie zu lösen.",
+    "instructionsParticipant": "Der Host gruppiert verwandte Karten. Änderungen sind in Echtzeit sichtbar.",
     "newGroupTitle": "Neue Gruppe",
     "clickToRename": "Klicken zum Umbenennen",
     "deleteGroup": "Gruppe löschen",
-    "removeFromGroup": "Aus Gruppe entfernen"
+    "removeFromGroup": "Aus Gruppe entfernen",
+    "resetLayout": "Layout zurücksetzen",
+    "maximize": "Maximieren",
+    "restore": "Wiederherstellen"
   },
   "voting": {
     "remaining": "Stimmen übrig"

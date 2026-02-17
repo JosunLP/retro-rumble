@@ -256,8 +256,8 @@ function handleJoinSession(code: string, participantName: string): void {
               <ExportPanel :session="session" />
             </div>
 
-            <!-- Grouping Phase: Show drag & drop clustering board -->
-            <GroupingBoard
+            <!-- Grouping Phase: Free-form canvas clustering -->
+            <ClusterCanvas
               v-else-if="currentPhase === 'grouping'"
               :session="session"
               :is-host="isHost"
