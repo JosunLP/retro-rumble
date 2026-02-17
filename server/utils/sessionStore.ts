@@ -6,13 +6,11 @@
  */
 
 import type { Peer } from 'crossws';
-import type {, 
-
+import type {
   IRetroSession,
   RetroColumnType,
   RetroPhase,
 } from '../../app/types/retro';
-import type { ICardGroup } from '../../app/types/retro';
 import { JOIN_CODE_CHARS, JOIN_CODE_LENGTH } from '../../app/types/retro';
 import { Participant } from '../../app/utils/Participant';
 import { RetroSession } from '../../app/utils/RetroSession';
