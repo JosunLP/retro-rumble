@@ -27,16 +27,35 @@ export const RETRO_COLUMNS = [
 export type RetroColumnType = (typeof RETRO_COLUMNS)[number];
 
 /**
- * Retro session phases
+ * Retro session phases (Scrum Retro Flow)
+ *
+ * 1. set-the-stage  – Welcome, ice-breaker / check-in
+ * 2. gather-data     – Anonymous cards in three columns
+ * 3. generate-insights – Group cards & vote on themes
+ * 4. decide-action   – SMART action items, assign & prioritize
+ * 5. close-retro     – Feedback, export, summary
  */
 export const RETRO_PHASES = [
-  'writing',
-  'grouping',
-  'voting',
-  'discussing',
-  'summary',
+  'set-the-stage',
+  'gather-data',
+  'generate-insights',
+  'decide-action',
+  'close-retro',
 ] as const;
 export type RetroPhase = (typeof RETRO_PHASES)[number];
+
+/**
+ * Available check-in mood emojis
+ */
+export const CHECK_IN_MOODS = [
+  '😊',
+  '😐',
+  '😟',
+  '🔥',
+  '💪',
+  '😴',
+] as const;
+export type CheckInMood = (typeof CHECK_IN_MOODS)[number];
 
 // ============================================
 // Validation Functions
@@ -143,6 +162,22 @@ export interface IActionItem {
   done: boolean;
 }
 
+/**
+ * Participant check-in response
+ */
+export interface ICheckInResponse {
+  participantId: string;
+  mood: string;
+}
+
+/**
+ * Participant feedback response (fist-to-five: 1–5)
+ */
+export interface IFeedbackResponse {
+  participantId: string;
+  rating: number;
+}
+
 export interface IRetroSession {
   /** Unique session ID */
   id: string;
@@ -160,6 +195,10 @@ export interface IRetroSession {
   groups: ICardGroup[];
   /** Committed action items */
   actionItems: IActionItem[];
+  /** Check-in mood responses (set-the-stage phase) */
+  checkInResponses: ICheckInResponse[];
+  /** Feedback ratings (close-retro phase, 1–5) */
+  feedbackResponses: IFeedbackResponse[];
   /** Maximum votes per participant */
   maxVotesPerUser: number;
   /** Timer duration in seconds (0 = no timer) */

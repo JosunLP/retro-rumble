@@ -40,11 +40,11 @@
     "you": "(du)"
   },
   "phase": {
-    "writing": "Schreiben",
-    "grouping": "Gruppieren",
-    "voting": "Abstimmen",
-    "discussing": "Diskutieren",
-    "summary": "Zusammenfassung",
+    "set-the-stage": "Einstimmung",
+    "gather-data": "Daten sammeln",
+    "generate-insights": "Erkenntnisse",
+    "decide-action": "Maßnahmen",
+    "close-retro": "Abschluss",
     "previous": "Zurück",
     "next": "Weiter"
   },
@@ -103,5 +103,23 @@
   "common": {
     "cancel": "Abbrechen",
     "save": "Speichern"
+  },
+  "checkin": {
+    "title": "Check-In",
+    "question": "Wie fühlst du dich heute? Wähle ein Emoji, das deine Stimmung beschreibt.",
+    "responses": "Team-Stimmung",
+    "waiting": "Warte auf Antworten des Teams..."
+  },
+  "feedback": {
+    "title": "Retro-Feedback",
+    "question": "Wie war diese Retrospektive? Bewerte von 1 (nicht gut) bis 5 (ausgezeichnet).",
+    "results": "Team-Feedback",
+    "average": "Durchschnitt",
+    "waiting": "Warte auf Feedback...",
+    "rating1": "Schlecht",
+    "rating2": "Mäßig",
+    "rating3": "OK",
+    "rating4": "Gut",
+    "rating5": "Super"
   }
 }

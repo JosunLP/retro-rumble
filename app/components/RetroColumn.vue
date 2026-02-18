@@ -67,11 +67,11 @@ const columnConfig: Record<
 const config = computed(() => columnConfig[props.column]);
 
 /**
- * Sort cards: by votes in discussing phase, by creation time otherwise
+ * Sort cards: by votes in decide-action / generate-insights phase, by creation time otherwise
  */
 const sortedCards = computed(() => {
   const cards = [...props.cards];
-  if (props.phase === 'discussing' || props.phase === 'voting') {
+  if (props.phase === 'decide-action' || props.phase === 'generate-insights') {
     return cards.sort((a, b) => b.votes - a.votes);
   }
   return cards.sort(
@@ -140,9 +140,9 @@ function addCard(): void {
       </div>
     </div>
 
-    <!-- Add Card Input (writing phase only) -->
+    <!-- Add Card Input (gather-data phase only) -->
     <div
-      v-if="phase === 'writing'"
+      v-if="phase === 'gather-data'"
       class="p-3 border border-t-0 border-secondary-200 rounded-b-xl bg-white"
     >
       <div class="flex gap-2">
@@ -164,7 +164,7 @@ function addCard(): void {
       </div>
     </div>
 
-    <!-- Bottom border when not in writing phase -->
+    <!-- Bottom border when not in gather-data phase -->
     <div
       v-else
       class="border border-t-0 border-secondary-200 rounded-b-xl h-2 bg-white"

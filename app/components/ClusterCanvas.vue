@@ -370,7 +370,7 @@ function isGroupDropTarget(groupId: string): boolean {
                 @pointerdown.stop
                 @blur="handleRenameGroup(group.id, $event)"
                 @keydown.enter="($event.target as HTMLInputElement).blur()"
-              />
+              >
               <span
                 v-else
                 class="flex-1 text-xs font-semibold text-secondary-700 dark:text-secondary-300 truncate"

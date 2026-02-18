@@ -9,11 +9,12 @@ export * from './websocket';
 
 // Re-export validation functions
 export {
-  JOIN_CODE_CHARS,
-  JOIN_CODE_LENGTH,
-  RETRO_COLUMNS,
-  RETRO_PHASES,
-  formatJoinCode,
-  isValidColumnType,
-  isValidJoinCode,
+    CHECK_IN_MOODS,
+    JOIN_CODE_CHARS,
+    JOIN_CODE_LENGTH,
+    RETRO_COLUMNS,
+    RETRO_PHASES,
+    formatJoinCode,
+    isValidColumnType,
+    isValidJoinCode
 } from './retro';

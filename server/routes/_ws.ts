@@ -7,27 +7,29 @@
 
 import type { Peer } from 'crossws';
 import type {
-  AddActionItemPayload,
-  AddCardPayload,
-  AddCardToGroupPayload,
-  ClientMessage,
-  CreateGroupPayload,
-  CreateSessionPayload,
-  DeleteActionItemPayload,
-  DeleteCardPayload,
-  DeleteGroupPayload,
-  EditActionItemPayload,
-  EditCardPayload,
-  JoinSessionPayload,
-  MoveCardPayload,
-  PhaseChangePayload,
-  RemoveCardFromGroupPayload,
-  RenameGroupPayload,
-  ServerMessage,
-  TimerSetPayload,
-  ToggleActionItemPayload,
-  UnvoteCardPayload,
-  VoteCardPayload,
+    AddActionItemPayload,
+    AddCardPayload,
+    AddCardToGroupPayload,
+    CheckInRespondPayload,
+    ClientMessage,
+    CreateGroupPayload,
+    CreateSessionPayload,
+    DeleteActionItemPayload,
+    DeleteCardPayload,
+    DeleteGroupPayload,
+    EditActionItemPayload,
+    EditCardPayload,
+    FeedbackRespondPayload,
+    JoinSessionPayload,
+    MoveCardPayload,
+    PhaseChangePayload,
+    RemoveCardFromGroupPayload,
+    RenameGroupPayload,
+    ServerMessage,
+    TimerSetPayload,
+    ToggleActionItemPayload,
+    UnvoteCardPayload,
+    VoteCardPayload,
 } from '../../app/types/websocket';
 import { sessionStore } from '../utils/sessionStore';
 
@@ -141,6 +143,18 @@ function handleMessage(peer: Peer, data: string): void {
         handleToggleActionItem(
           peer,
           message.payload as ToggleActionItemPayload
+        );
+        break;
+      case 'checkin:respond':
+        handleCheckInRespond(
+          peer,
+          message.payload as CheckInRespondPayload
+        );
+        break;
+      case 'feedback:respond':
+        handleFeedbackRespond(
+          peer,
+          message.payload as FeedbackRespondPayload
         );
         break;
       case 'timer:start':
@@ -271,7 +285,7 @@ function handleAddCard(peer: Peer, payload: AddCardPayload): void {
   if (!session) {
     sendMessage(peer, 'session:error', {
       message:
-        'Could not add card. Cards can only be added during the writing phase.',
+        'Could not add card. Cards can only be added during the Gather Data phase.',
       code: 'CARD_ADD_FAILED',
     });
     return;
@@ -520,6 +534,44 @@ function handleToggleActionItem(
     sendMessage(peer, 'session:error', {
       message: 'Could not toggle action item.',
       code: 'ACTION_TOGGLE_FAILED',
+    });
+    return;
+  }
+
+  broadcastToSession(session.id, 'session:updated', { session });
+}
+
+// ============================================
+// Check-In & Feedback Handlers
+// ============================================
+
+function handleCheckInRespond(
+  peer: Peer,
+  payload: CheckInRespondPayload
+): void {
+  const session = sessionStore.submitCheckIn(peer, payload.mood);
+
+  if (!session) {
+    sendMessage(peer, 'session:error', {
+      message: 'Could not submit check-in.',
+      code: 'CHECKIN_FAILED',
+    });
+    return;
+  }
+
+  broadcastToSession(session.id, 'session:updated', { session });
+}
+
+function handleFeedbackRespond(
+  peer: Peer,
+  payload: FeedbackRespondPayload
+): void {
+  const session = sessionStore.submitFeedback(peer, payload.rating);
+
+  if (!session) {
+    sendMessage(peer, 'session:error', {
+      message: 'Could not submit feedback.',
+      code: 'FEEDBACK_FAILED',
     });
     return;
   }

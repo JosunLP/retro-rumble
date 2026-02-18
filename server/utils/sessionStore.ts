@@ -7,9 +7,9 @@
 
 import type { Peer } from 'crossws';
 import type {
-  IRetroSession,
-  RetroColumnType,
-  RetroPhase,
+    IRetroSession,
+    RetroColumnType,
+    RetroPhase,
 } from '../../app/types/retro';
 import { JOIN_CODE_CHARS, JOIN_CODE_LENGTH } from '../../app/types/retro';
 import { Participant } from '../../app/utils/Participant';
@@ -186,8 +186,8 @@ class SessionStore {
     const entry = this.sessions.get(info.sessionId);
     if (!entry) return null;
 
-    // Only allow adding cards in the writing phase
-    if (entry.session.phase !== 'writing') return null;
+    // Only allow adding cards in the gather-data phase
+    if (entry.session.phase !== 'gather-data') return null;
 
     entry.session.addCard(column, content, info.participantId);
     return entry.session.toJSON();
@@ -472,6 +472,38 @@ class SessionStore {
 
     const success = session.toggleActionItem(actionId);
     return success ? session.toJSON() : null;
+  }
+
+  // ============================================
+  // Check-In & Feedback
+  // ============================================
+
+  /**
+   * Submits a check-in mood for a participant
+   */
+  public submitCheckIn(peer: Peer, mood: string): IRetroSession | null {
+    const info = this.peerMap.get(peer);
+    if (!info) return null;
+
+    const entry = this.sessions.get(info.sessionId);
+    if (!entry) return null;
+
+    const success = entry.session.submitCheckIn(info.participantId, mood);
+    return success ? entry.session.toJSON() : null;
+  }
+
+  /**
+   * Submits a feedback rating for a participant
+   */
+  public submitFeedback(peer: Peer, rating: number): IRetroSession | null {
+    const info = this.peerMap.get(peer);
+    if (!info) return null;
+
+    const entry = this.sessions.get(info.sessionId);
+    if (!entry) return null;
+
+    const success = entry.session.submitFeedback(info.participantId, rating);
+    return success ? entry.session.toJSON() : null;
   }
 
   // ============================================

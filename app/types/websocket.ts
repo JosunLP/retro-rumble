@@ -6,10 +6,10 @@
  */
 
 import type {
-  IParticipant,
-  IRetroSession,
-  RetroColumnType,
-  RetroPhase,
+    IParticipant,
+    IRetroSession,
+    RetroColumnType,
+    RetroPhase,
 } from './retro';
 
 // ============================================
@@ -36,6 +36,8 @@ export type ClientMessageType =
   | 'action:edit'
   | 'action:delete'
   | 'action:toggle'
+  | 'checkin:respond'
+  | 'feedback:respond'
   | 'timer:start'
   | 'timer:stop'
   | 'timer:set'
@@ -209,6 +211,16 @@ export interface DeleteActionItemPayload {
 export interface ToggleActionItemPayload {
   sessionId: string;
   actionId: string;
+}
+
+export interface CheckInRespondPayload {
+  sessionId: string;
+  mood: string;
+}
+
+export interface FeedbackRespondPayload {
+  sessionId: string;
+  rating: number;
 }
 
 // ============================================

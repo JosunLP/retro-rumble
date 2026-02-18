@@ -7,14 +7,14 @@
 
 import type { ISessionState, RetroColumnType, RetroPhase } from '~/types';
 import type {
-  ParticipantJoinedPayload,
-  ParticipantLeftPayload,
-  SessionCreatedPayload,
-  SessionErrorPayload,
-  SessionJoinedPayload,
-  SessionLeftPayload,
-  SessionUpdatedPayload,
-  TimerTickPayload,
+    ParticipantJoinedPayload,
+    ParticipantLeftPayload,
+    SessionCreatedPayload,
+    SessionErrorPayload,
+    SessionJoinedPayload,
+    SessionLeftPayload,
+    SessionUpdatedPayload,
+    TimerTickPayload,
 } from '~/types/websocket';
 
 /**
@@ -200,6 +200,11 @@ export function useRetroSession() {
     // Timer finished
     on('timer:finished', () => {
       if (!state.value.session) return;
+
+      // Play harmonious chime for all users
+      const { playChime } = useTimerSound();
+      playChime();
+
       state.value = {
         ...state.value,
         session: {
@@ -244,7 +249,7 @@ export function useRetroSession() {
     return state.value.session.maxVotesPerUser - usedVotes;
   });
 
-  const currentPhase = computed(() => state.value.session?.phase ?? 'writing');
+  const currentPhase = computed(() => state.value.session?.phase ?? 'set-the-stage');
 
   // ============================================
   // Actions
@@ -447,6 +452,16 @@ export function useRetroSession() {
     send('action:toggle', { sessionId: state.value.session.id, actionId });
   }
 
+  function submitCheckIn(mood: string): void {
+    if (!state.value.session) return;
+    send('checkin:respond', { sessionId: state.value.session.id, mood });
+  }
+
+  function submitFeedback(rating: number): void {
+    if (!state.value.session) return;
+    send('feedback:respond', { sessionId: state.value.session.id, rating });
+  }
+
   function clearError(): void {
     state.value = { ...state.value, error: null };
   }
@@ -486,6 +501,8 @@ export function useRetroSession() {
     editActionItem,
     deleteActionItem,
     toggleActionItem,
+    submitCheckIn,
+    submitFeedback,
     clearError,
   };
 }

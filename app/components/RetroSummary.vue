@@ -282,7 +282,7 @@ function cancelEditAction(): void {
               class="input-field flex-1 text-sm"
               @keydown.enter="saveEditAction"
               @keydown.escape="cancelEditAction"
-            />
+            >
             <input
               v-model="editActionAssignee"
               type="text"
@@ -290,7 +290,7 @@ function cancelEditAction(): void {
               :placeholder="t('summary.assigneePlaceholder')"
               @keydown.enter="saveEditAction"
               @keydown.escape="cancelEditAction"
-            />
+            >
             <button
               type="button"
               class="btn btn-sm btn-primary"
@@ -391,14 +391,14 @@ function cancelEditAction(): void {
           class="input-field flex-1 text-sm"
           :placeholder="t('summary.actionPlaceholder')"
           @keydown.enter="handleAddAction"
-        />
+        >
         <input
           v-model="newActionAssignee"
           type="text"
           class="input-field w-32 text-sm"
           :placeholder="t('summary.assigneePlaceholder')"
           @keydown.enter="handleAddAction"
-        />
+        >
         <button
           type="button"
           class="btn btn-sm btn-primary"

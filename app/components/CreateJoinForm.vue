@@ -111,7 +111,7 @@ function switchMode(newMode: 'create' | 'join'): void {
             class="input"
             :placeholder="t('form.sessionNamePlaceholder')"
             required
-          />
+          >
         </div>
 
         <div>
@@ -124,7 +124,7 @@ function switchMode(newMode: 'create' | 'join'): void {
             class="input"
             :placeholder="t('form.yourNamePlaceholder')"
             required
-          />
+          >
         </div>
 
         <div class="grid grid-cols-2 gap-4">
@@ -138,7 +138,7 @@ function switchMode(newMode: 'create' | 'join'): void {
               class="input"
               min="1"
               max="20"
-            />
+            >
           </div>
           <div>
             <label class="block text-sm font-medium text-secondary-700 mb-1">
@@ -154,7 +154,7 @@ function switchMode(newMode: 'create' | 'join'): void {
                 timerDuration =
                   Number(($event.target as HTMLInputElement).value) * 60
               "
-            />
+            >
           </div>
         </div>
 
@@ -185,7 +185,7 @@ function switchMode(newMode: 'create' | 'join'): void {
             :placeholder="t('form.joinCodePlaceholder')"
             maxlength="6"
             required
-          />
+          >
         </div>
 
         <div>
@@ -198,7 +198,7 @@ function switchMode(newMode: 'create' | 'join'): void {
             class="input"
             :placeholder="t('form.yourNamePlaceholder')"
             required
-          />
+          >
         </div>
 
         <button
