@@ -66,10 +66,12 @@
     "newGroupTitle": "Neue Gruppe",
     "clickToRename": "Klicken zum Umbenennen",
     "deleteGroup": "Gruppe löschen",
+    "moveToColumn": "Verschieben nach {column}",
     "removeFromGroup": "Aus Gruppe entfernen",
     "resetLayout": "Layout zurücksetzen",
     "maximize": "Maximieren",
-    "restore": "Wiederherstellen"
+    "restore": "Wiederherstellen",
+    "emptyColumn": "Keine Karten in dieser Spalte"
   },
   "voting": {
     "title": "Abstimmung",

@@ -32,6 +32,7 @@ export type ClientMessageType =
   | 'group:add-card'
   | 'group:remove-card'
   | 'group:rename'
+  | 'group:move'
   | 'group:delete'
   | 'group:vote'
   | 'group:unvote'
@@ -177,6 +178,12 @@ export interface RenameGroupPayload {
   sessionId: string;
   groupId: string;
   title: string;
+}
+
+export interface MoveGroupPayload {
+  sessionId: string;
+  groupId: string;
+  column: RetroColumnType;
 }
 
 export interface DeleteGroupPayload {

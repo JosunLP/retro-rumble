@@ -419,6 +419,21 @@ class SessionStore {
   }
 
   /**
+   * Moves a group to a different column
+   */
+  public moveGroup(
+    peer: Peer,
+    groupId: string,
+    column: RetroColumnType
+  ): IRetroSession | null {
+    const session = this.getSessionForPeer(peer);
+    if (!session) return null;
+
+    const success = session.moveGroup(groupId, column);
+    return success ? session.toJSON() : null;
+  }
+
+  /**
    * Deletes a group
    */
   public deleteGroup(peer: Peer, groupId: string): IRetroSession | null {

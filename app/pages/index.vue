@@ -35,6 +35,7 @@ const {
   addCardToGroup,
   removeCardFromGroup,
   renameGroup,
+  moveGroup,
   deleteGroup,
   startTimer,
   stopTimer,
@@ -285,6 +286,7 @@ function handleJoinSession(code: string, participantName: string): void {
               @add-card-to-group="addCardToGroup"
               @remove-card-from-group="removeCardFromGroup"
               @rename-group="renameGroup"
+              @move-group="moveGroup"
               @delete-group="deleteGroup"
             />
 

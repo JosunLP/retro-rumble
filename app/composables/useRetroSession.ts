@@ -267,16 +267,13 @@ export function useRetroSession() {
 
   const remainingVotes = computed(() => {
     if (!state.value.session || !state.value.currentParticipant) return 0;
+    const pid = state.value.currentParticipant!.id;
     const cardVotes = state.value.session.cards.reduce(
-      (count, c) =>
-        count +
-        (c.voterIds.includes(state.value.currentParticipant!.id) ? 1 : 0),
+      (count, c) => count + c.voterIds.filter((id) => id === pid).length,
       0
     );
     const groupVotes = state.value.session.groups.reduce(
-      (count, g) =>
-        count +
-        (g.voterIds.includes(state.value.currentParticipant!.id) ? 1 : 0),
+      (count, g) => count + g.voterIds.filter((id) => id === pid).length,
       0
     );
     return state.value.session.maxVotesPerUser - cardVotes - groupVotes;
@@ -430,6 +427,11 @@ export function useRetroSession() {
     send('group:rename', { sessionId: state.value.session.id, groupId, title });
   }
 
+  function moveGroup(groupId: string, column: RetroColumnType): void {
+    if (!state.value.session) return;
+    send('group:move', { sessionId: state.value.session.id, groupId, column });
+  }
+
   function deleteGroup(groupId: string): void {
     if (!state.value.session) return;
     send('group:delete', { sessionId: state.value.session.id, groupId });
@@ -537,6 +539,7 @@ export function useRetroSession() {
     addCardToGroup,
     removeCardFromGroup,
     renameGroup,
+    moveGroup,
     deleteGroup,
     startTimer,
     stopTimer,

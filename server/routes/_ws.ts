@@ -22,6 +22,7 @@ import type {
     FeedbackRespondPayload,
     JoinSessionPayload,
     MoveCardPayload,
+    MoveGroupPayload,
     PhaseChangePayload,
     RejoinSessionPayload,
     RemoveCardFromGroupPayload,
@@ -129,6 +130,9 @@ function handleMessage(peer: Peer, data: string): void {
         break;
       case 'group:rename':
         handleRenameGroup(peer, message.payload as RenameGroupPayload);
+        break;
+      case 'group:move':
+        handleMoveGroup(peer, message.payload as MoveGroupPayload);
         break;
       case 'group:delete':
         handleDeleteGroup(peer, message.payload as DeleteGroupPayload);
@@ -477,6 +481,24 @@ function handleRenameGroup(peer: Peer, payload: RenameGroupPayload): void {
     sendMessage(peer, 'session:error', {
       message: 'Could not rename group.',
       code: 'GROUP_RENAME_FAILED',
+    });
+    return;
+  }
+
+  broadcastToSession(session.id, 'session:updated', { session });
+}
+
+function handleMoveGroup(peer: Peer, payload: MoveGroupPayload): void {
+  const session = sessionStore.moveGroup(
+    peer,
+    payload.groupId,
+    payload.column
+  );
+
+  if (!session) {
+    sendMessage(peer, 'session:error', {
+      message: 'Could not move group.',
+      code: 'GROUP_MOVE_FAILED',
     });
     return;
   }

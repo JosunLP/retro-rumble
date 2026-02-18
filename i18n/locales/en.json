@@ -66,10 +66,12 @@
     "newGroupTitle": "New Group",
     "clickToRename": "Click to rename",
     "deleteGroup": "Delete group",
+    "moveToColumn": "Move to {column}",
     "removeFromGroup": "Remove from group",
     "resetLayout": "Reset Layout",
     "maximize": "Maximize",
-    "restore": "Restore"
+    "restore": "Restore",
+    "emptyColumn": "No cards in this column"
   },
   "voting": {
     "title": "Voting",

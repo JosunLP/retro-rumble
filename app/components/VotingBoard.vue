@@ -33,23 +33,20 @@ const columnMeta: Record<
   'went-well': {
     emoji: '✅',
     label: 'column.went-well',
-    cardClass:
-      'bg-success-50 border-success-200 dark:bg-success-950/30 dark:border-success-800',
-    headerClass: 'text-success-700 dark:text-success-400',
+    cardClass: 'bg-success-50 border-success-200',
+    headerClass: 'text-success-700',
   },
   'to-improve': {
     emoji: '⚠️',
     label: 'column.to-improve',
-    cardClass:
-      'bg-warning-50 border-warning-200 dark:bg-warning-950/30 dark:border-warning-800',
-    headerClass: 'text-warning-700 dark:text-warning-400',
+    cardClass: 'bg-warning-50 border-warning-200',
+    headerClass: 'text-warning-700',
   },
   'action-items': {
     emoji: '🎯',
     label: 'column.action-items',
-    cardClass:
-      'bg-primary-50 border-primary-200 dark:bg-primary-950/30 dark:border-primary-800',
-    headerClass: 'text-primary-700 dark:text-primary-400',
+    cardClass: 'bg-primary-50 border-primary-200',
+    headerClass: 'text-primary-700',
   },
 };
 
@@ -73,12 +70,12 @@ function getGroupCards(group: ICardGroup): IRetroCard[] {
     .sort((a, b) => b.votes - a.votes);
 }
 
-function hasVotedCard(card: IRetroCard): boolean {
-  return card.voterIds.includes(props.currentUserId);
+function userCardVotes(card: IRetroCard): number {
+  return card.voterIds.filter((id) => id === props.currentUserId).length;
 }
 
-function hasVotedGroup(group: ICardGroup): boolean {
-  return group.voterIds.includes(props.currentUserId);
+function userGroupVotes(group: ICardGroup): number {
+  return group.voterIds.filter((id) => id === props.currentUserId).length;
 }
 
 function canVote(): boolean {
@@ -86,23 +83,19 @@ function canVote(): boolean {
 }
 
 function handleVoteCard(cardId: string) {
-  const card = props.session.cards.find((c) => c.id === cardId);
-  if (!card) return;
-  if (hasVotedCard(card)) {
-    emit('unvoteCard', cardId);
-  } else {
-    emit('voteCard', cardId);
-  }
+  emit('voteCard', cardId);
+}
+
+function handleUnvoteCard(cardId: string) {
+  emit('unvoteCard', cardId);
 }
 
 function handleVoteGroup(groupId: string) {
-  const group = props.session.groups.find((g) => g.id === groupId);
-  if (!group) return;
-  if (hasVotedGroup(group)) {
-    emit('unvoteGroup', groupId);
-  } else {
-    emit('voteGroup', groupId);
-  }
+  emit('voteGroup', groupId);
+}
+
+function handleUnvoteGroup(groupId: string) {
+  emit('unvoteGroup', groupId);
 }
 
 function hasContent(column: RetroColumnType): boolean {
@@ -123,7 +116,7 @@ function hasContent(column: RetroColumnType): boolean {
             name="heroicons:hand-thumb-up"
             class="w-5 h-5 text-primary-600"
           />
-          <h3 class="text-lg font-semibold text-secondary-800 dark:text-secondary-200">
+          <h3 class="text-lg font-semibold text-secondary-800">
             {{ t('voting.title') }}
           </h3>
         </div>
@@ -131,15 +124,15 @@ function hasContent(column: RetroColumnType): boolean {
           class="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg border"
           :class="
             remainingVotes > 0
-              ? 'bg-primary-50 text-primary-700 border-primary-200 dark:bg-primary-900/30 dark:text-primary-300 dark:border-primary-800'
-              : 'bg-secondary-50 text-secondary-500 border-secondary-200 dark:bg-secondary-800 dark:text-secondary-400 dark:border-secondary-700'
+              ? 'bg-primary-50 text-primary-700 border-primary-200'
+              : 'bg-secondary-50 text-secondary-500 border-secondary-200'
           "
         >
           <Icon name="heroicons:hand-thumb-up" class="w-4 h-4" />
           {{ remainingVotes }} {{ t('voting.remaining') }}
         </div>
       </div>
-      <p class="mt-2 text-sm text-secondary-500 dark:text-secondary-400">
+      <p class="mt-2 text-sm text-secondary-500">
         {{ t('voting.instructions') }}
       </p>
     </div>
@@ -162,11 +155,11 @@ function hasContent(column: RetroColumnType): boolean {
         <div
           v-for="group in getGroupsForColumn(column)"
           :key="group.id"
-          class="rounded-xl border border-secondary-200 dark:border-secondary-700 bg-white dark:bg-secondary-800 shadow-sm overflow-hidden"
+          class="rounded-xl border border-secondary-200 bg-white shadow-sm overflow-hidden"
         >
           <!-- Group Header with Vote -->
           <div
-            class="flex items-center justify-between px-4 py-3 bg-secondary-50 dark:bg-secondary-800/80 border-b border-secondary-200 dark:border-secondary-700"
+            class="flex items-center justify-between px-4 py-3 bg-secondary-50 border-b border-secondary-200"
           >
             <div class="flex items-center gap-2">
               <Icon
@@ -174,7 +167,7 @@ function hasContent(column: RetroColumnType): boolean {
                 class="w-4 h-4 text-primary-500"
               />
               <span
-                class="text-sm font-semibold text-secondary-700 dark:text-secondary-300"
+                class="text-sm font-semibold text-secondary-700"
               >
                 {{ group.title }}
               </span>
@@ -183,28 +176,39 @@ function hasContent(column: RetroColumnType): boolean {
                 {{ t('summary.cards').toLowerCase() }})
               </span>
             </div>
-            <button
-              class="flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium transition-colors"
-              :class="
-                hasVotedGroup(group)
-                  ? 'bg-primary-100 text-primary-700 hover:bg-primary-200 dark:bg-primary-900/40 dark:text-primary-300'
-                  : canVote()
-                    ? 'bg-secondary-100 text-secondary-600 hover:bg-secondary-200 dark:bg-secondary-800 dark:text-secondary-400'
-                    : 'bg-secondary-50 text-secondary-400 cursor-not-allowed dark:bg-secondary-900'
-              "
-              :disabled="!hasVotedGroup(group) && !canVote()"
-              @click="handleVoteGroup(group.id)"
-            >
-              <Icon
-                :name="
-                  hasVotedGroup(group)
-                    ? 'heroicons:hand-thumb-up-solid'
-                    : 'heroicons:hand-thumb-up'
+            <div class="flex items-center gap-1">
+              <button
+                class="p-1 rounded-full transition-colors text-secondary-400 hover:text-error-500 hover:bg-error-50"
+                :class="{ 'opacity-0 pointer-events-none': userGroupVotes(group) === 0 }"
+                :disabled="userGroupVotes(group) === 0"
+                @click="handleUnvoteGroup(group.id)"
+              >
+                <Icon name="heroicons:minus-circle" class="w-4 h-4" />
+              </button>
+              <span
+                class="min-w-[2rem] text-center text-xs font-semibold tabular-nums px-1.5 py-0.5 rounded-full"
+                :class="
+                  userGroupVotes(group) > 0
+                    ? 'bg-primary-100 text-primary-700'
+                    : 'bg-secondary-100 text-secondary-500'
                 "
-                class="w-3.5 h-3.5"
-              />
-              <span>{{ group.votes }}</span>
-            </button>
+              >
+                <Icon name="heroicons:hand-thumb-up-solid" class="w-3 h-3 inline -mt-0.5" />
+                {{ group.votes }}
+              </span>
+              <button
+                class="p-1 rounded-full transition-colors"
+                :class="
+                  canVote()
+                    ? 'text-primary-600 hover:text-primary-700 hover:bg-primary-50'
+                    : 'text-secondary-300 cursor-not-allowed'
+                "
+                :disabled="!canVote()"
+                @click="handleVoteGroup(group.id)"
+              >
+                <Icon name="heroicons:plus-circle" class="w-4 h-4" />
+              </button>
+            </div>
           </div>
 
           <!-- Group Cards -->
@@ -216,7 +220,7 @@ function hasContent(column: RetroColumnType): boolean {
               :class="columnMeta[card.column].cardClass"
             >
               <p
-                class="text-sm text-secondary-800 dark:text-secondary-200 whitespace-pre-wrap break-words"
+                class="text-sm text-secondary-800 whitespace-pre-wrap break-words"
                 v-text="card.content"
               />
               <div
@@ -225,28 +229,39 @@ function hasContent(column: RetroColumnType): boolean {
                 <span class="text-[10px] text-secondary-400">
                   {{ columnMeta[card.column].emoji }}
                 </span>
-                <button
-                  class="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs transition-colors"
-                  :class="
-                    hasVotedCard(card)
-                      ? 'bg-primary-100 text-primary-700 hover:bg-primary-200 dark:bg-primary-900/40 dark:text-primary-300'
-                      : canVote()
-                        ? 'bg-secondary-100 text-secondary-600 hover:bg-secondary-200 dark:bg-secondary-800 dark:text-secondary-400'
-                        : 'bg-secondary-50 text-secondary-400 cursor-not-allowed dark:bg-secondary-900'
-                  "
-                  :disabled="!hasVotedCard(card) && !canVote()"
-                  @click="handleVoteCard(card.id)"
-                >
-                  <Icon
-                    :name="
-                      hasVotedCard(card)
-                        ? 'heroicons:hand-thumb-up-solid'
-                        : 'heroicons:hand-thumb-up'
+                <div class="flex items-center gap-1">
+                  <button
+                    class="p-0.5 rounded-full transition-colors text-secondary-400 hover:text-error-500 hover:bg-error-50"
+                    :class="{ 'opacity-0 pointer-events-none': userCardVotes(card) === 0 }"
+                    :disabled="userCardVotes(card) === 0"
+                    @click="handleUnvoteCard(card.id)"
+                  >
+                    <Icon name="heroicons:minus-circle" class="w-3.5 h-3.5" />
+                  </button>
+                  <span
+                    class="min-w-[1.75rem] text-center text-xs font-semibold tabular-nums px-1 py-0.5 rounded-full"
+                    :class="
+                      userCardVotes(card) > 0
+                        ? 'bg-primary-100 text-primary-700'
+                        : 'bg-secondary-100 text-secondary-500'
                     "
-                    class="w-3.5 h-3.5"
-                  />
-                  <span>{{ card.votes }}</span>
-                </button>
+                  >
+                    <Icon name="heroicons:hand-thumb-up-solid" class="w-3 h-3 inline -mt-0.5" />
+                    {{ card.votes }}
+                  </span>
+                  <button
+                    class="p-0.5 rounded-full transition-colors"
+                    :class="
+                      canVote()
+                        ? 'text-primary-600 hover:text-primary-700 hover:bg-primary-50'
+                        : 'text-secondary-300 cursor-not-allowed'
+                    "
+                    :disabled="!canVote()"
+                    @click="handleVoteCard(card.id)"
+                  >
+                    <Icon name="heroicons:plus-circle" class="w-3.5 h-3.5" />
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -260,7 +275,7 @@ function hasContent(column: RetroColumnType): boolean {
           :class="columnMeta[column].cardClass"
         >
           <p
-            class="text-sm text-secondary-800 dark:text-secondary-200 whitespace-pre-wrap break-words"
+            class="text-sm text-secondary-800 whitespace-pre-wrap break-words"
             v-text="card.content"
           />
           <div
@@ -269,28 +284,39 @@ function hasContent(column: RetroColumnType): boolean {
             <span class="text-[10px] text-secondary-400">
               {{ columnMeta[column].emoji }}
             </span>
-            <button
-              class="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs transition-colors"
-              :class="
-                hasVotedCard(card)
-                  ? 'bg-primary-100 text-primary-700 hover:bg-primary-200 dark:bg-primary-900/40 dark:text-primary-300'
-                  : canVote()
-                    ? 'bg-secondary-100 text-secondary-600 hover:bg-secondary-200 dark:bg-secondary-800 dark:text-secondary-400'
-                    : 'bg-secondary-50 text-secondary-400 cursor-not-allowed dark:bg-secondary-900'
-              "
-              :disabled="!hasVotedCard(card) && !canVote()"
-              @click="handleVoteCard(card.id)"
-            >
-              <Icon
-                :name="
-                  hasVotedCard(card)
-                    ? 'heroicons:hand-thumb-up-solid'
-                    : 'heroicons:hand-thumb-up'
+            <div class="flex items-center gap-1">
+              <button
+                class="p-0.5 rounded-full transition-colors text-secondary-400 hover:text-error-500 hover:bg-error-50"
+                :class="{ 'opacity-0 pointer-events-none': userCardVotes(card) === 0 }"
+                :disabled="userCardVotes(card) === 0"
+                @click="handleUnvoteCard(card.id)"
+              >
+                <Icon name="heroicons:minus-circle" class="w-3.5 h-3.5" />
+              </button>
+              <span
+                class="min-w-[1.75rem] text-center text-xs font-semibold tabular-nums px-1 py-0.5 rounded-full"
+                :class="
+                  userCardVotes(card) > 0
+                    ? 'bg-primary-100 text-primary-700'
+                    : 'bg-secondary-100 text-secondary-500'
                 "
-                class="w-3.5 h-3.5"
-              />
-              <span>{{ card.votes }}</span>
-            </button>
+              >
+                <Icon name="heroicons:hand-thumb-up-solid" class="w-3 h-3 inline -mt-0.5" />
+                {{ card.votes }}
+              </span>
+              <button
+                class="p-0.5 rounded-full transition-colors"
+                :class="
+                  canVote()
+                    ? 'text-primary-600 hover:text-primary-700 hover:bg-primary-50'
+                    : 'text-secondary-300 cursor-not-allowed'
+                "
+                :disabled="!canVote()"
+                @click="handleVoteCard(card.id)"
+              >
+                <Icon name="heroicons:plus-circle" class="w-3.5 h-3.5" />
+              </button>
+            </div>
           </div>
         </div>
 

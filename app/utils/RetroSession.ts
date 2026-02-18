@@ -224,15 +224,12 @@ export class RetroSession implements IRetroSession {
     const card = this.cards.find((c) => c.id === cardId);
     if (!card) return false;
 
-    // Check if already voted for this card
-    if (card.voterIds.includes(participantId)) return false;
-
     // Check max votes per user (cards + groups combined)
     const userVoteCount = this.cards.reduce(
-      (count, c) => count + (c.voterIds.includes(participantId) ? 1 : 0),
+      (count, c) => count + c.voterIds.filter((id) => id === participantId).length,
       0
     ) + this.groups.reduce(
-      (count, g) => count + (g.voterIds.includes(participantId) ? 1 : 0),
+      (count, g) => count + g.voterIds.filter((id) => id === participantId).length,
       0
     );
     if (userVoteCount >= this.maxVotesPerUser) return false;
@@ -266,10 +263,10 @@ export class RetroSession implements IRetroSession {
    */
   public getRemainingVotes(participantId: string): number {
     const usedVotes = this.cards.reduce(
-      (count, c) => count + (c.voterIds.includes(participantId) ? 1 : 0),
+      (count, c) => count + c.voterIds.filter((id) => id === participantId).length,
       0
     ) + this.groups.reduce(
-      (count, g) => count + (g.voterIds.includes(participantId) ? 1 : 0),
+      (count, g) => count + g.voterIds.filter((id) => id === participantId).length,
       0
     );
     return this.maxVotesPerUser - usedVotes;
@@ -371,6 +368,18 @@ export class RetroSession implements IRetroSession {
   }
 
   /**
+   * Moves a group to a different column
+   */
+  public moveGroup(groupId: string, column: RetroColumnType): boolean {
+    if (this.phase !== 'generate-insights') return false;
+    const group = this.groups.find((g) => g.id === groupId);
+    if (!group) return false;
+    group.column = column;
+    this.touch();
+    return true;
+  }
+
+  /**
    * Deletes a group (cards are kept, just ungrouped)
    */
   public deleteGroup(groupId: string): boolean {
@@ -401,15 +410,12 @@ export class RetroSession implements IRetroSession {
     const group = this.groups.find((g) => g.id === groupId);
     if (!group) return false;
 
-    // Check if already voted for this group
-    if (group.voterIds.includes(participantId)) return false;
-
     // Check max votes per user (cards + groups combined)
     const userVoteCount = this.cards.reduce(
-      (count, c) => count + (c.voterIds.includes(participantId) ? 1 : 0),
+      (count, c) => count + c.voterIds.filter((id) => id === participantId).length,
       0
     ) + this.groups.reduce(
-      (count, g) => count + (g.voterIds.includes(participantId) ? 1 : 0),
+      (count, g) => count + g.voterIds.filter((id) => id === participantId).length,
       0
     );
     if (userVoteCount >= this.maxVotesPerUser) return false;
