@@ -67,11 +67,11 @@ const columnConfig: Record<
 const config = computed(() => columnConfig[props.column]);
 
 /**
- * Sort cards: by votes in decide-action / generate-insights phase, by creation time otherwise
+ * Sort cards: by votes in voting / decide-action phase, by creation time otherwise
  */
 const sortedCards = computed(() => {
   const cards = [...props.cards];
-  if (props.phase === 'decide-action' || props.phase === 'generate-insights') {
+  if (props.phase === 'decide-action' || props.phase === 'voting') {
     return cards.sort((a, b) => b.votes - a.votes);
   }
   return cards.sort(

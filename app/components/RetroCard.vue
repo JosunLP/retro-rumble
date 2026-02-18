@@ -100,8 +100,8 @@ const cardClass = computed(() => {
       <div
         class="flex items-center justify-between mt-2 pt-2 border-t border-secondary-200/50"
       >
-        <!-- Vote Button (generate-insights phase only) -->
-        <div v-if="phase === 'generate-insights'" class="flex items-center gap-1">
+        <!-- Vote Button (voting phase only) -->
+        <div v-if="phase === 'voting'" class="flex items-center gap-1">
           <button
             type="button"
             class="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs transition-colors"

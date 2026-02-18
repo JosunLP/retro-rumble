@@ -28,7 +28,7 @@ export class RetroSession implements IRetroSession {
   public readonly id: string;
   public name: string;
   public phase: RetroPhase;
-  public readonly hostId: string;
+  public hostId: string;
   public participants: Participant[];
   public cards: IRetroCard[];
   public groups: ICardGroup[];
@@ -95,6 +95,24 @@ export class RetroSession implements IRetroSession {
    */
   public getParticipantById(id: string): Participant | undefined {
     return this.participants.find((p) => p.id === id);
+  }
+
+  /**
+   * Transfers host role to another participant
+   */
+  public transferHost(newHostId: string): boolean {
+    const newHost = this.getParticipantById(newHostId);
+    if (!newHost) return false;
+
+    // Remove host flag from current host
+    const oldHost = this.getParticipantById(this.hostId);
+    if (oldHost) oldHost.isHost = false;
+
+    // Set new host
+    this.hostId = newHostId;
+    newHost.isHost = true;
+    this.touch();
+    return true;
   }
 
   // ============================================
@@ -201,7 +219,7 @@ export class RetroSession implements IRetroSession {
    * Votes for a card
    */
   public voteCard(cardId: string, participantId: string): boolean {
-    if (this.phase !== 'generate-insights') return false;
+    if (this.phase !== 'voting') return false;
 
     const card = this.cards.find((c) => c.id === cardId);
     if (!card) return false;
@@ -209,9 +227,12 @@ export class RetroSession implements IRetroSession {
     // Check if already voted for this card
     if (card.voterIds.includes(participantId)) return false;
 
-    // Check max votes per user
+    // Check max votes per user (cards + groups combined)
     const userVoteCount = this.cards.reduce(
       (count, c) => count + (c.voterIds.includes(participantId) ? 1 : 0),
+      0
+    ) + this.groups.reduce(
+      (count, g) => count + (g.voterIds.includes(participantId) ? 1 : 0),
       0
     );
     if (userVoteCount >= this.maxVotesPerUser) return false;
@@ -226,7 +247,7 @@ export class RetroSession implements IRetroSession {
    * Removes a vote from a card
    */
   public unvoteCard(cardId: string, participantId: string): boolean {
-    if (this.phase !== 'generate-insights') return false;
+    if (this.phase !== 'voting') return false;
 
     const card = this.cards.find((c) => c.id === cardId);
     if (!card) return false;
@@ -246,6 +267,9 @@ export class RetroSession implements IRetroSession {
   public getRemainingVotes(participantId: string): number {
     const usedVotes = this.cards.reduce(
       (count, c) => count + (c.voterIds.includes(participantId) ? 1 : 0),
+      0
+    ) + this.groups.reduce(
+      (count, g) => count + (g.voterIds.includes(participantId) ? 1 : 0),
       0
     );
     return this.maxVotesPerUser - usedVotes;
@@ -278,6 +302,8 @@ export class RetroSession implements IRetroSession {
       title: title.trim(),
       column,
       cardIds: validCards,
+      votes: 0,
+      voterIds: [],
     };
 
     // Assign group ID to cards
@@ -358,6 +384,56 @@ export class RetroSession implements IRetroSession {
     });
 
     this.groups = this.groups.filter((g) => g.id !== groupId);
+    this.touch();
+    return true;
+  }
+
+  // ============================================
+  // Group Voting
+  // ============================================
+
+  /**
+   * Votes for a group
+   */
+  public voteGroup(groupId: string, participantId: string): boolean {
+    if (this.phase !== 'voting') return false;
+
+    const group = this.groups.find((g) => g.id === groupId);
+    if (!group) return false;
+
+    // Check if already voted for this group
+    if (group.voterIds.includes(participantId)) return false;
+
+    // Check max votes per user (cards + groups combined)
+    const userVoteCount = this.cards.reduce(
+      (count, c) => count + (c.voterIds.includes(participantId) ? 1 : 0),
+      0
+    ) + this.groups.reduce(
+      (count, g) => count + (g.voterIds.includes(participantId) ? 1 : 0),
+      0
+    );
+    if (userVoteCount >= this.maxVotesPerUser) return false;
+
+    group.voterIds.push(participantId);
+    group.votes = group.voterIds.length;
+    this.touch();
+    return true;
+  }
+
+  /**
+   * Removes a vote from a group
+   */
+  public unvoteGroup(groupId: string, participantId: string): boolean {
+    if (this.phase !== 'voting') return false;
+
+    const group = this.groups.find((g) => g.id === groupId);
+    if (!group) return false;
+
+    const voterIndex = group.voterIds.indexOf(participantId);
+    if (voterIndex === -1) return false;
+
+    group.voterIds.splice(voterIndex, 1);
+    group.votes = group.voterIds.length;
     this.touch();
     return true;
   }

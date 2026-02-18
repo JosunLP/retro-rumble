@@ -42,7 +42,8 @@
   "phase": {
     "set-the-stage": "Set the Stage",
     "gather-data": "Gather Data",
-    "generate-insights": "Insights",
+    "generate-insights": "Clustering",
+    "voting": "Voting",
     "decide-action": "Actions",
     "close-retro": "Close",
     "previous": "Previous",
@@ -61,7 +62,7 @@
   },
   "grouping": {
     "instructionsHost": "Drag cards onto each other to create groups. Drag away from a group to ungroup.",
-    "instructionsParticipant": "The host is organizing related cards into groups. Changes are visible in real time.",
+    "instructionsParticipant": "Drag cards onto each other to create groups. Drag away from a group to ungroup.",
     "newGroupTitle": "New Group",
     "clickToRename": "Click to rename",
     "deleteGroup": "Delete group",
@@ -71,7 +72,9 @@
     "restore": "Restore"
   },
   "voting": {
-    "remaining": "Votes remaining"
+    "title": "Voting",
+    "remaining": "Votes remaining",
+    "instructions": "Vote on the cards and groups that are most important to discuss. You can distribute your votes freely."
   },
   "timer": {
     "title": "Timer",

@@ -29,16 +29,18 @@ export type RetroColumnType = (typeof RETRO_COLUMNS)[number];
 /**
  * Retro session phases (Scrum Retro Flow)
  *
- * 1. set-the-stage  – Welcome, ice-breaker / check-in
- * 2. gather-data     – Anonymous cards in three columns
- * 3. generate-insights – Group cards & vote on themes
- * 4. decide-action   – SMART action items, assign & prioritize
- * 5. close-retro     – Feedback, export, summary
+ * 1. set-the-stage    – Welcome, ice-breaker / check-in
+ * 2. gather-data      – Anonymous cards in three columns
+ * 3. generate-insights – Group cards into clusters
+ * 4. voting           – Vote on cards and groups
+ * 5. decide-action    – SMART action items, assign & prioritize
+ * 6. close-retro      – Feedback, export, summary
  */
 export const RETRO_PHASES = [
   'set-the-stage',
   'gather-data',
   'generate-insights',
+  'voting',
   'decide-action',
   'close-retro',
 ] as const;
@@ -127,6 +129,10 @@ export interface ICardGroup {
   column: RetroColumnType;
   /** IDs of cards in this group */
   cardIds: string[];
+  /** Number of votes this group has received */
+  votes: number;
+  /** IDs of participants who voted for this group */
+  voterIds: string[];
 }
 
 /**

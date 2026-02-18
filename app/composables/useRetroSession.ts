@@ -13,6 +13,7 @@ import type {
     SessionErrorPayload,
     SessionJoinedPayload,
     SessionLeftPayload,
+    SessionRejoinedPayload,
     SessionUpdatedPayload,
     TimerTickPayload,
 } from '~/types/websocket';
@@ -110,6 +111,18 @@ export function useRetroSession() {
 
     // Session joined
     on<SessionJoinedPayload>('session:joined', (payload) => {
+      state.value = {
+        session: payload.session,
+        currentParticipant: payload.participant,
+        isHost: payload.session.hostId === payload.participant.id,
+        isConnected: true,
+        error: null,
+        joinCode: payload.joinCode,
+      };
+    });
+
+    // Session rejoined (after reconnect)
+    on<SessionRejoinedPayload>('session:rejoined', (payload) => {
       state.value = {
         session: payload.session,
         currentParticipant: payload.participant,
@@ -222,6 +235,20 @@ export function useRetroSession() {
         error: payload.message,
       };
     });
+
+    // Auto-rejoin when WebSocket reconnects
+    watch(connectionStatus, (newStatus) => {
+      if (
+        newStatus === 'connected' &&
+        state.value.joinCode &&
+        state.value.currentParticipant
+      ) {
+        send('session:rejoin', {
+          joinCode: state.value.joinCode,
+          participantId: state.value.currentParticipant.id,
+        });
+      }
+    });
   }
 
   // ============================================
@@ -240,13 +267,19 @@ export function useRetroSession() {
 
   const remainingVotes = computed(() => {
     if (!state.value.session || !state.value.currentParticipant) return 0;
-    const usedVotes = state.value.session.cards.reduce(
+    const cardVotes = state.value.session.cards.reduce(
       (count, c) =>
         count +
         (c.voterIds.includes(state.value.currentParticipant!.id) ? 1 : 0),
       0
     );
-    return state.value.session.maxVotesPerUser - usedVotes;
+    const groupVotes = state.value.session.groups.reduce(
+      (count, g) =>
+        count +
+        (g.voterIds.includes(state.value.currentParticipant!.id) ? 1 : 0),
+      0
+    );
+    return state.value.session.maxVotesPerUser - cardVotes - groupVotes;
   });
 
   const currentPhase = computed(() => state.value.session?.phase ?? 'set-the-stage');
@@ -345,6 +378,16 @@ export function useRetroSession() {
     send('card:unvote', { sessionId: state.value.session.id, cardId });
   }
 
+  function voteGroup(groupId: string): void {
+    if (!state.value.session) return;
+    send('group:vote', { sessionId: state.value.session.id, groupId });
+  }
+
+  function unvoteGroup(groupId: string): void {
+    if (!state.value.session) return;
+    send('group:unvote', { sessionId: state.value.session.id, groupId });
+  }
+
   function moveCard(cardId: string, column: RetroColumnType): void {
     if (!state.value.session) return;
     send('card:move', { sessionId: state.value.session.id, cardId, column });
@@ -355,7 +398,7 @@ export function useRetroSession() {
     column: RetroColumnType,
     cardIds: string[]
   ): void {
-    if (!state.value.session || !state.value.isHost) return;
+    if (!state.value.session) return;
     send('group:create', {
       sessionId: state.value.session.id,
       title,
@@ -365,7 +408,7 @@ export function useRetroSession() {
   }
 
   function addCardToGroup(groupId: string, cardId: string): void {
-    if (!state.value.session || !state.value.isHost) return;
+    if (!state.value.session) return;
     send('group:add-card', {
       sessionId: state.value.session.id,
       groupId,
@@ -374,7 +417,7 @@ export function useRetroSession() {
   }
 
   function removeCardFromGroup(groupId: string, cardId: string): void {
-    if (!state.value.session || !state.value.isHost) return;
+    if (!state.value.session) return;
     send('group:remove-card', {
       sessionId: state.value.session.id,
       groupId,
@@ -383,12 +426,12 @@ export function useRetroSession() {
   }
 
   function renameGroup(groupId: string, title: string): void {
-    if (!state.value.session || !state.value.isHost) return;
+    if (!state.value.session) return;
     send('group:rename', { sessionId: state.value.session.id, groupId, title });
   }
 
   function deleteGroup(groupId: string): void {
-    if (!state.value.session || !state.value.isHost) return;
+    if (!state.value.session) return;
     send('group:delete', { sessionId: state.value.session.id, groupId });
   }
 
@@ -487,6 +530,8 @@ export function useRetroSession() {
     deleteCard,
     voteCard,
     unvoteCard,
+    voteGroup,
+    unvoteGroup,
     moveCard,
     createGroup,
     addCardToGroup,

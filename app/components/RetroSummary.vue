@@ -8,11 +8,11 @@
  */
 
 import type {
-  IActionItem,
-  ICardGroup,
-  IRetroCard,
-  IRetroSession,
-  RetroColumnType,
+    IActionItem,
+    ICardGroup,
+    IRetroCard,
+    IRetroSession,
+    RetroColumnType,
 } from '~/types';
 
 const { t } = useI18n();
@@ -86,13 +86,18 @@ function cardsInGroup(group: ICardGroup): IRetroCard[] {
 }
 
 function totalVotesForColumn(col: RetroColumnType): number {
-  return cardsForColumn(col).reduce((sum, c) => sum + c.votes, 0);
+  const cardVotes = cardsForColumn(col).reduce((sum, c) => sum + c.votes, 0);
+  const groupVotes = props.session.groups
+    .filter((g) => g.column === col)
+    .reduce((sum, g) => sum + g.votes, 0);
+  return cardVotes + groupVotes;
 }
 
 // Statistics
 const totalCards = computed(() => props.session.cards.length);
 const totalVotes = computed(() =>
-  props.session.cards.reduce((sum, c) => sum + c.votes, 0)
+  props.session.cards.reduce((sum, c) => sum + c.votes, 0) +
+  props.session.groups.reduce((sum, g) => sum + g.votes, 0)
 );
 const totalGroups = computed(() => props.session.groups.length);
 const completedActions = computed(
@@ -200,6 +205,13 @@ function cancelEditAction(): void {
           >
             <Icon name="heroicons:folder" class="w-3.5 h-3.5" />
             {{ group.title }}
+            <span
+              v-if="group.votes > 0"
+              class="inline-flex items-center gap-0.5 text-xs font-medium text-primary-600 bg-primary-100 rounded-full px-1.5 py-0.5 ml-auto"
+            >
+              <Icon name="heroicons:hand-thumb-up-solid" class="w-3 h-3" />
+              {{ group.votes }}
+            </span>
           </div>
           <div
             class="space-y-1.5 pl-3 border-l-2"

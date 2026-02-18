@@ -19,6 +19,7 @@ import type {
 export type ClientMessageType =
   | 'session:create'
   | 'session:join'
+  | 'session:rejoin'
   | 'session:leave'
   | 'phase:change'
   | 'card:add'
@@ -32,6 +33,8 @@ export type ClientMessageType =
   | 'group:remove-card'
   | 'group:rename'
   | 'group:delete'
+  | 'group:vote'
+  | 'group:unvote'
   | 'action:add'
   | 'action:edit'
   | 'action:delete'
@@ -50,6 +53,7 @@ export type ClientMessageType =
 export type ServerMessageType =
   | 'session:created'
   | 'session:joined'
+  | 'session:rejoined'
   | 'session:updated'
   | 'session:left'
   | 'session:error'
@@ -101,6 +105,11 @@ export interface CreateSessionPayload {
 export interface JoinSessionPayload {
   joinCode: string;
   participantName: string;
+}
+
+export interface RejoinSessionPayload {
+  joinCode: string;
+  participantId: string;
 }
 
 export interface LeaveSessionPayload {
@@ -175,6 +184,16 @@ export interface DeleteGroupPayload {
   groupId: string;
 }
 
+export interface VoteGroupPayload {
+  sessionId: string;
+  groupId: string;
+}
+
+export interface UnvoteGroupPayload {
+  sessionId: string;
+  groupId: string;
+}
+
 export interface TimerStartPayload {
   sessionId: string;
 }
@@ -234,6 +253,12 @@ export interface SessionCreatedPayload {
 }
 
 export interface SessionJoinedPayload {
+  session: IRetroSession;
+  joinCode: string;
+  participant: IParticipant;
+}
+
+export interface SessionRejoinedPayload {
   session: IRetroSession;
   joinCode: string;
   participant: IParticipant;

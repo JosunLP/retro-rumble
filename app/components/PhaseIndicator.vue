@@ -29,6 +29,7 @@ const phaseIcons: Record<RetroPhase, string> = {
   'set-the-stage': 'heroicons:hand-raised',
   'gather-data': 'heroicons:pencil-square',
   'generate-insights': 'heroicons:light-bulb',
+  'voting': 'heroicons:hand-thumb-up',
   'decide-action': 'heroicons:rocket-launch',
   'close-retro': 'heroicons:clipboard-document-check',
 };

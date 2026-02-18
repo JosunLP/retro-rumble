@@ -42,7 +42,8 @@
   "phase": {
     "set-the-stage": "Einstimmung",
     "gather-data": "Daten sammeln",
-    "generate-insights": "Erkenntnisse",
+    "generate-insights": "Clustering",
+    "voting": "Abstimmung",
     "decide-action": "Maßnahmen",
     "close-retro": "Abschluss",
     "previous": "Zurück",
@@ -60,8 +61,8 @@
     "delete": "Löschen"
   },
   "grouping": {
-    "instructionsHost": "Ziehe Karten aufeinander, um Gruppen zu erstellen. Ziehe sie weg von einer Gruppe, um sie zu lösen.",
-    "instructionsParticipant": "Der Host gruppiert verwandte Karten. Änderungen sind in Echtzeit sichtbar.",
+    "instructionsHost": "Ziehe Karten aufeinander, um Gruppen zu erstellen. Ziehe Karten weg von einer Gruppe, um sie zu lösen.",
+    "instructionsParticipant": "Ziehe Karten aufeinander, um Gruppen zu erstellen. Ziehe Karten weg von einer Gruppe, um sie zu lösen.",
     "newGroupTitle": "Neue Gruppe",
     "clickToRename": "Klicken zum Umbenennen",
     "deleteGroup": "Gruppe löschen",
@@ -71,7 +72,9 @@
     "restore": "Wiederherstellen"
   },
   "voting": {
-    "remaining": "Stimmen übrig"
+    "title": "Abstimmung",
+    "remaining": "Stimmen übrig",
+    "instructions": "Stimme für die Karten und Gruppen ab, die am wichtigsten zu besprechen sind. Du kannst deine Stimmen frei verteilen."
   },
   "timer": {
     "title": "Timer",

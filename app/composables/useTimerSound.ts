@@ -61,9 +61,9 @@ function playChime(): void {
     // C major chord notes — ascending arpeggio
     // C5 = 523.25 Hz, E5 = 659.25 Hz, G5 = 783.99 Hz
     const notes = [
-      { freq: 523.25, delay: 0, duration: 1.2, volume: 0.15 },
-      { freq: 659.25, delay: 0.15, duration: 1.0, volume: 0.12 },
-      { freq: 783.99, delay: 0.3, duration: 1.4, volume: 0.10 },
+      { freq: 523.25, delay: 0, duration: 1.2, volume: 0.06 },
+      { freq: 659.25, delay: 0.15, duration: 1.0, volume: 0.05 },
+      { freq: 783.99, delay: 0.3, duration: 1.4, volume: 0.04 },
     ];
 
     for (const note of notes) {
@@ -71,7 +71,7 @@ function playChime(): void {
     }
 
     // Soft octave undertone for warmth
-    playTone(ctx, 261.63, now, 1.6, 0.06); // C4
+    playTone(ctx, 261.63, now, 1.6, 0.025); // C4
   } catch {
     // Audio not available — fail silently
   }

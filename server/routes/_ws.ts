@@ -23,13 +23,16 @@ import type {
     JoinSessionPayload,
     MoveCardPayload,
     PhaseChangePayload,
+    RejoinSessionPayload,
     RemoveCardFromGroupPayload,
     RenameGroupPayload,
     ServerMessage,
     TimerSetPayload,
     ToggleActionItemPayload,
     UnvoteCardPayload,
+    UnvoteGroupPayload,
     VoteCardPayload,
+    VoteGroupPayload,
 } from '../../app/types/websocket';
 import { sessionStore } from '../utils/sessionStore';
 
@@ -85,6 +88,9 @@ function handleMessage(peer: Peer, data: string): void {
       case 'session:join':
         handleJoinSession(peer, message.payload as JoinSessionPayload);
         break;
+      case 'session:rejoin':
+        handleRejoinSession(peer, message.payload as RejoinSessionPayload);
+        break;
       case 'session:leave':
         handleLeaveSession(peer);
         break;
@@ -126,6 +132,12 @@ function handleMessage(peer: Peer, data: string): void {
         break;
       case 'group:delete':
         handleDeleteGroup(peer, message.payload as DeleteGroupPayload);
+        break;
+      case 'group:vote':
+        handleVoteGroup(peer, message.payload as VoteGroupPayload);
+        break;
+      case 'group:unvote':
+        handleUnvoteGroup(peer, message.payload as UnvoteGroupPayload);
         break;
       case 'action:add':
         handleAddActionItem(peer, message.payload as AddActionItemPayload);
@@ -233,6 +245,31 @@ function handleJoinSession(peer: Peer, payload: JoinSessionPayload): void {
     },
     peer
   );
+}
+
+function handleRejoinSession(
+  peer: Peer,
+  payload: RejoinSessionPayload
+): void {
+  const result = sessionStore.rejoinSession(
+    payload.joinCode,
+    payload.participantId,
+    peer
+  );
+
+  if (!result) {
+    sendMessage(peer, 'session:error', {
+      message: 'Could not rejoin session. It may have ended.',
+      code: 'REJOIN_FAILED',
+    });
+    return;
+  }
+
+  sendMessage(peer, 'session:rejoined', {
+    session: result.session,
+    joinCode: result.joinCode,
+    participant: result.participant,
+  });
 }
 
 function handleLeaveSession(peer: Peer): void {
@@ -461,6 +498,34 @@ function handleDeleteGroup(peer: Peer, payload: DeleteGroupPayload): void {
   broadcastToSession(session.id, 'session:updated', { session });
 }
 
+function handleVoteGroup(peer: Peer, payload: VoteGroupPayload): void {
+  const session = sessionStore.voteGroup(peer, payload.groupId);
+
+  if (!session) {
+    sendMessage(peer, 'session:error', {
+      message: 'Could not vote for group. You may have reached your vote limit.',
+      code: 'VOTE_GROUP_FAILED',
+    });
+    return;
+  }
+
+  broadcastToSession(session.id, 'session:updated', { session });
+}
+
+function handleUnvoteGroup(peer: Peer, payload: UnvoteGroupPayload): void {
+  const session = sessionStore.unvoteGroup(peer, payload.groupId);
+
+  if (!session) {
+    sendMessage(peer, 'session:error', {
+      message: 'Could not remove vote from group.',
+      code: 'UNVOTE_GROUP_FAILED',
+    });
+    return;
+  }
+
+  broadcastToSession(session.id, 'session:updated', { session });
+}
+
 // ============================================
 // Action Item Handlers
 // ============================================
@@ -649,7 +714,8 @@ export default defineWebSocketHandler({
 
   close(peer) {
     console.log(`[WebSocket] Client disconnected: ${peer.id}`);
-    handleLeaveSession(peer);
+    // Only unmap the peer, keep participant in session for potential rejoin
+    sessionStore.disconnectPeer(peer);
   },
 
   error(peer, error) {

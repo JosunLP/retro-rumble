@@ -29,6 +29,8 @@ const {
   deleteCard,
   voteCard,
   unvoteCard,
+  voteGroup,
+  unvoteGroup,
   createGroup,
   addCardToGroup,
   removeCardFromGroup,
@@ -199,9 +201,9 @@ function handleJoinSession(code: string, participantName: string): void {
           </div>
           <div class="lg:col-span-4">
             <div class="grid grid-cols-2 gap-4 h-full">
-              <!-- Vote Info (generate-insights phase) -->
+              <!-- Vote Info (voting phase) -->
               <div
-                v-if="currentPhase === 'generate-insights'"
+                v-if="currentPhase === 'voting'"
                 class="card-container flex flex-col items-center justify-center"
               >
                 <div class="text-2xl font-bold text-primary-700">
@@ -273,16 +275,29 @@ function handleJoinSession(code: string, participantName: string): void {
               <ExportPanel :session="session" />
             </div>
 
-            <!-- Generate Insights: Cluster canvas with grouping + voting -->
+            <!-- Generate Insights: Cluster canvas with grouping (no voting) -->
             <ClusterCanvas
               v-else-if="currentPhase === 'generate-insights'"
               :session="session"
               :is-host="isHost"
+              :current-user-id="currentParticipant!.id"
               @create-group="createGroup"
               @add-card-to-group="addCardToGroup"
               @remove-card-from-group="removeCardFromGroup"
               @rename-group="renameGroup"
               @delete-group="deleteGroup"
+            />
+
+            <!-- Voting: Dedicated voting phase for cards and groups -->
+            <VotingBoard
+              v-else-if="currentPhase === 'voting'"
+              :session="session"
+              :remaining-votes="remainingVotes"
+              :current-user-id="currentParticipant!.id"
+              @vote-card="voteCard"
+              @unvote-card="unvoteCard"
+              @vote-group="voteGroup"
+              @unvote-group="unvoteGroup"
             />
 
             <!-- Decide Action: Action items with voted card overview -->

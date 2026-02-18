@@ -13,11 +13,12 @@ import type { ICardGroup, IRetroCard, RetroColumnType } from '~/types';
 export const CARD_W = 192;
 export const CARD_H = 72;
 const GAP = 16;
-const MARGIN = 28;
-const SECTION_GAP = 56;
-const GROUP_PAD = 14;
-const GROUP_HEADER = 32;
+const MARGIN = 32;
+const SECTION_GAP = 48;
+const GROUP_PAD = 28;
 const SECTION_HEADER = 40;
+const CLUSTER_MIN_R = 130;
+const CLUSTER_GAP = 56;
 
 // ---- Types ----
 
@@ -70,47 +71,93 @@ export function useClusterCanvas(containerRef: Ref<HTMLElement | null>) {
   // ============================================
 
   /**
-   * Full auto-layout: positions all cards in organized column sections.
-   * Groups are placed below ungrouped cards of their assigned column.
+   * Full auto-layout: cluster diagram.
+   * Ungrouped cards are placed in column sections.
+   * Groups are positioned as radial clusters with cards orbiting the center.
    */
   function autoLayout(cards: IRetroCard[], groups: ICardGroup[]) {
     const pos: Record<string, { x: number; y: number }> = {};
     const cols: RetroColumnType[] = ['went-well', 'to-improve', 'action-items'];
+
+    // --- Phase 1: Ungrouped cards in column sections ---
     let sectionX = MARGIN;
-    let maxH = 0;
+    let maxUngroupedH = 0;
+    const hasUngrouped = cards.some((c) => !c.groupId);
 
-    for (const col of cols) {
-      let y = MARGIN + SECTION_HEADER;
-
-      // Ungrouped cards in this column
-      const ungrouped = cards.filter((c) => c.column === col && !c.groupId);
-      for (const card of ungrouped) {
-        pos[card.id] = { x: sectionX, y };
-        y += CARD_H + GAP;
-      }
-
-      if (ungrouped.length > 0) y += GAP;
-
-      // Groups belonging to this column
-      const colGroups = groups.filter((g) => g.column === col);
-      for (const group of colGroups) {
-        y += GROUP_HEADER;
-        for (const cardId of group.cardIds) {
-          pos[cardId] = { x: sectionX + GROUP_PAD, y };
-          y += CARD_H + Math.round(GAP / 2);
+    if (hasUngrouped) {
+      for (const col of cols) {
+        let y = MARGIN + SECTION_HEADER;
+        const ungrouped = cards.filter((c) => c.column === col && !c.groupId);
+        for (const card of ungrouped) {
+          pos[card.id] = { x: sectionX, y };
+          y += CARD_H + GAP;
         }
-        y += GROUP_PAD + GAP;
+        maxUngroupedH = Math.max(maxUngroupedH, y);
+        sectionX += CARD_W + SECTION_GAP;
       }
-
-      maxH = Math.max(maxH, y);
-      sectionX += CARD_W + GROUP_PAD * 2 + SECTION_GAP;
     }
 
+    // --- Phase 2: Groups as radial clusters ---
+    const clusterStartY = hasUngrouped ? maxUngroupedH + MARGIN * 2 : MARGIN;
+    let rowX = MARGIN;
+    let rowY = clusterStartY;
+    let rowMaxH = 0;
+    const canvasWidth = Math.max(sectionX, 900);
+    let maxRight = sectionX;
+
+    for (const group of groups) {
+      const n = group.cardIds.length;
+      if (n === 0) continue;
+
+      // Cluster radius based on card count
+      const radius =
+        n === 1
+          ? CARD_W * 0.5
+          : Math.max(CLUSTER_MIN_R, (n * (CARD_W + GAP)) / (2 * Math.PI));
+
+      const cellSize = radius * 2 + CARD_W + GROUP_PAD * 2;
+
+      // Wrap to next row if needed
+      if (rowX + cellSize > canvasWidth && rowX > MARGIN) {
+        rowX = MARGIN;
+        rowY += rowMaxH + CLUSTER_GAP;
+        rowMaxH = 0;
+      }
+
+      const cx = rowX + cellSize / 2;
+      const cy = rowY + cellSize / 2;
+
+      // Position cards radially around center
+      if (n === 1) {
+        pos[group.cardIds[0]!] = {
+          x: cx - CARD_W / 2,
+          y: cy - CARD_H / 2 + 28,
+        };
+      } else {
+        for (let i = 0; i < n; i++) {
+          const angle = (i / n) * 2 * Math.PI - Math.PI / 2;
+          pos[group.cardIds[i]!] = {
+            x: cx + Math.cos(angle) * radius - CARD_W / 2,
+            y: cy + Math.sin(angle) * radius - CARD_H / 2,
+          };
+        }
+      }
+
+      rowX += cellSize + CLUSTER_GAP;
+      maxRight = Math.max(maxRight, rowX);
+      rowMaxH = Math.max(rowMaxH, cellSize);
+    }
+
+    const totalW = Math.max(maxRight + MARGIN, 700);
+    const totalH = Math.max(
+      maxUngroupedH + MARGIN * 3,
+      rowY + rowMaxH + MARGIN * 3,
+      500
+    );
+
     positions.value = pos;
-    boardSize.value = {
-      w: Math.max(sectionX + MARGIN, 700),
-      h: Math.max(maxH + MARGIN * 3, 500),
-    };
+    boardSize.value = { w: totalW, h: totalH };
+    ensureMinBoardSize();
   }
 
   /**
@@ -183,8 +230,12 @@ export function useClusterCanvas(containerRef: Ref<HTMLElement | null>) {
     if (!d || !el) return;
 
     const rect = el.getBoundingClientRect();
-    const x = ev.clientX - rect.left + el.scrollLeft - d.offsetX;
-    const y = ev.clientY - rect.top + el.scrollTop - d.offsetY;
+    const rawX = ev.clientX - rect.left + el.scrollLeft - d.offsetX;
+    const rawY = ev.clientY - rect.top + el.scrollTop - d.offsetY;
+
+    // Clamp within canvas bounds
+    const x = Math.max(0, Math.min(rawX, boardSize.value.w - CARD_W));
+    const y = Math.max(0, Math.min(rawY, boardSize.value.h - CARD_H));
 
     positions.value = { ...positions.value, [d.cardId]: { x, y } };
     dropTarget.value = hitTest(
@@ -283,6 +334,7 @@ export function useClusterCanvas(containerRef: Ref<HTMLElement | null>) {
 
   /**
    * Update group drag position — moves all cards together.
+   * Clamped to canvas bounds.
    */
   function moveGroupDrag(ev: PointerEvent) {
     const dg = draggingGroup.value;
@@ -290,8 +342,20 @@ export function useClusterCanvas(containerRef: Ref<HTMLElement | null>) {
     if (!dg || !el) return;
 
     const rect = el.getBoundingClientRect();
-    const newGroupX = ev.clientX - rect.left + el.scrollLeft - dg.offsetX;
-    const newGroupY = ev.clientY - rect.top + el.scrollTop - dg.offsetY;
+    const rawGroupX = ev.clientX - rect.left + el.scrollLeft - dg.offsetX;
+    const rawGroupY = ev.clientY - rect.top + el.scrollTop - dg.offsetY;
+
+    // Determine group extent from card offsets
+    let maxDx = 0;
+    let maxDy = 0;
+    for (const offset of Object.values(dg.cardOffsets)) {
+      maxDx = Math.max(maxDx, offset.dx + CARD_W);
+      maxDy = Math.max(maxDy, offset.dy + CARD_H);
+    }
+
+    // Clamp group origin so no card leaves the canvas
+    const newGroupX = Math.max(0, Math.min(rawGroupX, boardSize.value.w - maxDx));
+    const newGroupY = Math.max(0, Math.min(rawGroupY, boardSize.value.h - maxDy));
 
     const newPos = { ...positions.value };
     for (const [cardId, offset] of Object.entries(dg.cardOffsets)) {
@@ -371,9 +435,9 @@ export function useClusterCanvas(containerRef: Ref<HTMLElement | null>) {
 
     return {
       x: minX - GROUP_PAD,
-      y: minY - GROUP_HEADER - GROUP_PAD,
+      y: minY - GROUP_PAD,
       w: maxX - minX + GROUP_PAD * 2,
-      h: maxY - minY + GROUP_HEADER + GROUP_PAD * 2,
+      h: maxY - minY + GROUP_PAD * 2,
     };
   }
 
@@ -382,13 +446,38 @@ export function useClusterCanvas(containerRef: Ref<HTMLElement | null>) {
   // ============================================
 
   /**
+   * Compute the center point of a group cluster.
+   */
+  function groupCenter(group: ICardGroup): { x: number; y: number } | null {
+    const b = groupBounds(group);
+    if (!b) return null;
+    return { x: b.x + b.w / 2, y: b.y + b.h / 2 };
+  }
+
+  /**
+   * Ensure boardSize is at least as large as the visible container.
+   * Call after layout or when the container resizes (e.g. maximize).
+   */
+  function ensureMinBoardSize() {
+    const el = containerRef.value;
+    if (!el) return;
+    const { clientWidth, clientHeight } = el;
+    if (clientWidth > boardSize.value.w || clientHeight > boardSize.value.h) {
+      boardSize.value = {
+        w: Math.max(boardSize.value.w, clientWidth),
+        h: Math.max(boardSize.value.h, clientHeight),
+      };
+    }
+  }
+
+  /**
    * Get the X positions of the column section headers.
    */
   function getSectionPositions(): { type: RetroColumnType; x: number }[] {
     const cols: RetroColumnType[] = ['went-well', 'to-improve', 'action-items'];
     return cols.map((col, idx) => ({
       type: col,
-      x: MARGIN + idx * (CARD_W + GROUP_PAD * 2 + SECTION_GAP),
+      x: MARGIN + idx * (CARD_W + SECTION_GAP),
     }));
   }
 
@@ -400,6 +489,7 @@ export function useClusterCanvas(containerRef: Ref<HTMLElement | null>) {
     boardSize,
     autoLayout,
     syncPositions,
+    ensureMinBoardSize,
     startDrag,
     moveDrag,
     endDrag,
@@ -407,6 +497,7 @@ export function useClusterCanvas(containerRef: Ref<HTMLElement | null>) {
     moveGroupDrag,
     endGroupDrag,
     groupBounds,
+    groupCenter,
     getSectionPositions,
   };
 }

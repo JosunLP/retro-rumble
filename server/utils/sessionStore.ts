@@ -7,6 +7,7 @@
 
 import type { Peer } from 'crossws';
 import type {
+    IParticipant,
     IRetroSession,
     RetroColumnType,
     RetroPhase,
@@ -121,7 +122,8 @@ class SessionStore {
   }
 
   /**
-   * Removes a participant when they leave or disconnect
+   * Removes a participant when they explicitly leave the session.
+   * Handles host transfer when the host leaves.
    */
   public leaveSession(peer: Peer): {
     sessionId: string;
@@ -136,6 +138,8 @@ class SessionStore {
       this.peerMap.delete(peer);
       return null;
     }
+
+    const wasHost = entry.session.hostId === info.participantId;
 
     entry.session.removeParticipant(info.participantId);
     entry.connections.delete(info.participantId);
@@ -154,10 +158,90 @@ class SessionStore {
       };
     }
 
+    // Transfer host if the host left
+    if (wasHost) {
+      const nextHost = entry.session.participants[0];
+      if (nextHost) {
+        entry.session.transferHost(nextHost.id);
+        console.log(
+          `[SessionStore] Host transferred to: ${nextHost.name} (${nextHost.id})`
+        );
+      }
+    }
+
     return {
       sessionId: info.sessionId,
       participantId: info.participantId,
       session: entry.session.toJSON(),
+    };
+  }
+
+  /**
+   * Handles a peer disconnecting (WebSocket close).
+   * Unmaps the peer but keeps the participant in the session
+   * so they can rejoin.
+   */
+  public disconnectPeer(peer: Peer): {
+    sessionId: string;
+    participantId: string;
+  } | null {
+    const info = this.peerMap.get(peer);
+    if (!info) return null;
+
+    const entry = this.sessions.get(info.sessionId);
+    if (!entry) {
+      this.peerMap.delete(peer);
+      return null;
+    }
+
+    // Unmap peer but keep participant in session
+    entry.connections.delete(info.participantId);
+    this.peerMap.delete(peer);
+
+    console.log(
+      `[SessionStore] Peer disconnected (kept participant): ${info.participantId}`
+    );
+
+    return {
+      sessionId: info.sessionId,
+      participantId: info.participantId,
+    };
+  }
+
+  /**
+   * Rejoins an existing session with a previously assigned participant ID.
+   * Re-maps the new peer to the existing participant.
+   */
+  public rejoinSession(
+    joinCode: string,
+    participantId: string,
+    peer: Peer
+  ): {
+    session: IRetroSession;
+    joinCode: string;
+    participant: IParticipant;
+  } | null {
+    const normalizedCode = joinCode.toUpperCase().trim();
+    const sessionId = this.joinCodes.get(normalizedCode);
+    if (!sessionId) return null;
+
+    const entry = this.sessions.get(sessionId);
+    if (!entry) return null;
+
+    const participant = entry.session.getParticipantById(participantId);
+    if (!participant) return null;
+
+    // Re-map the new peer to the existing participant
+    entry.connections.set(participantId, peer);
+    this.peerMap.set(peer, { sessionId, participantId });
+
+    console.log(
+      `[SessionStore] Participant rejoined: ${participant.name} -> ${sessionId}`
+    );
+    return {
+      session: entry.session.toJSON(),
+      joinCode: normalizedCode,
+      participant: participant.toJSON(),
     };
   }
 
@@ -282,8 +366,6 @@ class SessionStore {
     column: RetroColumnType,
     cardIds: string[]
   ): IRetroSession | null {
-    if (!this.isHost(peer)) return null;
-
     const session = this.getSessionForPeer(peer);
     if (!session) return null;
 
@@ -299,8 +381,6 @@ class SessionStore {
     groupId: string,
     cardId: string
   ): IRetroSession | null {
-    if (!this.isHost(peer)) return null;
-
     const session = this.getSessionForPeer(peer);
     if (!session) return null;
 
@@ -316,8 +396,6 @@ class SessionStore {
     groupId: string,
     cardId: string
   ): IRetroSession | null {
-    if (!this.isHost(peer)) return null;
-
     const session = this.getSessionForPeer(peer);
     if (!session) return null;
 
@@ -333,8 +411,6 @@ class SessionStore {
     groupId: string,
     title: string
   ): IRetroSession | null {
-    if (!this.isHost(peer)) return null;
-
     const session = this.getSessionForPeer(peer);
     if (!session) return null;
 
@@ -346,13 +422,39 @@ class SessionStore {
    * Deletes a group
    */
   public deleteGroup(peer: Peer, groupId: string): IRetroSession | null {
-    if (!this.isHost(peer)) return null;
-
     const session = this.getSessionForPeer(peer);
     if (!session) return null;
 
     const success = session.deleteGroup(groupId);
     return success ? session.toJSON() : null;
+  }
+
+  /**
+   * Votes for a group
+   */
+  public voteGroup(peer: Peer, groupId: string): IRetroSession | null {
+    const info = this.peerMap.get(peer);
+    if (!info) return null;
+
+    const entry = this.sessions.get(info.sessionId);
+    if (!entry) return null;
+
+    const success = entry.session.voteGroup(groupId, info.participantId);
+    return success ? entry.session.toJSON() : null;
+  }
+
+  /**
+   * Removes a vote from a group
+   */
+  public unvoteGroup(peer: Peer, groupId: string): IRetroSession | null {
+    const info = this.peerMap.get(peer);
+    if (!info) return null;
+
+    const entry = this.sessions.get(info.sessionId);
+    if (!entry) return null;
+
+    const success = entry.session.unvoteGroup(groupId, info.participantId);
+    return success ? entry.session.toJSON() : null;
   }
 
   /**
