@@ -7,33 +7,33 @@
 
 import type { Peer } from 'crossws';
 import type {
-    AddActionItemPayload,
-    AddCardPayload,
-    AddCardToGroupPayload,
-    CheckInRespondPayload,
-    ClientMessage,
-    CreateGroupPayload,
-    CreateSessionPayload,
-    DeleteActionItemPayload,
-    DeleteCardPayload,
-    DeleteGroupPayload,
-    EditActionItemPayload,
-    EditCardPayload,
-    FeedbackRespondPayload,
-    JoinSessionPayload,
-    MoveCardPayload,
-    MoveGroupPayload,
-    PhaseChangePayload,
-    RejoinSessionPayload,
-    RemoveCardFromGroupPayload,
-    RenameGroupPayload,
-    ServerMessage,
-    TimerSetPayload,
-    ToggleActionItemPayload,
-    UnvoteCardPayload,
-    UnvoteGroupPayload,
-    VoteCardPayload,
-    VoteGroupPayload,
+  AddActionItemPayload,
+  AddCardPayload,
+  AddCardToGroupPayload,
+  CheckInRespondPayload,
+  ClientMessage,
+  CreateGroupPayload,
+  CreateSessionPayload,
+  DeleteActionItemPayload,
+  DeleteCardPayload,
+  DeleteGroupPayload,
+  EditActionItemPayload,
+  EditCardPayload,
+  FeedbackRespondPayload,
+  JoinSessionPayload,
+  MoveCardPayload,
+  MoveGroupPayload,
+  PhaseChangePayload,
+  RejoinSessionPayload,
+  RemoveCardFromGroupPayload,
+  RenameGroupPayload,
+  ServerMessage,
+  TimerSetPayload,
+  ToggleActionItemPayload,
+  UnvoteCardPayload,
+  UnvoteGroupPayload,
+  VoteCardPayload,
+  VoteGroupPayload,
 } from '../../app/types/websocket';
 import { sessionStore } from '../utils/sessionStore';
 
@@ -274,6 +274,13 @@ function handleRejoinSession(
     joinCode: result.joinCode,
     participant: result.participant,
   });
+
+  broadcastToSession(
+    result.session.id,
+    'session:updated',
+    { session: result.session },
+    peer
+  );
 }
 
 function handleLeaveSession(peer: Peer): void {
@@ -737,7 +744,13 @@ export default defineWebSocketHandler({
   close(peer) {
     console.log(`[WebSocket] Client disconnected: ${peer.id}`);
     // Only unmap the peer, keep participant in session for potential rejoin
-    sessionStore.disconnectPeer(peer);
+    const result = sessionStore.disconnectPeer(peer);
+
+    if (result?.session) {
+      broadcastToSession(result.sessionId, 'session:updated', {
+        session: result.session,
+      });
+    }
   },
 
   error(peer, error) {

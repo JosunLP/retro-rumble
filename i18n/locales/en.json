@@ -76,7 +76,12 @@
   "voting": {
     "title": "Voting",
     "remaining": "Votes remaining",
-    "instructions": "Vote on the cards and groups that are most important to discuss. You can distribute your votes freely."
+    "instructions": "Vote on the cards and groups that are most important to discuss. You can distribute your votes freely.",
+    "groupCardCount": "({count} cards)",
+    "voteGroup": "Vote for group",
+    "unvoteGroup": "Remove vote from group",
+    "voteCard": "Vote for card",
+    "unvoteCard": "Remove vote from card"
   },
   "timer": {
     "title": "Timer",
@@ -113,6 +118,15 @@
     "title": "Check-In",
     "question": "How are you feeling today? Pick an emoji that describes your mood.",
     "responses": "Team Mood",
+    "unknownParticipant": "Unknown participant",
+    "moodLabels": {
+      "happy": "Happy",
+      "neutral": "Neutral",
+      "worried": "Worried",
+      "energized": "Energized",
+      "confident": "Confident",
+      "tired": "Tired"
+    },
     "waiting": "Waiting for team responses..."
   },
   "feedback": {

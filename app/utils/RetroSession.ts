@@ -6,16 +6,17 @@
  */
 
 import type {
-    IActionItem,
-    ICardGroup,
-    ICheckInResponse,
-    IFeedbackResponse,
-    IRetroCard,
-    IRetroConfig,
-    IRetroSession,
-    RetroColumnType,
-    RetroPhase,
+  IActionItem,
+  ICardGroup,
+  ICheckInResponse,
+  IFeedbackResponse,
+  IRetroCard,
+  IRetroConfig,
+  IRetroSession,
+  RetroColumnType,
+  RetroPhase,
 } from '../types';
+import { isValidCheckInMood } from '../types';
 import { Participant } from './Participant';
 
 const DEFAULT_CONFIG: IRetroConfig = {
@@ -564,6 +565,10 @@ export class RetroSession implements IRetroSession {
    * Adds or updates a participant's check-in mood
    */
   public submitCheckIn(participantId: string, mood: string): boolean {
+    if (this.phase !== 'set-the-stage') return false;
+    if (!this.getParticipantById(participantId)) return false;
+    if (!isValidCheckInMood(mood)) return false;
+
     const existing = this.checkInResponses.find(
       (r) => r.participantId === participantId
     );
@@ -580,6 +585,10 @@ export class RetroSession implements IRetroSession {
    * Adds or updates a participant's retro feedback rating (1–5)
    */
   public submitFeedback(participantId: string, rating: number): boolean {
+    if (this.phase !== 'close-retro') return false;
+    if (!this.getParticipantById(participantId)) return false;
+    if (!Number.isFinite(rating)) return false;
+
     const clamped = Math.max(1, Math.min(5, Math.round(rating)));
     const existing = this.feedbackResponses.find(
       (r) => r.participantId === participantId

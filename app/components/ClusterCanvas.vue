@@ -15,7 +15,6 @@ const { t } = useI18n();
 
 const props = defineProps<{
   session: IRetroSession;
-  isHost: boolean;
   currentUserId: string;
 }>();
 
@@ -267,7 +266,7 @@ function handleDeleteGroup(groupId: string) {
                   :placeholder="t('grouping.clickToRename')"
                   @blur="handleRenameGroup(group.id, $event)"
                   @keydown.enter="($event.target as HTMLInputElement).blur()"
-                />
+                >
                 <span class="text-xs tabular-nums text-secondary-400 font-medium">
                   {{ group.cardIds.length }}
                 </span>

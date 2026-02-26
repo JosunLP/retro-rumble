@@ -6,6 +6,7 @@
  */
 
 import type {
+    CheckInMood,
     IParticipant,
     IRetroSession,
     RetroColumnType,
@@ -241,7 +242,7 @@ export interface ToggleActionItemPayload {
 
 export interface CheckInRespondPayload {
   sessionId: string;
-  mood: string;
+  mood: CheckInMood;
 }
 
 export interface FeedbackRespondPayload {

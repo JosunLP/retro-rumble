@@ -280,7 +280,6 @@ function handleJoinSession(code: string, participantName: string): void {
             <ClusterCanvas
               v-else-if="currentPhase === 'generate-insights'"
               :session="session"
-              :is-host="isHost"
               :current-user-id="currentParticipant!.id"
               @create-group="createGroup"
               @add-card-to-group="addCardToGroup"

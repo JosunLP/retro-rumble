@@ -5,7 +5,12 @@
  * Uses WebSocket for multi-user communication.
  */
 
-import type { ISessionState, RetroColumnType, RetroPhase } from '~/types';
+import type {
+    CheckInMood,
+    ISessionState,
+    RetroColumnType,
+    RetroPhase,
+} from '~/types';
 import type {
     ParticipantJoinedPayload,
     ParticipantLeftPayload,
@@ -497,7 +502,7 @@ export function useRetroSession() {
     send('action:toggle', { sessionId: state.value.session.id, actionId });
   }
 
-  function submitCheckIn(mood: string): void {
+  function submitCheckIn(mood: CheckInMood): void {
     if (!state.value.session) return;
     send('checkin:respond', { sessionId: state.value.session.id, mood });
   }

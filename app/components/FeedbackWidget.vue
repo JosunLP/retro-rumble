@@ -80,6 +80,8 @@ function submitRating(rating: number): void {
         v-for="rating in 5"
         :key="rating"
         type="button"
+        :aria-label="ratingLabels[rating - 1]"
+        :aria-pressed="selectedRating === rating"
         class="flex flex-col items-center gap-1 p-3 rounded-xl transition-all hover:scale-105"
         :class="
           selectedRating === rating

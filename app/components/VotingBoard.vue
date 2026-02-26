@@ -172,13 +172,13 @@ function hasContent(column: RetroColumnType): boolean {
                 {{ group.title }}
               </span>
               <span class="text-xs text-secondary-400">
-                ({{ group.cardIds.length }}
-                {{ t('summary.cards').toLowerCase() }})
+                {{ t('voting.groupCardCount', { count: group.cardIds.length }) }}
               </span>
             </div>
             <div class="flex items-center gap-1">
               <button
                 class="p-1 rounded-full transition-colors text-secondary-400 hover:text-error-500 hover:bg-error-50"
+                :aria-label="t('voting.unvoteGroup')"
                 :class="{ 'opacity-0 pointer-events-none': userGroupVotes(group) === 0 }"
                 :disabled="userGroupVotes(group) === 0"
                 @click="handleUnvoteGroup(group.id)"
@@ -198,6 +198,7 @@ function hasContent(column: RetroColumnType): boolean {
               </span>
               <button
                 class="p-1 rounded-full transition-colors"
+                :aria-label="t('voting.voteGroup')"
                 :class="
                   canVote()
                     ? 'text-primary-600 hover:text-primary-700 hover:bg-primary-50'
@@ -232,6 +233,7 @@ function hasContent(column: RetroColumnType): boolean {
                 <div class="flex items-center gap-1">
                   <button
                     class="p-0.5 rounded-full transition-colors text-secondary-400 hover:text-error-500 hover:bg-error-50"
+                    :aria-label="t('voting.unvoteCard')"
                     :class="{ 'opacity-0 pointer-events-none': userCardVotes(card) === 0 }"
                     :disabled="userCardVotes(card) === 0"
                     @click="handleUnvoteCard(card.id)"
@@ -251,6 +253,7 @@ function hasContent(column: RetroColumnType): boolean {
                   </span>
                   <button
                     class="p-0.5 rounded-full transition-colors"
+                    :aria-label="t('voting.voteCard')"
                     :class="
                       canVote()
                         ? 'text-primary-600 hover:text-primary-700 hover:bg-primary-50'
@@ -287,6 +290,7 @@ function hasContent(column: RetroColumnType): boolean {
             <div class="flex items-center gap-1">
               <button
                 class="p-0.5 rounded-full transition-colors text-secondary-400 hover:text-error-500 hover:bg-error-50"
+                :aria-label="t('voting.unvoteCard')"
                 :class="{ 'opacity-0 pointer-events-none': userCardVotes(card) === 0 }"
                 :disabled="userCardVotes(card) === 0"
                 @click="handleUnvoteCard(card.id)"
@@ -306,6 +310,7 @@ function hasContent(column: RetroColumnType): boolean {
               </span>
               <button
                 class="p-0.5 rounded-full transition-colors"
+                :aria-label="t('voting.voteCard')"
                 :class="
                   canVote()
                     ? 'text-primary-600 hover:text-primary-700 hover:bg-primary-50'

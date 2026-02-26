@@ -7,7 +7,7 @@
  * Results are shown in real-time as others respond.
  */
 
-import type { ICheckInResponse, IParticipant } from '~/types';
+import type { CheckInMood, ICheckInResponse, IParticipant } from '~/types';
 import { CHECK_IN_MOODS } from '~/types';
 
 const { t } = useI18n();
@@ -24,7 +24,7 @@ interface Props {
 const props = defineProps<Props>();
 
 const emit = defineEmits<{
-  submit: [mood: string];
+  submit: [mood: CheckInMood];
 }>();
 
 const selectedMood = computed(() => {
@@ -36,8 +36,21 @@ const selectedMood = computed(() => {
 const responseCount = computed(() => props.checkInResponses.length);
 const totalParticipants = computed(() => props.participants.length);
 
-function selectMood(mood: string): void {
+function selectMood(mood: CheckInMood): void {
   emit('submit', mood);
+}
+
+function getMoodLabel(mood: CheckInMood): string {
+  const moodTranslationKey: Record<CheckInMood, string> = {
+    '😊': 'checkin.moodLabels.happy',
+    '😐': 'checkin.moodLabels.neutral',
+    '😟': 'checkin.moodLabels.worried',
+    '🔥': 'checkin.moodLabels.energized',
+    '💪': 'checkin.moodLabels.confident',
+    '😴': 'checkin.moodLabels.tired',
+  };
+
+  return t(moodTranslationKey[mood]);
 }
 
 /**
@@ -45,7 +58,8 @@ function selectMood(mood: string): void {
  */
 function getParticipantName(participantId: string): string {
   return (
-    props.participants.find((p) => p.id === participantId)?.name ?? '???'
+    props.participants.find((p) => p.id === participantId)?.name ??
+    t('checkin.unknownParticipant')
   );
 }
 </script>
@@ -70,6 +84,9 @@ function getParticipantName(participantId: string): string {
         v-for="mood in CHECK_IN_MOODS"
         :key="mood"
         type="button"
+        :aria-label="getMoodLabel(mood)"
+        :aria-pressed="selectedMood === mood"
+        :title="getMoodLabel(mood)"
         class="text-4xl p-3 rounded-xl transition-all hover:scale-110"
         :class="
           selectedMood === mood

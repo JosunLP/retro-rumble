@@ -7,10 +7,10 @@
 
 import type { Peer } from 'crossws';
 import type {
-    IParticipant,
-    IRetroSession,
-    RetroColumnType,
-    RetroPhase,
+  IParticipant,
+  IRetroSession,
+  RetroColumnType,
+  RetroPhase,
 } from '../../app/types/retro';
 import { JOIN_CODE_CHARS, JOIN_CODE_LENGTH } from '../../app/types/retro';
 import { Participant } from '../../app/utils/Participant';
@@ -31,12 +31,53 @@ interface SessionEntry {
   session: RetroSession;
   joinCode: string;
   connections: Map<string, Peer>; // participantId -> peer
+  emptySince: number | null;
 }
+
+const SESSION_IDLE_TTL_MS = 30 * 60 * 1000; // 30 minutes
+const SESSION_CLEANUP_INTERVAL_MS = 60 * 1000; // 1 minute
 
 class SessionStore {
   private sessions: Map<string, SessionEntry> = new Map(); // sessionId -> entry
   private joinCodes: Map<string, string> = new Map(); // joinCode -> sessionId
   private peerMap: Map<Peer, PeerInfo> = new Map(); // peer -> info
+  private readonly cleanupInterval: ReturnType<typeof setInterval>;
+
+  constructor() {
+    this.cleanupInterval = setInterval(() => {
+      this.cleanupIdleSessions();
+    }, SESSION_CLEANUP_INTERVAL_MS);
+  }
+
+  /**
+   * Removes sessions that have had no active WebSocket connections for a while.
+   * This prevents stale in-memory sessions from accumulating when everyone
+   * closes their browser tab without explicitly leaving.
+   */
+  private cleanupIdleSessions(): void {
+    const now = Date.now();
+
+    for (const [sessionId, entry] of this.sessions.entries()) {
+      if (entry.connections.size > 0) {
+        entry.emptySince = null;
+        continue;
+      }
+
+      if (!entry.emptySince) {
+        entry.emptySince = now;
+        continue;
+      }
+
+      if (now - entry.emptySince < SESSION_IDLE_TTL_MS) {
+        continue;
+      }
+
+      entry.session.stopTimer();
+      this.joinCodes.delete(entry.joinCode);
+      this.sessions.delete(sessionId);
+      console.log(`[SessionStore] Session expired (idle timeout): ${sessionId}`);
+    }
+  }
 
   /**
    * Generates a unique join code
@@ -75,7 +116,12 @@ class SessionStore {
     const connections = new Map<string, Peer>();
     connections.set(participant.id, peer);
 
-    const entry: SessionEntry = { session, joinCode, connections };
+    const entry: SessionEntry = {
+      session,
+      joinCode,
+      connections,
+      emptySince: null,
+    };
     this.sessions.set(session.id, entry);
     this.joinCodes.set(joinCode, session.id);
     this.peerMap.set(peer, {
@@ -109,6 +155,7 @@ class SessionStore {
     const participant = new Participant(participantName, false);
     entry.session.addParticipant(participant);
     entry.connections.set(participant.id, peer);
+    entry.emptySince = null;
     this.peerMap.set(peer, { sessionId, participantId: participant.id });
 
     console.log(
@@ -143,6 +190,7 @@ class SessionStore {
 
     entry.session.removeParticipant(info.participantId);
     entry.connections.delete(info.participantId);
+    entry.emptySince = entry.connections.size === 0 ? Date.now() : null;
     this.peerMap.delete(peer);
 
     // If no participants left, remove the session
@@ -184,6 +232,7 @@ class SessionStore {
   public disconnectPeer(peer: Peer): {
     sessionId: string;
     participantId: string;
+    session?: IRetroSession;
   } | null {
     const info = this.peerMap.get(peer);
     if (!info) return null;
@@ -196,7 +245,25 @@ class SessionStore {
 
     // Unmap peer but keep participant in session
     entry.connections.delete(info.participantId);
+    entry.emptySince = entry.connections.size === 0 ? Date.now() : null;
     this.peerMap.delete(peer);
+
+    let updatedSession: IRetroSession | undefined;
+
+    // Host fallback: if host disconnects, transfer host to an active participant.
+    if (entry.session.hostId === info.participantId) {
+      const fallbackHost = entry.session.participants.find(
+        (p) => p.id !== info.participantId && entry.connections.has(p.id)
+      );
+
+      if (fallbackHost) {
+        entry.session.transferHost(fallbackHost.id);
+        updatedSession = entry.session.toJSON();
+        console.log(
+          `[SessionStore] Host transferred after disconnect: ${fallbackHost.name} (${fallbackHost.id})`
+        );
+      }
+    }
 
     console.log(
       `[SessionStore] Peer disconnected (kept participant): ${info.participantId}`
@@ -205,6 +272,7 @@ class SessionStore {
     return {
       sessionId: info.sessionId,
       participantId: info.participantId,
+      session: updatedSession,
     };
   }
 
@@ -231,8 +299,31 @@ class SessionStore {
     const participant = entry.session.getParticipantById(participantId);
     if (!participant) return null;
 
+    // Prevent impersonation: if this participant is already actively connected,
+    // reject rejoin instead of overwriting the connection.
+    if (entry.connections.has(participantId)) {
+      console.warn(
+        `[SessionStore] Rejoin rejected (participant already connected): ${participantId}`
+      );
+      return null;
+    }
+
+    // If this peer is already mapped (e.g., stale mapping or protocol misuse),
+    // clean up the previous session connection before remapping.
+    const existingPeerInfo = this.peerMap.get(peer);
+    if (existingPeerInfo) {
+      const previousEntry = this.sessions.get(existingPeerInfo.sessionId);
+      if (previousEntry) {
+        previousEntry.connections.delete(existingPeerInfo.participantId);
+        previousEntry.emptySince =
+          previousEntry.connections.size === 0 ? Date.now() : null;
+      }
+      this.peerMap.delete(peer);
+    }
+
     // Re-map the new peer to the existing participant
     entry.connections.set(participantId, peer);
+    entry.emptySince = null;
     this.peerMap.set(peer, { sessionId, participantId });
 
     console.log(

@@ -11,6 +11,10 @@
 let audioCtx: AudioContext | null = null;
 
 function getAudioContext(): AudioContext {
+  if (typeof window === 'undefined' || !('AudioContext' in window)) {
+    throw new Error('Web Audio API is only available in supported browsers');
+  }
+
   if (!audioCtx) {
     audioCtx = new AudioContext();
   }

@@ -91,6 +91,16 @@ export function isValidColumnType(value: unknown): value is RetroColumnType {
   );
 }
 
+/**
+ * Validates a check-in mood value
+ */
+export function isValidCheckInMood(value: unknown): value is CheckInMood {
+  return (
+    typeof value === 'string' &&
+    (CHECK_IN_MOODS as readonly string[]).includes(value)
+  );
+}
+
 // ============================================
 // Core Interfaces
 // ============================================
@@ -173,7 +183,7 @@ export interface IActionItem {
  */
 export interface ICheckInResponse {
   participantId: string;
-  mood: string;
+  mood: CheckInMood;
 }
 
 /**

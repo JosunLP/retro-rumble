@@ -76,7 +76,12 @@
   "voting": {
     "title": "Abstimmung",
     "remaining": "Stimmen übrig",
-    "instructions": "Stimme für die Karten und Gruppen ab, die am wichtigsten zu besprechen sind. Du kannst deine Stimmen frei verteilen."
+    "instructions": "Stimme für die Karten und Gruppen ab, die am wichtigsten zu besprechen sind. Du kannst deine Stimmen frei verteilen.",
+    "groupCardCount": "({count} Karten)",
+    "voteGroup": "Für Gruppe abstimmen",
+    "unvoteGroup": "Stimme von Gruppe entfernen",
+    "voteCard": "Für Karte abstimmen",
+    "unvoteCard": "Stimme von Karte entfernen"
   },
   "timer": {
     "title": "Timer",
@@ -113,6 +118,15 @@
     "title": "Check-In",
     "question": "Wie fühlst du dich heute? Wähle ein Emoji, das deine Stimmung beschreibt.",
     "responses": "Team-Stimmung",
+    "unknownParticipant": "Unbekannter Teilnehmer",
+    "moodLabels": {
+      "happy": "Fröhlich",
+      "neutral": "Neutral",
+      "worried": "Besorgt",
+      "energized": "Energiegeladen",
+      "confident": "Zuversichtlich",
+      "tired": "Müde"
+    },
     "waiting": "Warte auf Antworten des Teams..."
   },
   "feedback": {
