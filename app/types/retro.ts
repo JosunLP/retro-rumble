@@ -27,16 +27,37 @@ export const RETRO_COLUMNS = [
 export type RetroColumnType = (typeof RETRO_COLUMNS)[number];
 
 /**
- * Retro session phases
+ * Retro session phases (Scrum Retro Flow)
+ *
+ * 1. set-the-stage    – Welcome, ice-breaker / check-in
+ * 2. gather-data      – Anonymous cards in three columns
+ * 3. generate-insights – Group cards into clusters
+ * 4. voting           – Vote on cards and groups
+ * 5. decide-action    – SMART action items, assign & prioritize
+ * 6. close-retro      – Feedback, export, summary
  */
 export const RETRO_PHASES = [
-  'writing',
-  'grouping',
+  'set-the-stage',
+  'gather-data',
+  'generate-insights',
   'voting',
-  'discussing',
-  'summary',
+  'decide-action',
+  'close-retro',
 ] as const;
 export type RetroPhase = (typeof RETRO_PHASES)[number];
+
+/**
+ * Available check-in mood emojis
+ */
+export const CHECK_IN_MOODS = [
+  '😊',
+  '😐',
+  '😟',
+  '🔥',
+  '💪',
+  '😴',
+] as const;
+export type CheckInMood = (typeof CHECK_IN_MOODS)[number];
 
 // ============================================
 // Validation Functions
@@ -67,6 +88,16 @@ export function isValidColumnType(value: unknown): value is RetroColumnType {
   return (
     typeof value === 'string' &&
     (RETRO_COLUMNS as readonly string[]).includes(value)
+  );
+}
+
+/**
+ * Validates a check-in mood value
+ */
+export function isValidCheckInMood(value: unknown): value is CheckInMood {
+  return (
+    typeof value === 'string' &&
+    (CHECK_IN_MOODS as readonly string[]).includes(value)
   );
 }
 
@@ -108,6 +139,10 @@ export interface ICardGroup {
   column: RetroColumnType;
   /** IDs of cards in this group */
   cardIds: string[];
+  /** Number of votes this group has received */
+  votes: number;
+  /** IDs of participants who voted for this group */
+  voterIds: string[];
 }
 
 /**
@@ -143,6 +178,22 @@ export interface IActionItem {
   done: boolean;
 }
 
+/**
+ * Participant check-in response
+ */
+export interface ICheckInResponse {
+  participantId: string;
+  mood: CheckInMood;
+}
+
+/**
+ * Participant feedback response (fist-to-five: 1–5)
+ */
+export interface IFeedbackResponse {
+  participantId: string;
+  rating: number;
+}
+
 export interface IRetroSession {
   /** Unique session ID */
   id: string;
@@ -160,6 +211,10 @@ export interface IRetroSession {
   groups: ICardGroup[];
   /** Committed action items */
   actionItems: IActionItem[];
+  /** Check-in mood responses (set-the-stage phase) */
+  checkInResponses: ICheckInResponse[];
+  /** Feedback ratings (close-retro phase, 1–5) */
+  feedbackResponses: IFeedbackResponse[];
   /** Maximum votes per participant */
   maxVotesPerUser: number;
   /** Timer duration in seconds (0 = no timer) */

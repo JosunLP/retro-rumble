@@ -6,10 +6,11 @@
  */
 
 import type {
-  IParticipant,
-  IRetroSession,
-  RetroColumnType,
-  RetroPhase,
+    CheckInMood,
+    IParticipant,
+    IRetroSession,
+    RetroColumnType,
+    RetroPhase,
 } from './retro';
 
 // ============================================
@@ -19,6 +20,7 @@ import type {
 export type ClientMessageType =
   | 'session:create'
   | 'session:join'
+  | 'session:rejoin'
   | 'session:leave'
   | 'phase:change'
   | 'card:add'
@@ -31,11 +33,16 @@ export type ClientMessageType =
   | 'group:add-card'
   | 'group:remove-card'
   | 'group:rename'
+  | 'group:move'
   | 'group:delete'
+  | 'group:vote'
+  | 'group:unvote'
   | 'action:add'
   | 'action:edit'
   | 'action:delete'
   | 'action:toggle'
+  | 'checkin:respond'
+  | 'feedback:respond'
   | 'timer:start'
   | 'timer:stop'
   | 'timer:set'
@@ -48,6 +55,7 @@ export type ClientMessageType =
 export type ServerMessageType =
   | 'session:created'
   | 'session:joined'
+  | 'session:rejoined'
   | 'session:updated'
   | 'session:left'
   | 'session:error'
@@ -99,6 +107,11 @@ export interface CreateSessionPayload {
 export interface JoinSessionPayload {
   joinCode: string;
   participantName: string;
+}
+
+export interface RejoinSessionPayload {
+  joinCode: string;
+  participantId: string;
 }
 
 export interface LeaveSessionPayload {
@@ -168,7 +181,23 @@ export interface RenameGroupPayload {
   title: string;
 }
 
+export interface MoveGroupPayload {
+  sessionId: string;
+  groupId: string;
+  column: RetroColumnType;
+}
+
 export interface DeleteGroupPayload {
+  sessionId: string;
+  groupId: string;
+}
+
+export interface VoteGroupPayload {
+  sessionId: string;
+  groupId: string;
+}
+
+export interface UnvoteGroupPayload {
   sessionId: string;
   groupId: string;
 }
@@ -211,6 +240,16 @@ export interface ToggleActionItemPayload {
   actionId: string;
 }
 
+export interface CheckInRespondPayload {
+  sessionId: string;
+  mood: CheckInMood;
+}
+
+export interface FeedbackRespondPayload {
+  sessionId: string;
+  rating: number;
+}
+
 // ============================================
 // Server Message Payloads
 // ============================================
@@ -222,6 +261,12 @@ export interface SessionCreatedPayload {
 }
 
 export interface SessionJoinedPayload {
+  session: IRetroSession;
+  joinCode: string;
+  participant: IParticipant;
+}
+
+export interface SessionRejoinedPayload {
   session: IRetroSession;
   joinCode: string;
   participant: IParticipant;

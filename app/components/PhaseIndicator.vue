@@ -26,11 +26,12 @@ const emit = defineEmits<{
 const phaseIndex = computed(() => RETRO_PHASES.indexOf(props.currentPhase));
 
 const phaseIcons: Record<RetroPhase, string> = {
-  writing: 'heroicons:pencil-square',
-  grouping: 'heroicons:rectangle-group',
-  voting: 'heroicons:hand-thumb-up',
-  discussing: 'heroicons:chat-bubble-left-right',
-  summary: 'heroicons:clipboard-document-check',
+  'set-the-stage': 'heroicons:hand-raised',
+  'gather-data': 'heroicons:pencil-square',
+  'generate-insights': 'heroicons:light-bulb',
+  'voting': 'heroicons:hand-thumb-up',
+  'decide-action': 'heroicons:rocket-launch',
+  'close-retro': 'heroicons:clipboard-document-check',
 };
 
 function nextPhase(): void {

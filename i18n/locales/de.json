@@ -40,11 +40,12 @@
     "you": "(du)"
   },
   "phase": {
-    "writing": "Schreiben",
-    "grouping": "Gruppieren",
-    "voting": "Abstimmen",
-    "discussing": "Diskutieren",
-    "summary": "Zusammenfassung",
+    "set-the-stage": "Einstimmung",
+    "gather-data": "Daten sammeln",
+    "generate-insights": "Clustering",
+    "voting": "Abstimmung",
+    "decide-action": "Maßnahmen",
+    "close-retro": "Abschluss",
     "previous": "Zurück",
     "next": "Weiter"
   },
@@ -60,18 +61,27 @@
     "delete": "Löschen"
   },
   "grouping": {
-    "instructionsHost": "Ziehe Karten aufeinander, um Gruppen zu erstellen. Ziehe sie weg von einer Gruppe, um sie zu lösen.",
-    "instructionsParticipant": "Der Host gruppiert verwandte Karten. Änderungen sind in Echtzeit sichtbar.",
+    "instructionsHost": "Ziehe Karten aufeinander, um Gruppen zu erstellen. Ziehe Karten weg von einer Gruppe, um sie zu lösen.",
+    "instructionsParticipant": "Ziehe Karten aufeinander, um Gruppen zu erstellen. Ziehe Karten weg von einer Gruppe, um sie zu lösen.",
     "newGroupTitle": "Neue Gruppe",
     "clickToRename": "Klicken zum Umbenennen",
     "deleteGroup": "Gruppe löschen",
+    "moveToColumn": "Verschieben nach {column}",
     "removeFromGroup": "Aus Gruppe entfernen",
     "resetLayout": "Layout zurücksetzen",
     "maximize": "Maximieren",
-    "restore": "Wiederherstellen"
+    "restore": "Wiederherstellen",
+    "emptyColumn": "Keine Karten in dieser Spalte"
   },
   "voting": {
-    "remaining": "Stimmen übrig"
+    "title": "Abstimmung",
+    "remaining": "Stimmen übrig",
+    "instructions": "Stimme für die Karten und Gruppen ab, die am wichtigsten zu besprechen sind. Du kannst deine Stimmen frei verteilen.",
+    "groupCardCount": "({count} Karten)",
+    "voteGroup": "Für Gruppe abstimmen",
+    "unvoteGroup": "Stimme von Gruppe entfernen",
+    "voteCard": "Für Karte abstimmen",
+    "unvoteCard": "Stimme von Karte entfernen"
   },
   "timer": {
     "title": "Timer",
@@ -103,5 +113,32 @@
   "common": {
     "cancel": "Abbrechen",
     "save": "Speichern"
+  },
+  "checkin": {
+    "title": "Check-In",
+    "question": "Wie fühlst du dich heute? Wähle ein Emoji, das deine Stimmung beschreibt.",
+    "responses": "Team-Stimmung",
+    "unknownParticipant": "Unbekannter Teilnehmer",
+    "moodLabels": {
+      "happy": "Fröhlich",
+      "neutral": "Neutral",
+      "worried": "Besorgt",
+      "energized": "Energiegeladen",
+      "confident": "Zuversichtlich",
+      "tired": "Müde"
+    },
+    "waiting": "Warte auf Antworten des Teams..."
+  },
+  "feedback": {
+    "title": "Retro-Feedback",
+    "question": "Wie war diese Retrospektive? Bewerte von 1 (nicht gut) bis 5 (ausgezeichnet).",
+    "results": "Team-Feedback",
+    "average": "Durchschnitt",
+    "waiting": "Warte auf Feedback...",
+    "rating1": "Schlecht",
+    "rating2": "Mäßig",
+    "rating3": "OK",
+    "rating4": "Gut",
+    "rating5": "Super"
   }
 }

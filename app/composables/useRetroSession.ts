@@ -5,16 +5,22 @@
  * Uses WebSocket for multi-user communication.
  */
 
-import type { ISessionState, RetroColumnType, RetroPhase } from '~/types';
 import type {
-  ParticipantJoinedPayload,
-  ParticipantLeftPayload,
-  SessionCreatedPayload,
-  SessionErrorPayload,
-  SessionJoinedPayload,
-  SessionLeftPayload,
-  SessionUpdatedPayload,
-  TimerTickPayload,
+    CheckInMood,
+    ISessionState,
+    RetroColumnType,
+    RetroPhase,
+} from '~/types';
+import type {
+    ParticipantJoinedPayload,
+    ParticipantLeftPayload,
+    SessionCreatedPayload,
+    SessionErrorPayload,
+    SessionJoinedPayload,
+    SessionLeftPayload,
+    SessionRejoinedPayload,
+    SessionUpdatedPayload,
+    TimerTickPayload,
 } from '~/types/websocket';
 
 /**
@@ -120,6 +126,18 @@ export function useRetroSession() {
       };
     });
 
+    // Session rejoined (after reconnect)
+    on<SessionRejoinedPayload>('session:rejoined', (payload) => {
+      state.value = {
+        session: payload.session,
+        currentParticipant: payload.participant,
+        isHost: payload.session.hostId === payload.participant.id,
+        isConnected: true,
+        error: null,
+        joinCode: payload.joinCode,
+      };
+    });
+
     // Session updated
     on<SessionUpdatedPayload>('session:updated', (payload) => {
       if (!state.value.currentParticipant) return;
@@ -200,6 +218,11 @@ export function useRetroSession() {
     // Timer finished
     on('timer:finished', () => {
       if (!state.value.session) return;
+
+      // Play harmonious chime for all users
+      const { playChime } = useTimerSound();
+      playChime();
+
       state.value = {
         ...state.value,
         session: {
@@ -216,6 +239,20 @@ export function useRetroSession() {
         ...state.value,
         error: payload.message,
       };
+    });
+
+    // Auto-rejoin when WebSocket reconnects
+    watch(connectionStatus, (newStatus) => {
+      if (
+        newStatus === 'connected' &&
+        state.value.joinCode &&
+        state.value.currentParticipant
+      ) {
+        send('session:rejoin', {
+          joinCode: state.value.joinCode,
+          participantId: state.value.currentParticipant.id,
+        });
+      }
     });
   }
 
@@ -235,16 +272,19 @@ export function useRetroSession() {
 
   const remainingVotes = computed(() => {
     if (!state.value.session || !state.value.currentParticipant) return 0;
-    const usedVotes = state.value.session.cards.reduce(
-      (count, c) =>
-        count +
-        (c.voterIds.includes(state.value.currentParticipant!.id) ? 1 : 0),
+    const pid = state.value.currentParticipant!.id;
+    const cardVotes = state.value.session.cards.reduce(
+      (count, c) => count + c.voterIds.filter((id) => id === pid).length,
       0
     );
-    return state.value.session.maxVotesPerUser - usedVotes;
+    const groupVotes = state.value.session.groups.reduce(
+      (count, g) => count + g.voterIds.filter((id) => id === pid).length,
+      0
+    );
+    return state.value.session.maxVotesPerUser - cardVotes - groupVotes;
   });
 
-  const currentPhase = computed(() => state.value.session?.phase ?? 'writing');
+  const currentPhase = computed(() => state.value.session?.phase ?? 'set-the-stage');
 
   // ============================================
   // Actions
@@ -340,6 +380,16 @@ export function useRetroSession() {
     send('card:unvote', { sessionId: state.value.session.id, cardId });
   }
 
+  function voteGroup(groupId: string): void {
+    if (!state.value.session) return;
+    send('group:vote', { sessionId: state.value.session.id, groupId });
+  }
+
+  function unvoteGroup(groupId: string): void {
+    if (!state.value.session) return;
+    send('group:unvote', { sessionId: state.value.session.id, groupId });
+  }
+
   function moveCard(cardId: string, column: RetroColumnType): void {
     if (!state.value.session) return;
     send('card:move', { sessionId: state.value.session.id, cardId, column });
@@ -350,7 +400,7 @@ export function useRetroSession() {
     column: RetroColumnType,
     cardIds: string[]
   ): void {
-    if (!state.value.session || !state.value.isHost) return;
+    if (!state.value.session) return;
     send('group:create', {
       sessionId: state.value.session.id,
       title,
@@ -360,7 +410,7 @@ export function useRetroSession() {
   }
 
   function addCardToGroup(groupId: string, cardId: string): void {
-    if (!state.value.session || !state.value.isHost) return;
+    if (!state.value.session) return;
     send('group:add-card', {
       sessionId: state.value.session.id,
       groupId,
@@ -369,7 +419,7 @@ export function useRetroSession() {
   }
 
   function removeCardFromGroup(groupId: string, cardId: string): void {
-    if (!state.value.session || !state.value.isHost) return;
+    if (!state.value.session) return;
     send('group:remove-card', {
       sessionId: state.value.session.id,
       groupId,
@@ -378,12 +428,17 @@ export function useRetroSession() {
   }
 
   function renameGroup(groupId: string, title: string): void {
-    if (!state.value.session || !state.value.isHost) return;
+    if (!state.value.session) return;
     send('group:rename', { sessionId: state.value.session.id, groupId, title });
   }
 
+  function moveGroup(groupId: string, column: RetroColumnType): void {
+    if (!state.value.session) return;
+    send('group:move', { sessionId: state.value.session.id, groupId, column });
+  }
+
   function deleteGroup(groupId: string): void {
-    if (!state.value.session || !state.value.isHost) return;
+    if (!state.value.session) return;
     send('group:delete', { sessionId: state.value.session.id, groupId });
   }
 
@@ -447,6 +502,16 @@ export function useRetroSession() {
     send('action:toggle', { sessionId: state.value.session.id, actionId });
   }
 
+  function submitCheckIn(mood: CheckInMood): void {
+    if (!state.value.session) return;
+    send('checkin:respond', { sessionId: state.value.session.id, mood });
+  }
+
+  function submitFeedback(rating: number): void {
+    if (!state.value.session) return;
+    send('feedback:respond', { sessionId: state.value.session.id, rating });
+  }
+
   function clearError(): void {
     state.value = { ...state.value, error: null };
   }
@@ -472,11 +537,14 @@ export function useRetroSession() {
     deleteCard,
     voteCard,
     unvoteCard,
+    voteGroup,
+    unvoteGroup,
     moveCard,
     createGroup,
     addCardToGroup,
     removeCardFromGroup,
     renameGroup,
+    moveGroup,
     deleteGroup,
     startTimer,
     stopTimer,
@@ -486,6 +554,8 @@ export function useRetroSession() {
     editActionItem,
     deleteActionItem,
     toggleActionItem,
+    submitCheckIn,
+    submitFeedback,
     clearError,
   };
 }

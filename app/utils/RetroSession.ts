@@ -8,12 +8,15 @@
 import type {
   IActionItem,
   ICardGroup,
+  ICheckInResponse,
+  IFeedbackResponse,
   IRetroCard,
   IRetroConfig,
   IRetroSession,
   RetroColumnType,
   RetroPhase,
 } from '../types';
+import { isValidCheckInMood } from '../types';
 import { Participant } from './Participant';
 
 const DEFAULT_CONFIG: IRetroConfig = {
@@ -26,11 +29,13 @@ export class RetroSession implements IRetroSession {
   public readonly id: string;
   public name: string;
   public phase: RetroPhase;
-  public readonly hostId: string;
+  public hostId: string;
   public participants: Participant[];
   public cards: IRetroCard[];
   public groups: ICardGroup[];
   public actionItems: IActionItem[];
+  public checkInResponses: ICheckInResponse[];
+  public feedbackResponses: IFeedbackResponse[];
   public maxVotesPerUser: number;
   public timerDuration: number;
   public timerRemaining: number | null;
@@ -45,11 +50,13 @@ export class RetroSession implements IRetroSession {
     this.id = crypto.randomUUID();
     this.name = name.trim();
     this.hostId = hostId;
-    this.phase = 'writing';
+    this.phase = 'set-the-stage';
     this.participants = [];
     this.cards = [];
     this.groups = [];
     this.actionItems = [];
+    this.checkInResponses = [];
+    this.feedbackResponses = [];
     this.config = { ...DEFAULT_CONFIG, ...config };
     this.maxVotesPerUser = this.config.maxVotesPerUser;
     this.timerDuration = this.config.timerDuration;
@@ -89,6 +96,24 @@ export class RetroSession implements IRetroSession {
    */
   public getParticipantById(id: string): Participant | undefined {
     return this.participants.find((p) => p.id === id);
+  }
+
+  /**
+   * Transfers host role to another participant
+   */
+  public transferHost(newHostId: string): boolean {
+    const newHost = this.getParticipantById(newHostId);
+    if (!newHost) return false;
+
+    // Remove host flag from current host
+    const oldHost = this.getParticipantById(this.hostId);
+    if (oldHost) oldHost.isHost = false;
+
+    // Set new host
+    this.hostId = newHostId;
+    newHost.isHost = true;
+    this.touch();
+    return true;
   }
 
   // ============================================
@@ -200,12 +225,12 @@ export class RetroSession implements IRetroSession {
     const card = this.cards.find((c) => c.id === cardId);
     if (!card) return false;
 
-    // Check if already voted for this card
-    if (card.voterIds.includes(participantId)) return false;
-
-    // Check max votes per user
+    // Check max votes per user (cards + groups combined)
     const userVoteCount = this.cards.reduce(
-      (count, c) => count + (c.voterIds.includes(participantId) ? 1 : 0),
+      (count, c) => count + c.voterIds.filter((id) => id === participantId).length,
+      0
+    ) + this.groups.reduce(
+      (count, g) => count + g.voterIds.filter((id) => id === participantId).length,
       0
     );
     if (userVoteCount >= this.maxVotesPerUser) return false;
@@ -239,7 +264,10 @@ export class RetroSession implements IRetroSession {
    */
   public getRemainingVotes(participantId: string): number {
     const usedVotes = this.cards.reduce(
-      (count, c) => count + (c.voterIds.includes(participantId) ? 1 : 0),
+      (count, c) => count + c.voterIds.filter((id) => id === participantId).length,
+      0
+    ) + this.groups.reduce(
+      (count, g) => count + g.voterIds.filter((id) => id === participantId).length,
       0
     );
     return this.maxVotesPerUser - usedVotes;
@@ -257,7 +285,7 @@ export class RetroSession implements IRetroSession {
     column: RetroColumnType,
     cardIds: string[]
   ): ICardGroup | null {
-    if (this.phase !== 'grouping') return null;
+    if (this.phase !== 'generate-insights') return null;
 
     // Verify all cards exist (cross-column grouping allowed)
     const validCards = cardIds.filter((id) => {
@@ -272,6 +300,8 @@ export class RetroSession implements IRetroSession {
       title: title.trim(),
       column,
       cardIds: validCards,
+      votes: 0,
+      voterIds: [],
     };
 
     // Assign group ID to cards
@@ -289,7 +319,7 @@ export class RetroSession implements IRetroSession {
    * Adds a card to an existing group
    */
   public addCardToGroup(groupId: string, cardId: string): boolean {
-    if (this.phase !== 'grouping') return false;
+    if (this.phase !== 'generate-insights') return false;
 
     const group = this.groups.find((g) => g.id === groupId);
     if (!group) return false;
@@ -307,7 +337,7 @@ export class RetroSession implements IRetroSession {
    * Removes a card from a group
    */
   public removeCardFromGroup(groupId: string, cardId: string): boolean {
-    if (this.phase !== 'grouping') return false;
+    if (this.phase !== 'generate-insights') return false;
 
     const group = this.groups.find((g) => g.id === groupId);
     if (!group) return false;
@@ -339,6 +369,18 @@ export class RetroSession implements IRetroSession {
   }
 
   /**
+   * Moves a group to a different column
+   */
+  public moveGroup(groupId: string, column: RetroColumnType): boolean {
+    if (this.phase !== 'generate-insights') return false;
+    const group = this.groups.find((g) => g.id === groupId);
+    if (!group) return false;
+    group.column = column;
+    this.touch();
+    return true;
+  }
+
+  /**
    * Deletes a group (cards are kept, just ungrouped)
    */
   public deleteGroup(groupId: string): boolean {
@@ -352,6 +394,53 @@ export class RetroSession implements IRetroSession {
     });
 
     this.groups = this.groups.filter((g) => g.id !== groupId);
+    this.touch();
+    return true;
+  }
+
+  // ============================================
+  // Group Voting
+  // ============================================
+
+  /**
+   * Votes for a group
+   */
+  public voteGroup(groupId: string, participantId: string): boolean {
+    if (this.phase !== 'voting') return false;
+
+    const group = this.groups.find((g) => g.id === groupId);
+    if (!group) return false;
+
+    // Check max votes per user (cards + groups combined)
+    const userVoteCount = this.cards.reduce(
+      (count, c) => count + c.voterIds.filter((id) => id === participantId).length,
+      0
+    ) + this.groups.reduce(
+      (count, g) => count + g.voterIds.filter((id) => id === participantId).length,
+      0
+    );
+    if (userVoteCount >= this.maxVotesPerUser) return false;
+
+    group.voterIds.push(participantId);
+    group.votes = group.voterIds.length;
+    this.touch();
+    return true;
+  }
+
+  /**
+   * Removes a vote from a group
+   */
+  public unvoteGroup(groupId: string, participantId: string): boolean {
+    if (this.phase !== 'voting') return false;
+
+    const group = this.groups.find((g) => g.id === groupId);
+    if (!group) return false;
+
+    const voterIndex = group.voterIds.indexOf(participantId);
+    if (voterIndex === -1) return false;
+
+    group.voterIds.splice(voterIndex, 1);
+    group.votes = group.voterIds.length;
     this.touch();
     return true;
   }
@@ -469,6 +558,51 @@ export class RetroSession implements IRetroSession {
   }
 
   // ============================================
+  // Check-In & Feedback
+  // ============================================
+
+  /**
+   * Adds or updates a participant's check-in mood
+   */
+  public submitCheckIn(participantId: string, mood: string): boolean {
+    if (this.phase !== 'set-the-stage') return false;
+    if (!this.getParticipantById(participantId)) return false;
+    if (!isValidCheckInMood(mood)) return false;
+
+    const existing = this.checkInResponses.find(
+      (r) => r.participantId === participantId
+    );
+    if (existing) {
+      existing.mood = mood;
+    } else {
+      this.checkInResponses.push({ participantId, mood });
+    }
+    this.touch();
+    return true;
+  }
+
+  /**
+   * Adds or updates a participant's retro feedback rating (1–5)
+   */
+  public submitFeedback(participantId: string, rating: number): boolean {
+    if (this.phase !== 'close-retro') return false;
+    if (!this.getParticipantById(participantId)) return false;
+    if (!Number.isFinite(rating)) return false;
+
+    const clamped = Math.max(1, Math.min(5, Math.round(rating)));
+    const existing = this.feedbackResponses.find(
+      (r) => r.participantId === participantId
+    );
+    if (existing) {
+      existing.rating = clamped;
+    } else {
+      this.feedbackResponses.push({ participantId, rating: clamped });
+    }
+    this.touch();
+    return true;
+  }
+
+  // ============================================
   // Helpers
   // ============================================
 
@@ -507,6 +641,8 @@ export class RetroSession implements IRetroSession {
       cards: this.cards,
       groups: this.groups,
       actionItems: this.actionItems,
+      checkInResponses: this.checkInResponses,
+      feedbackResponses: this.feedbackResponses,
       maxVotesPerUser: this.maxVotesPerUser,
       timerDuration: this.timerDuration,
       timerRemaining: this.timerRemaining,
@@ -527,6 +663,8 @@ export class RetroSession implements IRetroSession {
       cards: data.cards ?? [],
       groups: data.groups ?? [],
       actionItems: data.actionItems ?? [],
+      checkInResponses: data.checkInResponses ?? [],
+      feedbackResponses: data.feedbackResponses ?? [],
       maxVotesPerUser: data.maxVotesPerUser,
       timerDuration: data.timerDuration,
       timerRemaining: data.timerRemaining,

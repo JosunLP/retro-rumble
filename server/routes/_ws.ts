@@ -10,6 +10,7 @@ import type {
   AddActionItemPayload,
   AddCardPayload,
   AddCardToGroupPayload,
+  CheckInRespondPayload,
   ClientMessage,
   CreateGroupPayload,
   CreateSessionPayload,
@@ -18,16 +19,21 @@ import type {
   DeleteGroupPayload,
   EditActionItemPayload,
   EditCardPayload,
+  FeedbackRespondPayload,
   JoinSessionPayload,
   MoveCardPayload,
+  MoveGroupPayload,
   PhaseChangePayload,
+  RejoinSessionPayload,
   RemoveCardFromGroupPayload,
   RenameGroupPayload,
   ServerMessage,
   TimerSetPayload,
   ToggleActionItemPayload,
   UnvoteCardPayload,
+  UnvoteGroupPayload,
   VoteCardPayload,
+  VoteGroupPayload,
 } from '../../app/types/websocket';
 import { sessionStore } from '../utils/sessionStore';
 
@@ -83,6 +89,9 @@ function handleMessage(peer: Peer, data: string): void {
       case 'session:join':
         handleJoinSession(peer, message.payload as JoinSessionPayload);
         break;
+      case 'session:rejoin':
+        handleRejoinSession(peer, message.payload as RejoinSessionPayload);
+        break;
       case 'session:leave':
         handleLeaveSession(peer);
         break;
@@ -122,8 +131,17 @@ function handleMessage(peer: Peer, data: string): void {
       case 'group:rename':
         handleRenameGroup(peer, message.payload as RenameGroupPayload);
         break;
+      case 'group:move':
+        handleMoveGroup(peer, message.payload as MoveGroupPayload);
+        break;
       case 'group:delete':
         handleDeleteGroup(peer, message.payload as DeleteGroupPayload);
+        break;
+      case 'group:vote':
+        handleVoteGroup(peer, message.payload as VoteGroupPayload);
+        break;
+      case 'group:unvote':
+        handleUnvoteGroup(peer, message.payload as UnvoteGroupPayload);
         break;
       case 'action:add':
         handleAddActionItem(peer, message.payload as AddActionItemPayload);
@@ -141,6 +159,18 @@ function handleMessage(peer: Peer, data: string): void {
         handleToggleActionItem(
           peer,
           message.payload as ToggleActionItemPayload
+        );
+        break;
+      case 'checkin:respond':
+        handleCheckInRespond(
+          peer,
+          message.payload as CheckInRespondPayload
+        );
+        break;
+      case 'feedback:respond':
+        handleFeedbackRespond(
+          peer,
+          message.payload as FeedbackRespondPayload
         );
         break;
       case 'timer:start':
@@ -221,6 +251,38 @@ function handleJoinSession(peer: Peer, payload: JoinSessionPayload): void {
   );
 }
 
+function handleRejoinSession(
+  peer: Peer,
+  payload: RejoinSessionPayload
+): void {
+  const result = sessionStore.rejoinSession(
+    payload.joinCode,
+    payload.participantId,
+    peer
+  );
+
+  if (!result) {
+    sendMessage(peer, 'session:error', {
+      message: 'Could not rejoin session. It may have ended.',
+      code: 'REJOIN_FAILED',
+    });
+    return;
+  }
+
+  sendMessage(peer, 'session:rejoined', {
+    session: result.session,
+    joinCode: result.joinCode,
+    participant: result.participant,
+  });
+
+  broadcastToSession(
+    result.session.id,
+    'session:updated',
+    { session: result.session },
+    peer
+  );
+}
+
 function handleLeaveSession(peer: Peer): void {
   const result = sessionStore.leaveSession(peer);
 
@@ -271,7 +333,7 @@ function handleAddCard(peer: Peer, payload: AddCardPayload): void {
   if (!session) {
     sendMessage(peer, 'session:error', {
       message:
-        'Could not add card. Cards can only be added during the writing phase.',
+        'Could not add card. Cards can only be added during the Gather Data phase.',
       code: 'CARD_ADD_FAILED',
     });
     return;
@@ -433,6 +495,24 @@ function handleRenameGroup(peer: Peer, payload: RenameGroupPayload): void {
   broadcastToSession(session.id, 'session:updated', { session });
 }
 
+function handleMoveGroup(peer: Peer, payload: MoveGroupPayload): void {
+  const session = sessionStore.moveGroup(
+    peer,
+    payload.groupId,
+    payload.column
+  );
+
+  if (!session) {
+    sendMessage(peer, 'session:error', {
+      message: 'Could not move group.',
+      code: 'GROUP_MOVE_FAILED',
+    });
+    return;
+  }
+
+  broadcastToSession(session.id, 'session:updated', { session });
+}
+
 function handleDeleteGroup(peer: Peer, payload: DeleteGroupPayload): void {
   const session = sessionStore.deleteGroup(peer, payload.groupId);
 
@@ -440,6 +520,34 @@ function handleDeleteGroup(peer: Peer, payload: DeleteGroupPayload): void {
     sendMessage(peer, 'session:error', {
       message: 'Could not delete group.',
       code: 'GROUP_DELETE_FAILED',
+    });
+    return;
+  }
+
+  broadcastToSession(session.id, 'session:updated', { session });
+}
+
+function handleVoteGroup(peer: Peer, payload: VoteGroupPayload): void {
+  const session = sessionStore.voteGroup(peer, payload.groupId);
+
+  if (!session) {
+    sendMessage(peer, 'session:error', {
+      message: 'Could not vote for group. You may have reached your vote limit.',
+      code: 'VOTE_GROUP_FAILED',
+    });
+    return;
+  }
+
+  broadcastToSession(session.id, 'session:updated', { session });
+}
+
+function handleUnvoteGroup(peer: Peer, payload: UnvoteGroupPayload): void {
+  const session = sessionStore.unvoteGroup(peer, payload.groupId);
+
+  if (!session) {
+    sendMessage(peer, 'session:error', {
+      message: 'Could not remove vote from group.',
+      code: 'UNVOTE_GROUP_FAILED',
     });
     return;
   }
@@ -528,6 +636,44 @@ function handleToggleActionItem(
 }
 
 // ============================================
+// Check-In & Feedback Handlers
+// ============================================
+
+function handleCheckInRespond(
+  peer: Peer,
+  payload: CheckInRespondPayload
+): void {
+  const session = sessionStore.submitCheckIn(peer, payload.mood);
+
+  if (!session) {
+    sendMessage(peer, 'session:error', {
+      message: 'Could not submit check-in.',
+      code: 'CHECKIN_FAILED',
+    });
+    return;
+  }
+
+  broadcastToSession(session.id, 'session:updated', { session });
+}
+
+function handleFeedbackRespond(
+  peer: Peer,
+  payload: FeedbackRespondPayload
+): void {
+  const session = sessionStore.submitFeedback(peer, payload.rating);
+
+  if (!session) {
+    sendMessage(peer, 'session:error', {
+      message: 'Could not submit feedback.',
+      code: 'FEEDBACK_FAILED',
+    });
+    return;
+  }
+
+  broadcastToSession(session.id, 'session:updated', { session });
+}
+
+// ============================================
 // Timer Handlers
 // ============================================
 
@@ -597,7 +743,14 @@ export default defineWebSocketHandler({
 
   close(peer) {
     console.log(`[WebSocket] Client disconnected: ${peer.id}`);
-    handleLeaveSession(peer);
+    // Only unmap the peer, keep participant in session for potential rejoin
+    const result = sessionStore.disconnectPeer(peer);
+
+    if (result?.session) {
+      broadcastToSession(result.sessionId, 'session:updated', {
+        session: result.session,
+      });
+    }
   },
 
   error(peer, error) {

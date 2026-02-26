@@ -40,11 +40,12 @@
     "you": "(you)"
   },
   "phase": {
-    "writing": "Write",
-    "grouping": "Group",
-    "voting": "Vote",
-    "discussing": "Discuss",
-    "summary": "Summary",
+    "set-the-stage": "Set the Stage",
+    "gather-data": "Gather Data",
+    "generate-insights": "Clustering",
+    "voting": "Voting",
+    "decide-action": "Actions",
+    "close-retro": "Close",
     "previous": "Previous",
     "next": "Next"
   },
@@ -61,17 +62,26 @@
   },
   "grouping": {
     "instructionsHost": "Drag cards onto each other to create groups. Drag away from a group to ungroup.",
-    "instructionsParticipant": "The host is organizing related cards into groups. Changes are visible in real time.",
+    "instructionsParticipant": "Drag cards onto each other to create groups. Drag away from a group to ungroup.",
     "newGroupTitle": "New Group",
     "clickToRename": "Click to rename",
     "deleteGroup": "Delete group",
+    "moveToColumn": "Move to {column}",
     "removeFromGroup": "Remove from group",
     "resetLayout": "Reset Layout",
     "maximize": "Maximize",
-    "restore": "Restore"
+    "restore": "Restore",
+    "emptyColumn": "No cards in this column"
   },
   "voting": {
-    "remaining": "Votes remaining"
+    "title": "Voting",
+    "remaining": "Votes remaining",
+    "instructions": "Vote on the cards and groups that are most important to discuss. You can distribute your votes freely.",
+    "groupCardCount": "({count} cards)",
+    "voteGroup": "Vote for group",
+    "unvoteGroup": "Remove vote from group",
+    "voteCard": "Vote for card",
+    "unvoteCard": "Remove vote from card"
   },
   "timer": {
     "title": "Timer",
@@ -103,5 +113,32 @@
   "common": {
     "cancel": "Cancel",
     "save": "Save"
+  },
+  "checkin": {
+    "title": "Check-In",
+    "question": "How are you feeling today? Pick an emoji that describes your mood.",
+    "responses": "Team Mood",
+    "unknownParticipant": "Unknown participant",
+    "moodLabels": {
+      "happy": "Happy",
+      "neutral": "Neutral",
+      "worried": "Worried",
+      "energized": "Energized",
+      "confident": "Confident",
+      "tired": "Tired"
+    },
+    "waiting": "Waiting for team responses..."
+  },
+  "feedback": {
+    "title": "Retro Feedback",
+    "question": "How was this retrospective? Rate from 1 (not great) to 5 (excellent).",
+    "results": "Team Feedback",
+    "average": "Average",
+    "waiting": "Waiting for feedback...",
+    "rating1": "Poor",
+    "rating2": "Fair",
+    "rating3": "OK",
+    "rating4": "Good",
+    "rating5": "Great"
   }
 }

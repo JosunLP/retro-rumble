@@ -140,7 +140,7 @@ const cardClass = computed(() => {
         <!-- Card Actions -->
         <div class="flex items-center gap-1">
           <button
-            v-if="(isAuthor || isHost) && phase === 'writing'"
+            v-if="(isAuthor || isHost) && phase === 'gather-data'"
             type="button"
             class="p-1 text-secondary-400 hover:text-primary-600 transition-colors"
             :title="t('card.edit')"
@@ -149,7 +149,7 @@ const cardClass = computed(() => {
             <Icon name="heroicons:pencil" class="w-3.5 h-3.5" />
           </button>
           <button
-            v-if="(isAuthor || isHost) && phase === 'writing'"
+            v-if="(isAuthor || isHost) && phase === 'gather-data'"
             type="button"
             class="p-1 text-secondary-400 hover:text-error-600 transition-colors"
             :title="t('card.delete')"

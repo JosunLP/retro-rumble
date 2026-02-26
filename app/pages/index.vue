@@ -29,10 +29,13 @@ const {
   deleteCard,
   voteCard,
   unvoteCard,
+  voteGroup,
+  unvoteGroup,
   createGroup,
   addCardToGroup,
   removeCardFromGroup,
   renameGroup,
+  moveGroup,
   deleteGroup,
   startTimer,
   stopTimer,
@@ -42,6 +45,8 @@ const {
   editActionItem,
   deleteActionItem,
   toggleActionItem,
+  submitCheckIn,
+  submitFeedback,
   clearError,
 } = useRetroSession();
 
@@ -243,8 +248,23 @@ function handleJoinSession(code: string, participantName: string): void {
 
           <!-- Retro Board / Grouping Board / Summary -->
           <div class="lg:col-span-9">
-            <!-- Summary Phase: Show retro summary and export panel -->
-            <div v-if="currentPhase === 'summary'" class="space-y-6">
+            <!-- Set the Stage: Check-in widget -->
+            <CheckInWidget
+              v-if="currentPhase === 'set-the-stage'"
+              :check-in-responses="session.checkInResponses ?? []"
+              :participants="session.participants"
+              :current-user-id="currentParticipant!.id"
+              @submit="submitCheckIn"
+            />
+
+            <!-- Close Retro: Summary, feedback & export -->
+            <div v-else-if="currentPhase === 'close-retro'" class="space-y-6">
+              <FeedbackWidget
+                :feedback-responses="session.feedbackResponses ?? []"
+                :participants="session.participants"
+                :current-user-id="currentParticipant!.id"
+                @submit="submitFeedback"
+              />
               <RetroSummary
                 :session="session"
                 :is-host="isHost"
@@ -256,19 +276,44 @@ function handleJoinSession(code: string, participantName: string): void {
               <ExportPanel :session="session" />
             </div>
 
-            <!-- Grouping Phase: Free-form canvas clustering -->
+            <!-- Generate Insights: Cluster canvas with grouping (no voting) -->
             <ClusterCanvas
-              v-else-if="currentPhase === 'grouping'"
+              v-else-if="currentPhase === 'generate-insights'"
               :session="session"
-              :is-host="isHost"
+              :current-user-id="currentParticipant!.id"
               @create-group="createGroup"
               @add-card-to-group="addCardToGroup"
               @remove-card-from-group="removeCardFromGroup"
               @rename-group="renameGroup"
+              @move-group="moveGroup"
               @delete-group="deleteGroup"
             />
 
-            <!-- Other Phases: Show standard retro board -->
+            <!-- Voting: Dedicated voting phase for cards and groups -->
+            <VotingBoard
+              v-else-if="currentPhase === 'voting'"
+              :session="session"
+              :remaining-votes="remainingVotes"
+              :current-user-id="currentParticipant!.id"
+              @vote-card="voteCard"
+              @unvote-card="unvoteCard"
+              @vote-group="voteGroup"
+              @unvote-group="unvoteGroup"
+            />
+
+            <!-- Decide Action: Action items with voted card overview -->
+            <div v-else-if="currentPhase === 'decide-action'" class="space-y-6">
+              <RetroSummary
+                :session="session"
+                :is-host="isHost"
+                @add-action-item="addActionItem"
+                @edit-action-item="editActionItem"
+                @delete-action-item="deleteActionItem"
+                @toggle-action-item="toggleActionItem"
+              />
+            </div>
+
+            <!-- Gather Data: Standard retro board -->
             <RetroBoard
               v-else
               :session="session"
