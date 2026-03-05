@@ -8,7 +8,13 @@
 import { describe, expect, test } from 'bun:test';
 import type { Peer } from 'crossws';
 import type { RetroPhase } from '../app/types/retro';
-import { RETRO_PHASES } from '../app/types/retro';
+import {
+    MAX_ACTION_ITEMS_PER_SESSION,
+    MAX_CARD_CONTENT_LENGTH,
+    MAX_CARDS_PER_USER,
+    MAX_SESSION_NAME_LENGTH,
+    RETRO_PHASES,
+} from '../app/types/retro';
 
 // We import the class directly for testing; the exported singleton is not used.
 // Re-export the private class by importing the module and casting.
@@ -73,7 +79,7 @@ describe('SessionStore', () => {
       const peer = makePeer();
       const longName = 'A'.repeat(200);
       const result = sessionStore.createSession(longName, 'Host', peer);
-      expect(result.session.name.length).toBeLessThanOrEqual(80);
+      expect(result.session.name.length).toBeLessThanOrEqual(MAX_SESSION_NAME_LENGTH);
     });
 
     test('join code uses only allowed characters', () => {
@@ -470,12 +476,12 @@ describe('SessionStore', () => {
       advanceToPhase(peer, 'decide-action');
 
       // Add items up to the limit
-      for (let i = 0; i < 50; i++) {
+      for (let i = 0; i < MAX_ACTION_ITEMS_PER_SESSION; i++) {
         const result = sessionStore.addActionItem(peer, `Action ${i}`);
         expect(result).not.toBeNull();
       }
 
-      // The 51st should be rejected
+      // The item exceeding the limit should be rejected
       expect(sessionStore.addActionItem(peer, 'One too many')).toBeNull();
     });
   });
@@ -553,18 +559,18 @@ describe('SessionStore', () => {
       const longContent = 'A'.repeat(1000);
       const result = sessionStore.addCard(peer, 'went-well', longContent);
       expect(result).not.toBeNull();
-      expect(result!.cards[0]!.content.length).toBeLessThanOrEqual(500);
+      expect(result!.cards[0]!.content.length).toBeLessThanOrEqual(MAX_CARD_CONTENT_LENGTH);
     });
 
     test('addCard rate limiting per user', () => {
       const peer = makePeer();
       sessionStore.createSession('Rate Cards', 'Host', peer);
       sessionStore.changePhase(peer, 'gather-data');
-      for (let i = 0; i < 50; i++) {
+      for (let i = 0; i < MAX_CARDS_PER_USER; i++) {
         const result = sessionStore.addCard(peer, 'went-well', `Card ${i}`);
         expect(result).not.toBeNull();
       }
-      // 51st card should be rejected
+      // Card exceeding the per-user limit should be rejected
       expect(sessionStore.addCard(peer, 'went-well', 'overflow')).toBeNull();
     });
   });

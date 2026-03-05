@@ -6,15 +6,15 @@
  */
 
 import type {
-  IActionItem,
-  ICardGroup,
-  ICheckInResponse,
-  IFeedbackResponse,
-  IRetroCard,
-  IRetroConfig,
-  IRetroSession,
-  RetroColumnType,
-  RetroPhase,
+    IActionItem,
+    ICardGroup,
+    ICheckInResponse,
+    IFeedbackResponse,
+    IRetroCard,
+    IRetroConfig,
+    IRetroSession,
+    RetroColumnType,
+    RetroPhase,
 } from '../types';
 import { countVotesForParticipant, isValidCheckInMood, RETRO_PHASES } from '../types';
 import { Participant } from './Participant';
@@ -677,7 +677,7 @@ export class RetroSession implements IRetroSession {
       id: data.id,
       phase: data.phase,
       cards: data.cards ?? [],
-      groups: data.groups ?? [],
+      groups: (data.groups ?? []).map((g) => ({ ...g, createdAt: new Date(g.createdAt) })),
       actionItems: data.actionItems ?? [],
       checkInResponses: data.checkInResponses ?? [],
       feedbackResponses: data.feedbackResponses ?? [],
