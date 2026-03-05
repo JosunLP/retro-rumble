@@ -63,14 +63,14 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside));
     <div
       v-if="isOpen"
       role="listbox"
-      class="absolute right-0 mt-1 w-44 bg-white dark:bg-secondary-800 border border-secondary-200 dark:border-secondary-700 rounded shadow-lg z-50 py-1 max-h-72 overflow-y-auto"
+      class="absolute right-0 mt-1 w-44 bg-white border border-secondary-200 rounded shadow-lg z-50 py-1 max-h-72 overflow-y-auto"
     >
       <button
         v-for="loc in availableLocales"
         :key="loc.code"
         type="button"
         role="option"
-        class="w-full text-left px-3 py-1.5 text-sm hover:bg-secondary-100 dark:hover:bg-secondary-700 transition-colors"
+        class="w-full text-left px-3 py-1.5 text-sm text-secondary-700 hover:bg-secondary-100 hover:text-secondary-900 transition-colors"
         @click="switchLocale(loc.code)"
       >
         {{ loc.name }}
