@@ -654,7 +654,7 @@ export class RetroSession implements IRetroSession {
       phase: this.phase,
       hostId: this.hostId,
       participants: this.participants.map((p) => p.toJSON()),
-      cards: this.cards.map((c) => ({ ...c })),
+      cards: this.cards.map((c) => ({ ...c, voterIds: [...c.voterIds] })),
       groups: this.groups.map((g) => ({ ...g, cardIds: [...g.cardIds], voterIds: [...g.voterIds] })),
       actionItems: this.actionItems.map((a) => ({ ...a })),
       checkInResponses: [...this.checkInResponses],
