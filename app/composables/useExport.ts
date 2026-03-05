@@ -220,7 +220,7 @@ export function useExport() {
       lines.push(`## ${t('export.markdown.committedActions')}`);
       lines.push('');
       lines.push(
-        `| ${t('export.markdown.action')} | ${t('export.markdown.assignee')} | ${t('export.markdown.due')} | Status |`
+        `| ${t('export.markdown.action')} | ${t('export.markdown.assignee')} | ${t('export.markdown.due')} | ${t('export.markdown.status')} |`
       );
       lines.push('| --- | --- | --- | --- |');
       for (const action of session.actionItems) {
