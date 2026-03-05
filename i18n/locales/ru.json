@@ -1,0 +1,183 @@
+{
+  "app": {
+    "name": "Retro Rumble",
+    "tagline": "Анонимные ретроспективы Scrum для гибких команд"
+  },
+  "connection": {
+    "connected": "Подключено",
+    "connecting": "Подключение...",
+    "disconnected": "Отключено",
+    "error": "Ошибка подключения"
+  },
+  "home": {
+    "welcome": "Начните ретроспективу",
+    "subtitle": "Создайте или присоединитесь к ретроспективе – анонимно, безопасно и просто.",
+    "newSession": "Новая сессия",
+    "joinSession": "Присоединиться к сессии"
+  },
+  "form": {
+    "sessionName": "Название сессии",
+    "sessionNamePlaceholder": "напр. Ретро Спринт 42",
+    "yourName": "Ваше имя",
+    "yourNamePlaceholder": "напр. Алексей",
+    "maxVotes": "Макс. голоса",
+    "timerMinutes": "Таймер (мин)",
+    "joinCode": "Код доступа",
+    "joinCodePlaceholder": "ABC123",
+    "createButton": "Начать ретро",
+    "joinButton": "Присоединиться к ретро"
+  },
+  "session": {
+    "joinCode": "Код доступа",
+    "participants": "участников",
+    "info": {
+      "sessionLabel": "Сессия:"
+    }
+  },
+  "participants": {
+    "title": "Участники",
+    "host": "Хост",
+    "you": "(вы)"
+  },
+  "phase": {
+    "set-the-stage": "Подготовка",
+    "gather-data": "Сбор данных",
+    "generate-insights": "Группировка",
+    "voting": "Голосование",
+    "decide-action": "Действия",
+    "close-retro": "Закрытие",
+    "previous": "Назад",
+    "next": "Вперёд"
+  },
+  "column": {
+    "went-well": "Что прошло хорошо",
+    "to-improve": "Что улучшить",
+    "action-items": "Действия",
+    "empty": "Карточек пока нет"
+  },
+  "card": {
+    "placeholder": "Добавьте карточку... (Ctrl+Enter для отправки)",
+    "edit": "Редактировать",
+    "delete": "Удалить",
+    "charRemaining": "Осталось {n} символов",
+    "charLimitReached": "Достигнут лимит символов"
+  },
+  "grouping": {
+    "instructionsHost": "Перетаскивайте карточки друг на друга для создания групп. Отдалите карточку от группы, чтобы разгруппировать.",
+    "instructionsParticipant": "Перетаскивайте карточки друг на друга для создания групп. Отдалите карточку от группы, чтобы разгруппировать.",
+    "newGroupTitle": "Новая группа",
+    "clickToRename": "Нажмите для переименования",
+    "deleteGroup": "Удалить группу",
+    "moveToColumn": "Переместить в {column}",
+    "removeFromGroup": "Убрать из группы",
+    "resetLayout": "Сбросить макет",
+    "maximize": "Развернуть",
+    "restore": "Восстановить",
+    "emptyColumn": "Нет карточек в этой колонке"
+  },
+  "voting": {
+    "title": "Голосование",
+    "remaining": "Осталось голосов",
+    "instructions": "Голосуйте за наиболее важные карточки и группы для обсуждения. Вы можете свободно распределять голоса.",
+    "groupCardCount": "({count} карточек)",
+    "voteGroup": "Голосовать за группу",
+    "unvoteGroup": "Снять голос с группы",
+    "voteCard": "Голосовать за карточку",
+    "unvoteCard": "Снять голос с карточки"
+  },
+  "timer": {
+    "title": "Таймер",
+    "start": "Старт",
+    "stop": "Стоп"
+  },
+  "summary": {
+    "totalCards": "Карточки",
+    "totalVotes": "Голоса",
+    "totalGroups": "Группы",
+    "actionsDone": "Выполненные действия",
+    "cards": "карточек",
+    "votes": "голосов",
+    "actionItems": "Действия",
+    "noActions": "Действий пока нет. Добавьте обязательства на следующий спринт!",
+    "actionPlaceholder": "Новое действие...",
+    "assigneePlaceholder": "Ответственный",
+    "addAction": "Добавить",
+    "dueDate": "Срок",
+    "dueDatePlaceholder": "ГГГГ-ММ-ДД"
+  },
+  "export": {
+    "title": "Экспортировать результаты",
+    "description": "Загрузите результаты ретро для обмена с командой или архивирования.",
+    "format": {
+      "json": "JSON",
+      "markdown": "Markdown",
+      "png": "Изображение (PNG)"
+    },
+    "markdown": {
+      "date": "Дата",
+      "participants": "Участники",
+      "committedActions": "Согласованные действия",
+      "action": "Действие",
+      "assignee": "Ответственный",
+      "due": "Срок",
+      "statistics": "Статистика",
+      "totalCards": "Всего карточек",
+      "totalVotes": "Всего голосов",
+      "done": "выполнено",
+      "generatedBy": "Создано с помощью"
+    },
+    "canvas": {
+      "participants": "Участники",
+      "cards": "карточек",
+      "votes": "голосов",
+      "groups": "групп",
+      "actions": "Действия"
+    }
+  },
+  "common": {
+    "cancel": "Отмена",
+    "save": "Сохранить"
+  },
+  "errors": {
+    "fillAllFields": "Пожалуйста, заполните все поля.",
+    "joinCodeLength": "Код доступа должен состоять из 6 символов.",
+    "enterYourName": "Пожалуйста, введите своё имя.",
+    "connectionFailed": "Не удалось подключиться к серверу."
+  },
+  "ui": {
+    "leaveConfirm": "Вы уверены, что хотите покинуть эту сессию?",
+    "leaveSession": "Покинуть сессию",
+    "shareLink": "Скопировать ссылку на сессию",
+    "shareLinkCopied": "Ссылка скопирована!",
+    "reconnecting": "Переподключение...",
+    "reconnectingHint": "Ваша сессия сохранена. Пожалуйста, подождите.",
+    "reconnectingError": "Подключение не удалось. Автоматическое повторное подключение..."
+  },
+  "checkin": {
+    "title": "Чек-ин",
+    "question": "Как вы себя чувствуете сегодня? Выберите эмодзи, описывающий ваше настроение.",
+    "responses": "Настроение команды",
+    "unknownParticipant": "Неизвестный участник",
+    "moodLabels": {
+      "happy": "Счастливый",
+      "neutral": "Нейтральный",
+      "worried": "Обеспокоенный",
+      "energized": "Энергичный",
+      "confident": "Уверенный",
+      "tired": "Усталый"
+    },
+    "waiting": "Ожидание ответов команды..."
+  },
+  "feedback": {
+    "title": "Отзыв о ретро",
+    "question": "Как прошла эта ретроспектива? Оцените от 1 (плохо) до 5 (отлично).",
+    "results": "Отзывы команды",
+    "average": "Среднее",
+    "waiting": "Ожидание отзывов...",
+    "rating1": "Плохо",
+    "rating2": "Неплохо",
+    "rating3": "Нормально",
+    "rating4": "Хорошо",
+    "rating5": "Отлично"
+  }
+}

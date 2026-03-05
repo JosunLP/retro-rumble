@@ -1,0 +1,183 @@
+{
+  "app": {
+    "name": "Retro Rumble",
+    "tagline": "アジャイルチームのための匿名スクラムレトロスペクティブ"
+  },
+  "connection": {
+    "connected": "接続済み",
+    "connecting": "接続中...",
+    "disconnected": "切断されました",
+    "error": "接続エラー"
+  },
+  "home": {
+    "welcome": "レトロを始めましょう",
+    "subtitle": "レトロスペクティブを作成または参加 – 匿名・安全・シンプル。",
+    "newSession": "新しいセッション",
+    "joinSession": "セッションに参加"
+  },
+  "form": {
+    "sessionName": "セッション名",
+    "sessionNamePlaceholder": "例: スプリント42レトロ",
+    "yourName": "あなたの名前",
+    "yourNamePlaceholder": "例: 田中",
+    "maxVotes": "最大投票数",
+    "timerMinutes": "タイマー（分）",
+    "joinCode": "参加コード",
+    "joinCodePlaceholder": "ABC123",
+    "createButton": "レトロを開始",
+    "joinButton": "レトロに参加"
+  },
+  "session": {
+    "joinCode": "参加コード",
+    "participants": "参加者",
+    "info": {
+      "sessionLabel": "セッション："
+    }
+  },
+  "participants": {
+    "title": "参加者",
+    "host": "ホスト",
+    "you": "（あなた）"
+  },
+  "phase": {
+    "set-the-stage": "準備",
+    "gather-data": "データ収集",
+    "generate-insights": "グループ化",
+    "voting": "投票",
+    "decide-action": "アクション",
+    "close-retro": "クローズ",
+    "previous": "前へ",
+    "next": "次へ"
+  },
+  "column": {
+    "went-well": "うまくいったこと",
+    "to-improve": "改善点",
+    "action-items": "アクションアイテム",
+    "empty": "カードはまだありません"
+  },
+  "card": {
+    "placeholder": "カードを追加... (Ctrl+Enterで送信)",
+    "edit": "編集",
+    "delete": "削除",
+    "charRemaining": "残り{n}文字",
+    "charLimitReached": "文字数制限に達しました"
+  },
+  "grouping": {
+    "instructionsHost": "カードを互いにドラッグしてグループを作成します。カードをグループから離してグループ解除します。",
+    "instructionsParticipant": "カードを互いにドラッグしてグループを作成します。カードをグループから離してグループ解除します。",
+    "newGroupTitle": "新しいグループ",
+    "clickToRename": "クリックして名前を変更",
+    "deleteGroup": "グループを削除",
+    "moveToColumn": "{column}に移動",
+    "removeFromGroup": "グループから削除",
+    "resetLayout": "レイアウトをリセット",
+    "maximize": "最大化",
+    "restore": "元に戻す",
+    "emptyColumn": "この列にカードはありません"
+  },
+  "voting": {
+    "title": "投票",
+    "remaining": "残り投票数",
+    "instructions": "最も重要なカードやグループに投票してください。投票は自由に分配できます。",
+    "groupCardCount": "（{count}枚のカード）",
+    "voteGroup": "グループに投票",
+    "unvoteGroup": "グループの投票を取り消す",
+    "voteCard": "カードに投票",
+    "unvoteCard": "カードの投票を取り消す"
+  },
+  "timer": {
+    "title": "タイマー",
+    "start": "開始",
+    "stop": "停止"
+  },
+  "summary": {
+    "totalCards": "カード",
+    "totalVotes": "投票",
+    "totalGroups": "グループ",
+    "actionsDone": "完了したアクション",
+    "cards": "枚",
+    "votes": "票",
+    "actionItems": "アクションアイテム",
+    "noActions": "まだアクションはありません。次のスプリントへの約束を追加しましょう！",
+    "actionPlaceholder": "新しいアクション...",
+    "assigneePlaceholder": "担当者",
+    "addAction": "追加",
+    "dueDate": "期限",
+    "dueDatePlaceholder": "YYYY-MM-DD"
+  },
+  "export": {
+    "title": "結果をエクスポート",
+    "description": "レトロの結果をダウンロードして、チームと共有または保存します。",
+    "format": {
+      "json": "JSON",
+      "markdown": "Markdown",
+      "png": "画像 (PNG)"
+    },
+    "markdown": {
+      "date": "日付",
+      "participants": "参加者",
+      "committedActions": "合意したアクション",
+      "action": "アクション",
+      "assignee": "担当者",
+      "due": "期限",
+      "statistics": "統計",
+      "totalCards": "カード合計",
+      "totalVotes": "投票合計",
+      "done": "完了",
+      "generatedBy": "作成者"
+    },
+    "canvas": {
+      "participants": "参加者",
+      "cards": "枚",
+      "votes": "票",
+      "groups": "グループ",
+      "actions": "アクション"
+    }
+  },
+  "common": {
+    "cancel": "キャンセル",
+    "save": "保存"
+  },
+  "errors": {
+    "fillAllFields": "すべてのフィールドを入力してください。",
+    "joinCodeLength": "参加コードは6文字でなければなりません。",
+    "enterYourName": "名前を入力してください。",
+    "connectionFailed": "サーバーに接続できませんでした。"
+  },
+  "ui": {
+    "leaveConfirm": "本当にこのセッションを離れますか？",
+    "leaveSession": "セッションを離れる",
+    "shareLink": "セッションリンクをコピー",
+    "shareLinkCopied": "リンクをコピーしました！",
+    "reconnecting": "再接続中...",
+    "reconnectingHint": "セッションは保存されています。お待ちください。",
+    "reconnectingError": "接続に失敗しました。自動的に再試行します..."
+  },
+  "checkin": {
+    "title": "チェックイン",
+    "question": "今日の気分はどうですか？気分を表す絵文字を選んでください。",
+    "responses": "チームの気分",
+    "unknownParticipant": "不明な参加者",
+    "moodLabels": {
+      "happy": "嬉しい",
+      "neutral": "普通",
+      "worried": "心配",
+      "energized": "元気",
+      "confident": "自信がある",
+      "tired": "疲れた"
+    },
+    "waiting": "チームの回答を待っています..."
+  },
+  "feedback": {
+    "title": "レトロのフィードバック",
+    "question": "このレトロスペクティブはどうでしたか？1（良くない）から5（素晴らしい）で評価してください。",
+    "results": "チームのフィードバック",
+    "average": "平均",
+    "waiting": "フィードバックを待っています...",
+    "rating1": "悪い",
+    "rating2": "まあまあ",
+    "rating3": "普通",
+    "rating4": "良い",
+    "rating5": "素晴らしい"
+  }
+}

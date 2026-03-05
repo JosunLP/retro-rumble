@@ -78,9 +78,8 @@ function userGroupVotes(group: ICardGroup): number {
   return group.voterIds.filter((id) => id === props.currentUserId).length;
 }
 
-function canVote(): boolean {
-  return props.remainingVotes > 0;
-}
+/** Whether the user can still cast a vote */
+const canVote = computed(() => props.remainingVotes > 0);
 
 function handleVoteCard(cardId: string) {
   emit('voteCard', cardId);
@@ -200,11 +199,11 @@ function hasContent(column: RetroColumnType): boolean {
                 class="p-1 rounded-full transition-colors"
                 :aria-label="t('voting.voteGroup')"
                 :class="
-                  canVote()
+                  canVote
                     ? 'text-primary-600 hover:text-primary-700 hover:bg-primary-50'
                     : 'text-secondary-300 cursor-not-allowed'
                 "
-                :disabled="!canVote()"
+                :disabled="!canVote"
                 @click="handleVoteGroup(group.id)"
               >
                 <Icon name="heroicons:plus-circle" class="w-4 h-4" />
@@ -255,11 +254,11 @@ function hasContent(column: RetroColumnType): boolean {
                     class="p-0.5 rounded-full transition-colors"
                     :aria-label="t('voting.voteCard')"
                     :class="
-                      canVote()
+                      canVote
                         ? 'text-primary-600 hover:text-primary-700 hover:bg-primary-50'
                         : 'text-secondary-300 cursor-not-allowed'
                     "
-                    :disabled="!canVote()"
+                    :disabled="!canVote"
                     @click="handleVoteCard(card.id)"
                   >
                     <Icon name="heroicons:plus-circle" class="w-3.5 h-3.5" />
@@ -312,11 +311,11 @@ function hasContent(column: RetroColumnType): boolean {
                 class="p-0.5 rounded-full transition-colors"
                 :aria-label="t('voting.voteCard')"
                 :class="
-                  canVote()
+                  canVote
                     ? 'text-primary-600 hover:text-primary-700 hover:bg-primary-50'
                     : 'text-secondary-300 cursor-not-allowed'
                 "
-                :disabled="!canVote()"
+                :disabled="!canVote"
                 @click="handleVoteCard(card.id)"
               >
                 <Icon name="heroicons:plus-circle" class="w-3.5 h-3.5" />

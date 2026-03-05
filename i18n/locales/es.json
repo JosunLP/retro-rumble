@@ -1,0 +1,183 @@
+{
+  "app": {
+    "name": "Retro Rumble",
+    "tagline": "Retrospectivas Scrum anónimas para equipos ágiles"
+  },
+  "connection": {
+    "connected": "Conectado",
+    "connecting": "Conectando...",
+    "disconnected": "Desconectado",
+    "error": "Error de conexión"
+  },
+  "home": {
+    "welcome": "Inicia tu Retro",
+    "subtitle": "Crea o únete a una retrospectiva – anónima, segura y sencilla.",
+    "newSession": "Nueva sesión",
+    "joinSession": "Unirse a sesión"
+  },
+  "form": {
+    "sessionName": "Nombre de la sesión",
+    "sessionNamePlaceholder": "p. ej., Retro Sprint 42",
+    "yourName": "Tu nombre",
+    "yourNamePlaceholder": "p. ej., Alex",
+    "maxVotes": "Máx. votos",
+    "timerMinutes": "Temporizador (min)",
+    "joinCode": "Código de acceso",
+    "joinCodePlaceholder": "ABC123",
+    "createButton": "Iniciar Retro",
+    "joinButton": "Unirse a Retro"
+  },
+  "session": {
+    "joinCode": "Código de acceso",
+    "participants": "participantes",
+    "info": {
+      "sessionLabel": "Sesión:"
+    }
+  },
+  "participants": {
+    "title": "Participantes",
+    "host": "Anfitrión",
+    "you": "(tú)"
+  },
+  "phase": {
+    "set-the-stage": "Preparación",
+    "gather-data": "Recopilar datos",
+    "generate-insights": "Agrupación",
+    "voting": "Votación",
+    "decide-action": "Acciones",
+    "close-retro": "Cierre",
+    "previous": "Anterior",
+    "next": "Siguiente"
+  },
+  "column": {
+    "went-well": "Qué salió bien",
+    "to-improve": "Qué mejorar",
+    "action-items": "Acciones",
+    "empty": "Aún no hay tarjetas"
+  },
+  "card": {
+    "placeholder": "Agregar tarjeta... (Ctrl+Enter para enviar)",
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "charRemaining": "{n} caracteres restantes",
+    "charLimitReached": "Límite de caracteres alcanzado"
+  },
+  "grouping": {
+    "instructionsHost": "Arrastra tarjetas unas sobre otras para crear grupos. Arrastra fuera del grupo para desagrupar.",
+    "instructionsParticipant": "Arrastra tarjetas unas sobre otras para crear grupos. Arrastra fuera del grupo para desagrupar.",
+    "newGroupTitle": "Nuevo grupo",
+    "clickToRename": "Clic para renombrar",
+    "deleteGroup": "Eliminar grupo",
+    "moveToColumn": "Mover a {column}",
+    "removeFromGroup": "Quitar del grupo",
+    "resetLayout": "Restablecer diseño",
+    "maximize": "Maximizar",
+    "restore": "Restaurar",
+    "emptyColumn": "No hay tarjetas en esta columna"
+  },
+  "voting": {
+    "title": "Votación",
+    "remaining": "Votos restantes",
+    "instructions": "Vota por las tarjetas y grupos más importantes. Puedes distribuir tus votos libremente.",
+    "groupCardCount": "({count} tarjetas)",
+    "voteGroup": "Votar por grupo",
+    "unvoteGroup": "Quitar voto del grupo",
+    "voteCard": "Votar por tarjeta",
+    "unvoteCard": "Quitar voto de tarjeta"
+  },
+  "timer": {
+    "title": "Temporizador",
+    "start": "Iniciar",
+    "stop": "Detener"
+  },
+  "summary": {
+    "totalCards": "Tarjetas",
+    "totalVotes": "Votos",
+    "totalGroups": "Grupos",
+    "actionsDone": "Acciones completadas",
+    "cards": "tarjetas",
+    "votes": "votos",
+    "actionItems": "Acciones",
+    "noActions": "Aún no hay acciones. ¡Añade compromisos para el próximo sprint!",
+    "actionPlaceholder": "Nueva acción...",
+    "assigneePlaceholder": "Responsable",
+    "addAction": "Agregar",
+    "dueDate": "Fecha límite",
+    "dueDatePlaceholder": "AAAA-MM-DD"
+  },
+  "export": {
+    "title": "Exportar resultados",
+    "description": "Descarga los resultados de tu retro para compartirlos con el equipo o archivarlos.",
+    "format": {
+      "json": "JSON",
+      "markdown": "Markdown",
+      "png": "Imagen (PNG)"
+    },
+    "markdown": {
+      "date": "Fecha",
+      "participants": "Participantes",
+      "committedActions": "Acciones comprometidas",
+      "action": "Acción",
+      "assignee": "Responsable",
+      "due": "Fecha límite",
+      "statistics": "Estadísticas",
+      "totalCards": "Total de tarjetas",
+      "totalVotes": "Total de votos",
+      "done": "completado",
+      "generatedBy": "Generado por"
+    },
+    "canvas": {
+      "participants": "Participantes",
+      "cards": "tarjetas",
+      "votes": "votos",
+      "groups": "grupos",
+      "actions": "Acciones"
+    }
+  },
+  "common": {
+    "cancel": "Cancelar",
+    "save": "Guardar"
+  },
+  "errors": {
+    "fillAllFields": "Por favor, completa todos los campos.",
+    "joinCodeLength": "El código de acceso debe tener 6 caracteres.",
+    "enterYourName": "Por favor, ingresa tu nombre.",
+    "connectionFailed": "No se pudo conectar al servidor."
+  },
+  "ui": {
+    "leaveConfirm": "¿Seguro que quieres salir de esta sesión?",
+    "leaveSession": "Salir de sesión",
+    "shareLink": "Copiar enlace de sesión",
+    "shareLinkCopied": "¡Enlace copiado!",
+    "reconnecting": "Reconectando...",
+    "reconnectingHint": "Tu sesión está guardada. Por favor, espera.",
+    "reconnectingError": "Conexión fallida. Reintentando automáticamente..."
+  },
+  "checkin": {
+    "title": "Check-In",
+    "question": "¿Cómo te sientes hoy? Elige un emoji que describa tu estado de ánimo.",
+    "responses": "Estado del equipo",
+    "unknownParticipant": "Participante desconocido",
+    "moodLabels": {
+      "happy": "Feliz",
+      "neutral": "Neutral",
+      "worried": "Preocupado",
+      "energized": "Energizado",
+      "confident": "Seguro",
+      "tired": "Cansado"
+    },
+    "waiting": "Esperando respuestas del equipo..."
+  },
+  "feedback": {
+    "title": "Feedback de la retro",
+    "question": "¿Cómo fue esta retrospectiva? Califica del 1 (no tan bien) al 5 (excelente).",
+    "results": "Feedback del equipo",
+    "average": "Promedio",
+    "waiting": "Esperando feedback...",
+    "rating1": "Malo",
+    "rating2": "Regular",
+    "rating3": "OK",
+    "rating4": "Bueno",
+    "rating5": "Excelente"
+  }
+}

@@ -1,0 +1,183 @@
+{
+  "app": {
+    "name": "Retro Rumble",
+    "tagline": "Anonyma Scrum-retrospektiv för agila team"
+  },
+  "connection": {
+    "connected": "Ansluten",
+    "connecting": "Ansluter...",
+    "disconnected": "Frånkopplad",
+    "error": "Anslutningsfel"
+  },
+  "home": {
+    "welcome": "Starta din Retro",
+    "subtitle": "Skapa eller gå med i en retrospektiv – anonym, säker och enkel.",
+    "newSession": "Ny session",
+    "joinSession": "Gå med i session"
+  },
+  "form": {
+    "sessionName": "Sessionsnamn",
+    "sessionNamePlaceholder": "t.ex. Retro Sprint 42",
+    "yourName": "Ditt namn",
+    "yourNamePlaceholder": "t.ex. Alex",
+    "maxVotes": "Max röster",
+    "timerMinutes": "Timer (min)",
+    "joinCode": "Åtkomstkod",
+    "joinCodePlaceholder": "ABC123",
+    "createButton": "Starta Retro",
+    "joinButton": "Gå med i Retro"
+  },
+  "session": {
+    "joinCode": "Åtkomstkod",
+    "participants": "deltagare",
+    "info": {
+      "sessionLabel": "Session:"
+    }
+  },
+  "participants": {
+    "title": "Deltagare",
+    "host": "Värd",
+    "you": "(du)"
+  },
+  "phase": {
+    "set-the-stage": "Förberedelse",
+    "gather-data": "Datainsamling",
+    "generate-insights": "Gruppering",
+    "voting": "Röstning",
+    "decide-action": "Åtgärder",
+    "close-retro": "Avslutning",
+    "previous": "Föregående",
+    "next": "Nästa"
+  },
+  "column": {
+    "went-well": "Vad gick bra",
+    "to-improve": "Vad kan förbättras",
+    "action-items": "Åtgärder",
+    "empty": "Inga kort än"
+  },
+  "card": {
+    "placeholder": "Lägg till ett kort... (Ctrl+Enter för att skicka)",
+    "edit": "Redigera",
+    "delete": "Ta bort",
+    "charRemaining": "{n} tecken kvar",
+    "charLimitReached": "Teckengräns uppnådd"
+  },
+  "grouping": {
+    "instructionsHost": "Dra kort på varandra för att skapa grupper. Dra ett kort från en grupp för att avgruppera.",
+    "instructionsParticipant": "Dra kort på varandra för att skapa grupper. Dra ett kort från en grupp för att avgruppera.",
+    "newGroupTitle": "Ny grupp",
+    "clickToRename": "Klicka för att byta namn",
+    "deleteGroup": "Ta bort grupp",
+    "moveToColumn": "Flytta till {column}",
+    "removeFromGroup": "Ta bort från grupp",
+    "resetLayout": "Återställ layout",
+    "maximize": "Maximera",
+    "restore": "Återställ",
+    "emptyColumn": "Inga kort i den här kolumnen"
+  },
+  "voting": {
+    "title": "Röstning",
+    "remaining": "Återstående röster",
+    "instructions": "Rösta på de viktigaste korten och grupperna att diskutera. Du kan fördela dina röster fritt.",
+    "groupCardCount": "({count} kort)",
+    "voteGroup": "Rösta på grupp",
+    "unvoteGroup": "Ta bort röst från grupp",
+    "voteCard": "Rösta på kort",
+    "unvoteCard": "Ta bort röst från kort"
+  },
+  "timer": {
+    "title": "Timer",
+    "start": "Starta",
+    "stop": "Stoppa"
+  },
+  "summary": {
+    "totalCards": "Kort",
+    "totalVotes": "Röster",
+    "totalGroups": "Grupper",
+    "actionsDone": "Slutförda åtgärder",
+    "cards": "kort",
+    "votes": "röster",
+    "actionItems": "Åtgärder",
+    "noActions": "Inga åtgärder än. Lägg till åtaganden för nästa sprint!",
+    "actionPlaceholder": "Ny åtgärd...",
+    "assigneePlaceholder": "Ansvarig",
+    "addAction": "Lägg till",
+    "dueDate": "Deadline",
+    "dueDatePlaceholder": "ÅÅÅÅ-MM-DD"
+  },
+  "export": {
+    "title": "Exportera resultat",
+    "description": "Ladda ner dina retroresultat för att dela med teamet eller arkivera.",
+    "format": {
+      "json": "JSON",
+      "markdown": "Markdown",
+      "png": "Bild (PNG)"
+    },
+    "markdown": {
+      "date": "Datum",
+      "participants": "Deltagare",
+      "committedActions": "Överenskomna åtgärder",
+      "action": "Åtgärd",
+      "assignee": "Ansvarig",
+      "due": "Deadline",
+      "statistics": "Statistik",
+      "totalCards": "Totalt kort",
+      "totalVotes": "Totalt röster",
+      "done": "klar",
+      "generatedBy": "Genererad av"
+    },
+    "canvas": {
+      "participants": "Deltagare",
+      "cards": "kort",
+      "votes": "röster",
+      "groups": "grupper",
+      "actions": "Åtgärder"
+    }
+  },
+  "common": {
+    "cancel": "Avbryt",
+    "save": "Spara"
+  },
+  "errors": {
+    "fillAllFields": "Fyll i alla fält.",
+    "joinCodeLength": "Åtkomstkoden måste vara 6 tecken.",
+    "enterYourName": "Ange ditt namn.",
+    "connectionFailed": "Det gick inte att ansluta till servern."
+  },
+  "ui": {
+    "leaveConfirm": "Är du säker på att du vill lämna den här sessionen?",
+    "leaveSession": "Lämna session",
+    "shareLink": "Kopiera sessionslänk",
+    "shareLinkCopied": "Länk kopierad!",
+    "reconnecting": "Återansluter...",
+    "reconnectingHint": "Din session är sparad. Vänta.",
+    "reconnectingError": "Anslutning misslyckades. Återansluter automatiskt..."
+  },
+  "checkin": {
+    "title": "Check-in",
+    "question": "Hur mår du idag? Välj en emoji som beskriver ditt humör.",
+    "responses": "Teamets humör",
+    "unknownParticipant": "Okänd deltagare",
+    "moodLabels": {
+      "happy": "Glad",
+      "neutral": "Neutral",
+      "worried": "Orolig",
+      "energized": "Energisk",
+      "confident": "Trygg",
+      "tired": "Trött"
+    },
+    "waiting": "Väntar på teamets svar..."
+  },
+  "feedback": {
+    "title": "Feedback om Retro",
+    "question": "Hur gick den här retrospektiven? Betygsätt från 1 (inte bra) till 5 (utmärkt).",
+    "results": "Teamets feedback",
+    "average": "Genomsnitt",
+    "waiting": "Väntar på feedback...",
+    "rating1": "Dåligt",
+    "rating2": "Okej",
+    "rating3": "Bra",
+    "rating4": "Mycket bra",
+    "rating5": "Utmärkt"
+  }
+}

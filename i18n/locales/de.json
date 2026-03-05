@@ -112,6 +112,26 @@
       "json": "JSON",
       "markdown": "Markdown",
       "png": "Bild (PNG)"
+    },
+    "markdown": {
+      "date": "Datum",
+      "participants": "Teilnehmer",
+      "committedActions": "Vereinbarte Maßnahmen",
+      "action": "Maßnahme",
+      "assignee": "Zuständig",
+      "due": "Fällig",
+      "statistics": "Statistik",
+      "totalCards": "Karten insgesamt",
+      "totalVotes": "Stimmen insgesamt",
+      "done": "erledigt",
+      "generatedBy": "Erstellt mit"
+    },
+    "canvas": {
+      "participants": "Teilnehmer",
+      "cards": "Karten",
+      "votes": "Stimmen",
+      "groups": "Gruppen",
+      "actions": "Maßnahmen"
     }
   },
   "common": {

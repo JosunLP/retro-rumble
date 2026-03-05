@@ -33,10 +33,13 @@ export class Participant implements IParticipant {
   }
 
   /**
-   * Creates a Participant instance from JSON data
+   * Creates a Participant instance from JSON data.
+   * Restores the original joinedAt timestamp instead of using the current time.
    */
   public static fromJSON(data: IParticipant): Participant {
     const participant = new Participant(data.name, data.isHost, data.id);
+    // Override the joinedAt set by the constructor to restore the original timestamp
+    (participant as { joinedAt: Date }).joinedAt = new Date(data.joinedAt);
     return participant;
   }
 }
