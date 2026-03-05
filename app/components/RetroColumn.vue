@@ -137,12 +137,12 @@ const newCardCharsRemaining = computed(
             :placeholder="t('card.placeholder')"
             :maxlength="MAX_CARD_CONTENT_LENGTH"
             :aria-label="t(`column.${column}`) + ' — ' + t('card.placeholder')"
-            aria-describedby="char-counter"
+            :aria-describedby="`char-counter-${column}`"
             rows="2"
             @keydown.enter.ctrl="addCard"
           />
           <span
-            id="char-counter"
+            :id="`char-counter-${column}`"
             class="absolute bottom-1 right-2 text-xs tabular-nums leading-none"
             :class="newCardCharsRemaining <= 50 ? 'text-warning-500' : 'text-secondary-300'"
             role="status"
