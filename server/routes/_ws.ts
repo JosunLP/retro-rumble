@@ -7,33 +7,33 @@
 
 import type { Peer } from 'crossws';
 import type {
-  AddActionItemPayload,
-  AddCardPayload,
-  AddCardToGroupPayload,
-  CheckInRespondPayload,
-  ClientMessage,
-  CreateGroupPayload,
-  CreateSessionPayload,
-  DeleteActionItemPayload,
-  DeleteCardPayload,
-  DeleteGroupPayload,
-  EditActionItemPayload,
-  EditCardPayload,
-  FeedbackRespondPayload,
-  JoinSessionPayload,
-  MoveCardPayload,
-  MoveGroupPayload,
-  PhaseChangePayload,
-  RejoinSessionPayload,
-  RemoveCardFromGroupPayload,
-  RenameGroupPayload,
-  ServerMessage,
-  TimerSetPayload,
-  ToggleActionItemPayload,
-  UnvoteCardPayload,
-  UnvoteGroupPayload,
-  VoteCardPayload,
-  VoteGroupPayload,
+    AddActionItemPayload,
+    AddCardPayload,
+    AddCardToGroupPayload,
+    CheckInRespondPayload,
+    ClientMessage,
+    CreateGroupPayload,
+    CreateSessionPayload,
+    DeleteActionItemPayload,
+    DeleteCardPayload,
+    DeleteGroupPayload,
+    EditActionItemPayload,
+    EditCardPayload,
+    FeedbackRespondPayload,
+    JoinSessionPayload,
+    MoveCardPayload,
+    MoveGroupPayload,
+    PhaseChangePayload,
+    RejoinSessionPayload,
+    RemoveCardFromGroupPayload,
+    RenameGroupPayload,
+    ServerMessage,
+    TimerSetPayload,
+    ToggleActionItemPayload,
+    UnvoteCardPayload,
+    UnvoteGroupPayload,
+    VoteCardPayload,
+    VoteGroupPayload,
 } from '../../app/types/websocket';
 import { sessionStore } from '../utils/sessionStore';
 
@@ -76,124 +76,127 @@ function broadcastToSession(
 }
 
 /**
+ * Safely dispatches a handler, catching any uncaught exceptions so that
+ * one bad message never tears down the entire WebSocket connection.
+ */
+function safeDispatch(peer: Peer, handler: () => void): void {
+  try {
+    handler();
+  } catch (error) {
+    console.error('[WebSocket] Handler error:', error);
+    sendMessage(peer, 'session:error', {
+      message: 'An internal error occurred. Please try again.',
+      code: 'INTERNAL_ERROR',
+    });
+  }
+}
+
+/**
  * Handles incoming WebSocket messages
  */
 function handleMessage(peer: Peer, data: string): void {
+  let message: ClientMessage;
   try {
-    const message = JSON.parse(data) as ClientMessage;
-
-    switch (message.type) {
-      case 'session:create':
-        handleCreateSession(peer, message.payload as CreateSessionPayload);
-        break;
-      case 'session:join':
-        handleJoinSession(peer, message.payload as JoinSessionPayload);
-        break;
-      case 'session:rejoin':
-        handleRejoinSession(peer, message.payload as RejoinSessionPayload);
-        break;
-      case 'session:leave':
-        handleLeaveSession(peer);
-        break;
-      case 'phase:change':
-        handlePhaseChange(peer, message.payload as PhaseChangePayload);
-        break;
-      case 'card:add':
-        handleAddCard(peer, message.payload as AddCardPayload);
-        break;
-      case 'card:edit':
-        handleEditCard(peer, message.payload as EditCardPayload);
-        break;
-      case 'card:delete':
-        handleDeleteCard(peer, message.payload as DeleteCardPayload);
-        break;
-      case 'card:vote':
-        handleVoteCard(peer, message.payload as VoteCardPayload);
-        break;
-      case 'card:unvote':
-        handleUnvoteCard(peer, message.payload as UnvoteCardPayload);
-        break;
-      case 'card:move':
-        handleMoveCard(peer, message.payload as MoveCardPayload);
-        break;
-      case 'group:create':
-        handleCreateGroup(peer, message.payload as CreateGroupPayload);
-        break;
-      case 'group:add-card':
-        handleAddCardToGroup(peer, message.payload as AddCardToGroupPayload);
-        break;
-      case 'group:remove-card':
-        handleRemoveCardFromGroup(
-          peer,
-          message.payload as RemoveCardFromGroupPayload
-        );
-        break;
-      case 'group:rename':
-        handleRenameGroup(peer, message.payload as RenameGroupPayload);
-        break;
-      case 'group:move':
-        handleMoveGroup(peer, message.payload as MoveGroupPayload);
-        break;
-      case 'group:delete':
-        handleDeleteGroup(peer, message.payload as DeleteGroupPayload);
-        break;
-      case 'group:vote':
-        handleVoteGroup(peer, message.payload as VoteGroupPayload);
-        break;
-      case 'group:unvote':
-        handleUnvoteGroup(peer, message.payload as UnvoteGroupPayload);
-        break;
-      case 'action:add':
-        handleAddActionItem(peer, message.payload as AddActionItemPayload);
-        break;
-      case 'action:edit':
-        handleEditActionItem(peer, message.payload as EditActionItemPayload);
-        break;
-      case 'action:delete':
-        handleDeleteActionItem(
-          peer,
-          message.payload as DeleteActionItemPayload
-        );
-        break;
-      case 'action:toggle':
-        handleToggleActionItem(
-          peer,
-          message.payload as ToggleActionItemPayload
-        );
-        break;
-      case 'checkin:respond':
-        handleCheckInRespond(
-          peer,
-          message.payload as CheckInRespondPayload
-        );
-        break;
-      case 'feedback:respond':
-        handleFeedbackRespond(
-          peer,
-          message.payload as FeedbackRespondPayload
-        );
-        break;
-      case 'timer:start':
-        handleTimerStart(peer);
-        break;
-      case 'timer:stop':
-        handleTimerStop(peer);
-        break;
-      case 'timer:set':
-        handleTimerSet(peer, message.payload as TimerSetPayload);
-        break;
-      case 'ping':
-        sendMessage(peer, 'pong', {});
-        break;
-      default:
-        console.warn('[WebSocket] Unknown message type:', message.type);
-    }
+    message = JSON.parse(data) as ClientMessage;
   } catch (error) {
     console.error('[WebSocket] Error parsing message:', error);
     sendMessage(peer, 'session:error', {
-      message: 'Invalid message',
+      message: 'Invalid message format.',
       code: 'INVALID_MESSAGE',
     });
+    return;
+  }
+
+  switch (message.type) {
+    case 'session:create':
+      safeDispatch(peer, () => handleCreateSession(peer, message.payload as CreateSessionPayload));
+      break;
+    case 'session:join':
+      safeDispatch(peer, () => handleJoinSession(peer, message.payload as JoinSessionPayload));
+      break;
+    case 'session:rejoin':
+      safeDispatch(peer, () => handleRejoinSession(peer, message.payload as RejoinSessionPayload));
+      break;
+    case 'session:leave':
+      safeDispatch(peer, () => handleLeaveSession(peer));
+      break;
+    case 'phase:change':
+      safeDispatch(peer, () => handlePhaseChange(peer, message.payload as PhaseChangePayload));
+      break;
+    case 'card:add':
+      safeDispatch(peer, () => handleAddCard(peer, message.payload as AddCardPayload));
+      break;
+    case 'card:edit':
+      safeDispatch(peer, () => handleEditCard(peer, message.payload as EditCardPayload));
+      break;
+    case 'card:delete':
+      safeDispatch(peer, () => handleDeleteCard(peer, message.payload as DeleteCardPayload));
+      break;
+    case 'card:vote':
+      safeDispatch(peer, () => handleVoteCard(peer, message.payload as VoteCardPayload));
+      break;
+    case 'card:unvote':
+      safeDispatch(peer, () => handleUnvoteCard(peer, message.payload as UnvoteCardPayload));
+      break;
+    case 'card:move':
+      safeDispatch(peer, () => handleMoveCard(peer, message.payload as MoveCardPayload));
+      break;
+    case 'group:create':
+      safeDispatch(peer, () => handleCreateGroup(peer, message.payload as CreateGroupPayload));
+      break;
+    case 'group:add-card':
+      safeDispatch(peer, () => handleAddCardToGroup(peer, message.payload as AddCardToGroupPayload));
+      break;
+    case 'group:remove-card':
+      safeDispatch(peer, () => handleRemoveCardFromGroup(peer, message.payload as RemoveCardFromGroupPayload));
+      break;
+    case 'group:rename':
+      safeDispatch(peer, () => handleRenameGroup(peer, message.payload as RenameGroupPayload));
+      break;
+    case 'group:move':
+      safeDispatch(peer, () => handleMoveGroup(peer, message.payload as MoveGroupPayload));
+      break;
+    case 'group:delete':
+      safeDispatch(peer, () => handleDeleteGroup(peer, message.payload as DeleteGroupPayload));
+      break;
+    case 'group:vote':
+      safeDispatch(peer, () => handleVoteGroup(peer, message.payload as VoteGroupPayload));
+      break;
+    case 'group:unvote':
+      safeDispatch(peer, () => handleUnvoteGroup(peer, message.payload as UnvoteGroupPayload));
+      break;
+    case 'action:add':
+      safeDispatch(peer, () => handleAddActionItem(peer, message.payload as AddActionItemPayload));
+      break;
+    case 'action:edit':
+      safeDispatch(peer, () => handleEditActionItem(peer, message.payload as EditActionItemPayload));
+      break;
+    case 'action:delete':
+      safeDispatch(peer, () => handleDeleteActionItem(peer, message.payload as DeleteActionItemPayload));
+      break;
+    case 'action:toggle':
+      safeDispatch(peer, () => handleToggleActionItem(peer, message.payload as ToggleActionItemPayload));
+      break;
+    case 'checkin:respond':
+      safeDispatch(peer, () => handleCheckInRespond(peer, message.payload as CheckInRespondPayload));
+      break;
+    case 'feedback:respond':
+      safeDispatch(peer, () => handleFeedbackRespond(peer, message.payload as FeedbackRespondPayload));
+      break;
+    case 'timer:start':
+      safeDispatch(peer, () => handleTimerStart(peer));
+      break;
+    case 'timer:stop':
+      safeDispatch(peer, () => handleTimerStop(peer));
+      break;
+    case 'timer:set':
+      safeDispatch(peer, () => handleTimerSet(peer, message.payload as TimerSetPayload));
+      break;
+    case 'ping':
+      sendMessage(peer, 'pong', {});
+      break;
+    default:
+      console.warn('[WebSocket] Unknown message type:', message.type);
   }
 }
 
@@ -202,21 +205,28 @@ function handleMessage(peer: Peer, data: string): void {
 // ============================================
 
 function handleCreateSession(peer: Peer, payload: CreateSessionPayload): void {
-  const result = sessionStore.createSession(
-    payload.sessionName,
-    payload.participantName,
-    peer,
-    {
-      maxVotesPerUser: payload.maxVotesPerUser,
-      timerDuration: payload.timerDuration,
-    }
-  );
+  try {
+    const result = sessionStore.createSession(
+      payload.sessionName,
+      payload.participantName,
+      peer,
+      {
+        maxVotesPerUser: payload.maxVotesPerUser,
+        timerDuration: payload.timerDuration,
+      }
+    );
 
-  sendMessage(peer, 'session:created', {
-    session: result.session,
-    joinCode: result.joinCode,
-    participant: result.participant,
-  });
+    sendMessage(peer, 'session:created', {
+      session: result.session,
+      joinCode: result.joinCode,
+      participant: result.participant,
+    });
+  } catch {
+    sendMessage(peer, 'session:error', {
+      message: 'Could not create session. Please check your input.',
+      code: 'SESSION_CREATE_FAILED',
+    });
+  }
 }
 
 function handleJoinSession(peer: Peer, payload: JoinSessionPayload): void {

@@ -12,7 +12,20 @@ import type {
   RetroColumnType,
   RetroPhase,
 } from '../../app/types/retro';
-import { JOIN_CODE_CHARS, JOIN_CODE_LENGTH } from '../../app/types/retro';
+import {
+  isValidColumnType,
+  isValidISODate,
+  isValidPhase,
+  JOIN_CODE_CHARS,
+  JOIN_CODE_LENGTH,
+  MAX_ACTION_ITEM_TEXT_LENGTH,
+  MAX_ACTION_ITEMS_PER_SESSION,
+  MAX_CARD_CONTENT_LENGTH,
+  MAX_CARDS_PER_USER,
+  MAX_GROUP_TITLE_LENGTH,
+  MAX_PARTICIPANT_NAME_LENGTH,
+  MAX_SESSION_NAME_LENGTH,
+} from '../../app/types/retro';
 import { Participant } from '../../app/utils/Participant';
 import { RetroSession } from '../../app/utils/RetroSession';
 
@@ -36,6 +49,25 @@ interface SessionEntry {
 
 const SESSION_IDLE_TTL_MS = 30 * 60 * 1000; // 30 minutes
 const SESSION_CLEANUP_INTERVAL_MS = 60 * 1000; // 1 minute
+
+/**
+ * Strips HTML tags from a string.
+ * Defense-in-depth: all user-provided text is plain-text only,
+ * so we remove anything that looks like a tag before storing.
+ *
+ * The regex is applied iteratively to handle nested / malformed constructs
+ * such as `<<script>>` which a single pass would miss.
+ */
+function stripHtml(text: string): string {
+  let result = text;
+  let previous: string;
+  do {
+    previous = result;
+    result = result.replace(/<[^>]*>/g, '');
+  } while (result !== previous);
+  // Remove any remaining lone angle brackets as a final safety measure
+  return result.replace(/[<>]/g, '');
+}
 
 class SessionStore {
   private sessions: Map<string, SessionEntry> = new Map(); // sessionId -> entry
@@ -103,8 +135,14 @@ class SessionStore {
     peer: Peer,
     config?: { maxVotesPerUser?: number; timerDuration?: number }
   ): { session: IRetroSession; joinCode: string; participant: Participant } {
-    const participant = new Participant(participantName, true);
-    const session = new RetroSession(sessionName, participant.id, {
+    // Validate and sanitize input lengths (strip HTML as defense-in-depth)
+    const safeName = stripHtml(sessionName).trim().slice(0, MAX_SESSION_NAME_LENGTH);
+    const safeParticipantName = stripHtml(participantName).trim().slice(0, MAX_PARTICIPANT_NAME_LENGTH);
+    if (!safeName || !safeParticipantName) {
+      throw new Error('SESSION_NAME_EMPTY');
+    }
+    const participant = new Participant(safeParticipantName, true);
+    const session = new RetroSession(safeName, participant.id, {
       maxVotesPerUser: config?.maxVotesPerUser ?? 5,
       timerDuration: config?.timerDuration ?? 300,
       anonymousCards: true,
@@ -152,7 +190,10 @@ class SessionStore {
     const entry = this.sessions.get(sessionId);
     if (!entry) return null;
 
-    const participant = new Participant(participantName, false);
+    const safeParticipantName = stripHtml(participantName).trim().slice(0, MAX_PARTICIPANT_NAME_LENGTH);
+    if (!safeParticipantName) return null;
+
+    const participant = new Participant(safeParticipantName, false);
     entry.session.addParticipant(participant);
     entry.connections.set(participant.id, peer);
     entry.emptySince = null;
@@ -250,17 +291,20 @@ class SessionStore {
 
     let updatedSession: IRetroSession | undefined;
 
-    // Host fallback: if host disconnects, transfer host to an active participant.
+    // Host fallback: if host disconnects, transfer to an active peer first,
+    // then to any remaining participant (so there's always a host if someone reconnects).
     if (entry.session.hostId === info.participantId) {
-      const fallbackHost = entry.session.participants.find(
+      const connectedFallback = entry.session.participants.find(
         (p) => p.id !== info.participantId && entry.connections.has(p.id)
       );
+      const anyFallback = connectedFallback
+        ?? entry.session.participants.find((p) => p.id !== info.participantId);
 
-      if (fallbackHost) {
-        entry.session.transferHost(fallbackHost.id);
+      if (anyFallback) {
+        entry.session.transferHost(anyFallback.id);
         updatedSession = entry.session.toJSON();
         console.log(
-          `[SessionStore] Host transferred after disconnect: ${fallbackHost.name} (${fallbackHost.id})`
+          `[SessionStore] Host transferred after disconnect: ${anyFallback.name} (${anyFallback.id})`
         );
       }
     }
@@ -337,14 +381,15 @@ class SessionStore {
   }
 
   /**
-   * Changes the retro phase
+   * Changes the retro phase (validates sequential progression)
    */
   public changePhase(peer: Peer, phase: RetroPhase): IRetroSession | null {
+    if (!isValidPhase(phase)) return null;
     const session = this.getSessionForPeer(peer);
     if (!session) return null;
     if (!this.isHost(peer)) return null;
-    session.changePhase(phase);
-    return session.toJSON();
+    const success = session.changePhase(phase);
+    return success ? session.toJSON() : null;
   }
 
   /**
@@ -355,6 +400,8 @@ class SessionStore {
     column: RetroColumnType,
     content: string
   ): IRetroSession | null {
+    if (!isValidColumnType(column)) return null;
+
     const info = this.peerMap.get(peer);
     if (!info) return null;
 
@@ -364,7 +411,17 @@ class SessionStore {
     // Only allow adding cards in the gather-data phase
     if (entry.session.phase !== 'gather-data') return null;
 
-    entry.session.addCard(column, content, info.participantId);
+    // Rate limit: prevent card spam per user
+    const userCardCount = entry.session.cards.filter(
+      (c) => c.authorId === info.participantId
+    ).length;
+    if (userCardCount >= MAX_CARDS_PER_USER) return null;
+
+    // Validate and sanitize content
+    const safeContent = stripHtml(content).trim().slice(0, MAX_CARD_CONTENT_LENGTH);
+    if (!safeContent) return null;
+
+    entry.session.addCard(column, safeContent, info.participantId);
     return entry.session.toJSON();
   }
 
@@ -382,7 +439,10 @@ class SessionStore {
     const entry = this.sessions.get(info.sessionId);
     if (!entry) return null;
 
-    const success = entry.session.editCard(cardId, content, info.participantId);
+    const safeContent = stripHtml(content).trim().slice(0, MAX_CARD_CONTENT_LENGTH);
+    if (!safeContent) return null;
+
+    const success = entry.session.editCard(cardId, safeContent, info.participantId);
     return success ? entry.session.toJSON() : null;
   }
 
@@ -460,7 +520,8 @@ class SessionStore {
     const session = this.getSessionForPeer(peer);
     if (!session) return null;
 
-    const group = session.createGroup(title, column, cardIds);
+    const safeTitle = stripHtml(title).trim().slice(0, MAX_GROUP_TITLE_LENGTH) || 'Group';
+    const group = session.createGroup(safeTitle, column, cardIds);
     return group ? session.toJSON() : null;
   }
 
@@ -505,7 +566,9 @@ class SessionStore {
     const session = this.getSessionForPeer(peer);
     if (!session) return null;
 
-    const success = session.renameGroup(groupId, title);
+    const safeTitle = stripHtml(title).trim().slice(0, MAX_GROUP_TITLE_LENGTH);
+    if (!safeTitle) return null;
+    const success = session.renameGroup(groupId, safeTitle);
     return success ? session.toJSON() : null;
   }
 
@@ -600,10 +663,13 @@ class SessionStore {
   }
 
   /**
-   * Sets the timer duration
+   * Sets the timer duration.
+   * Validates the duration is a finite number; the RetroSession class
+   * handles clamping to the allowed range.
    */
   public setTimerDuration(peer: Peer, duration: number): IRetroSession | null {
     if (!this.isHost(peer)) return null;
+    if (!Number.isFinite(duration)) return null;
 
     const session = this.getSessionForPeer(peer);
     if (!session) return null;
@@ -617,7 +683,9 @@ class SessionStore {
   // ============================================
 
   /**
-   * Adds an action item
+   * Adds an action item.
+   * Rate-limited to MAX_ACTION_ITEMS_PER_SESSION per session.
+   * Only allowed during decide-action or close-retro phases.
    */
   public addActionItem(
     peer: Peer,
@@ -628,12 +696,25 @@ class SessionStore {
     const session = this.getSessionForPeer(peer);
     if (!session) return null;
 
-    session.addActionItem(text, assignee ?? null, dueDate ?? null);
+    // Phase restriction: action items belong to decide-action or close-retro
+    if (session.phase !== 'decide-action' && session.phase !== 'close-retro') {
+      return null;
+    }
+
+    // Rate limit: prevent unbounded action items
+    if (session.actionItems.length >= MAX_ACTION_ITEMS_PER_SESSION) return null;
+
+    const safeText = stripHtml(text).trim().slice(0, MAX_ACTION_ITEM_TEXT_LENGTH);
+    if (!safeText) return null;
+    const safeAssignee = assignee ? stripHtml(assignee).trim().slice(0, MAX_PARTICIPANT_NAME_LENGTH) || null : null;
+    const safeDueDate = this.sanitizeDueDate(dueDate);
+
+    session.addActionItem(safeText, safeAssignee, safeDueDate);
     return session.toJSON();
   }
 
   /**
-   * Edits an action item (host only)
+   * Edits an action item (host only, decide-action or close-retro phase)
    */
   public editActionItem(
     peer: Peer,
@@ -647,17 +728,24 @@ class SessionStore {
     const session = this.getSessionForPeer(peer);
     if (!session) return null;
 
+    if (session.phase !== 'decide-action' && session.phase !== 'close-retro') return null;
+
+    const safeText = stripHtml(text).trim().slice(0, MAX_ACTION_ITEM_TEXT_LENGTH);
+    if (!safeText) return null;
+    const safeAssignee = assignee ? stripHtml(assignee).trim().slice(0, MAX_PARTICIPANT_NAME_LENGTH) || null : null;
+    const safeDueDate = this.sanitizeDueDate(dueDate);
+
     const success = session.editActionItem(
       actionId,
-      text,
-      assignee ?? null,
-      dueDate ?? null
+      safeText,
+      safeAssignee,
+      safeDueDate
     );
     return success ? session.toJSON() : null;
   }
 
   /**
-   * Deletes an action item (host only)
+   * Deletes an action item (host only, decide-action or close-retro phase)
    */
   public deleteActionItem(peer: Peer, actionId: string): IRetroSession | null {
     if (!this.isHost(peer)) return null;
@@ -665,18 +753,22 @@ class SessionStore {
     const session = this.getSessionForPeer(peer);
     if (!session) return null;
 
+    if (session.phase !== 'decide-action' && session.phase !== 'close-retro') return null;
+
     const success = session.deleteActionItem(actionId);
     return success ? session.toJSON() : null;
   }
 
   /**
-   * Toggles an action item's done status (host only)
+   * Toggles an action item's done status (host only, decide-action or close-retro phase)
    */
   public toggleActionItem(peer: Peer, actionId: string): IRetroSession | null {
     if (!this.isHost(peer)) return null;
 
     const session = this.getSessionForPeer(peer);
     if (!session) return null;
+
+    if (session.phase !== 'decide-action' && session.phase !== 'close-retro') return null;
 
     const success = session.toggleActionItem(actionId);
     return success ? session.toJSON() : null;
@@ -725,6 +817,16 @@ class SessionStore {
     const info = this.peerMap.get(peer);
     if (!info) return null;
     return this.sessions.get(info.sessionId)?.session ?? null;
+  }
+
+  /**
+   * Sanitizes and validates an optional due-date string.
+   * Returns a valid ISO date (YYYY-MM-DD) or null.
+   */
+  private sanitizeDueDate(dueDate?: string): string | null {
+    if (!dueDate) return null;
+    const trimmed = dueDate.trim().slice(0, 10);
+    return isValidISODate(trimmed) ? trimmed : null;
   }
 
   /**

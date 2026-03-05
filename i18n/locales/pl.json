@@ -1,0 +1,206 @@
+{
+  "app": {
+    "name": "Retro Rumble",
+    "tagline": "Anonimowe retrospektywy Scrum dla zwinnych zespołów"
+  },
+  "connection": {
+    "connected": "Połączono",
+    "connecting": "Łączenie...",
+    "disconnected": "Rozłączono",
+    "error": "Błąd połączenia"
+  },
+  "home": {
+    "welcome": "Rozpocznij Retro",
+    "subtitle": "Utwórz lub dołącz do retrospektywy – anonimowo, bezpiecznie i prosto.",
+    "newSession": "Nowa sesja",
+    "joinSession": "Dołącz do sesji"
+  },
+  "form": {
+    "sessionName": "Nazwa sesji",
+    "sessionNamePlaceholder": "np. Retro Sprint 42",
+    "yourName": "Twoje imię",
+    "yourNamePlaceholder": "np. Aleksandra",
+    "maxVotes": "Maks. głosy",
+    "timerMinutes": "Timer (min)",
+    "joinCode": "Kod dostępu",
+    "joinCodePlaceholder": "ABC123",
+    "createButton": "Rozpocznij Retro",
+    "joinButton": "Dołącz do Retro"
+  },
+  "session": {
+    "joinCode": "Kod dostępu",
+    "participants": "uczestników",
+    "info": {
+      "sessionLabel": "Sesja:"
+    }
+  },
+  "participants": {
+    "title": "Uczestnicy",
+    "host": "Host",
+    "you": "(ty)",
+    "online": "Online",
+    "offline": "Offline"
+  },
+  "phase": {
+    "set-the-stage": "Przygotowanie",
+    "gather-data": "Zbieranie danych",
+    "generate-insights": "Grupowanie",
+    "voting": "Głosowanie",
+    "decide-action": "Działania",
+    "close-retro": "Zamknięcie",
+    "previous": "Poprzednia",
+    "next": "Następna",
+    "description": {
+      "set-the-stage": "Witaj! Podziel się swoim nastrojem, aby ustawić atmosferę.",
+      "gather-data": "Pisz anonimowe karty o tym, co poszło dobrze i co można poprawić.",
+      "generate-insights": "Przeciągaj karty do grup, aby znaleźć wspólne tematy.",
+      "voting": "Głosuj na tematy najważniejsze dla zespołu.",
+      "decide-action": "Zdefiniuj konkretne działania i przypisz odpowiedzialności.",
+      "close-retro": "Przejrzyj podsumowanie i oceń tę retrospektywę."
+    }
+  },
+  "column": {
+    "went-well": "Co poszło dobrze",
+    "to-improve": "Do poprawy",
+    "action-items": "Działania",
+    "empty": "Brak kart"
+  },
+  "card": {
+    "placeholder": "Dodaj kartę... (Ctrl+Enter, aby wysłać)",
+    "edit": "Edytuj",
+    "delete": "Usuń",
+    "charRemaining": "Pozostało {n} znaków",
+    "charLimitReached": "Osiągnięto limit znaków"
+  },
+  "grouping": {
+    "instructionsHost": "Przeciągaj karty na siebie, aby tworzyć grupy. Odsuń kartę od grupy, aby ją rozgrupować.",
+    "instructionsParticipant": "Przeciągaj karty na siebie, aby tworzyć grupy. Odsuń kartę od grupy, aby ją rozgrupować.",
+    "newGroupTitle": "Nowa grupa",
+    "clickToRename": "Kliknij, aby zmienić nazwę",
+    "deleteGroup": "Usuń grupę",
+    "moveToColumn": "Przenieś do {column}",
+    "removeFromGroup": "Usuń z grupy",
+    "resetLayout": "Resetuj układ",
+    "maximize": "Maksymalizuj",
+    "restore": "Przywróć",
+    "emptyColumn": "Brak kart w tej kolumnie"
+  },
+  "voting": {
+    "title": "Głosowanie",
+    "remaining": "Pozostałe głosy",
+    "instructions": "Głosuj na najważniejsze karty i grupy do omówienia. Możesz swobodnie rozdzielać głosy.",
+    "groupCardCount": "({count} kart)",
+    "voteGroup": "Zagłosuj na grupę",
+    "unvoteGroup": "Wycofaj głos z grupy",
+    "voteCard": "Zagłosuj na kartę",
+    "unvoteCard": "Wycofaj głos z karty"
+  },
+  "timer": {
+    "title": "Timer",
+    "start": "Start",
+    "stop": "Stop"
+  },
+  "summary": {
+    "totalCards": "Karty",
+    "totalVotes": "Głosy",
+    "totalGroups": "Grupy",
+    "actionsDone": "Ukończone działania",
+    "cards": "kart",
+    "votes": "głosów",
+    "actionItems": "Działania",
+    "noActions": "Brak działań. Dodaj zobowiązania na następny sprint!",
+    "actionPlaceholder": "Nowe działanie...",
+    "assigneePlaceholder": "Odpowiedzialny",
+    "addAction": "Dodaj",
+    "dueDate": "Termin",
+    "dueDatePlaceholder": "RRRR-MM-DD",
+    "toggleDone": "Oznacz jako ukończone",
+    "topVoted": "Najczęściej wybierane"
+  },
+  "export": {
+    "title": "Eksportuj wyniki",
+    "description": "Pobierz wyniki retro, aby udostępnić je zespołowi lub zarchiwizować.",
+    "format": {
+      "json": "JSON",
+      "markdown": "Markdown",
+      "png": "Obraz (PNG)"
+    },
+    "markdown": {
+      "date": "Data",
+      "participants": "Uczestnicy",
+      "committedActions": "Uzgodnione działania",
+      "action": "Działanie",
+      "assignee": "Odpowiedzialny",
+      "due": "Termin",
+      "status": "Status",
+      "vote": "głos",
+      "votePlural": "głosów",
+      "statistics": "Statystyki",
+      "totalCards": "Łącznie kart",
+      "totalVotes": "Łącznie głosów",
+      "done": "zrobione",
+      "generatedBy": "Wygenerowano przez"
+    },
+    "canvas": {
+      "participants": "Uczestnicy",
+      "cards": "kart",
+      "votes": "głosów",
+      "groups": "grup",
+      "actions": "Działania"
+    }
+  },
+  "common": {
+    "cancel": "Anuluj",
+    "save": "Zapisz"
+  },
+  "errors": {
+    "fillAllFields": "Proszę wypełnić wszystkie pola.",
+    "joinCodeLength": "Kod dostępu musi mieć 6 znaków.",
+    "enterYourName": "Proszę podać swoje imię.",
+    "connectionFailed": "Nie można połączyć się z serwerem.",
+    "clipboardFailed": "Nie udało się skopiować do schowka. Proszę skopiować ręcznie.",
+    "actionLimitReached": "Osiągnięto limit działań.",
+    "actionWrongPhase": "Działania można dodawać tylko w fazie Działań lub Zamknięcia."
+  },
+  "ui": {
+    "leaveConfirm": "Czy na pewno chcesz opuścić tę sesję?",
+    "leaveSession": "Opuść sesję",
+    "shareLink": "Kopiuj link do sesji",
+    "shareLinkCopied": "Link skopiowany!",
+    "reconnecting": "Ponowne łączenie...",
+    "reconnectingHint": "Sesja jest zapisana. Proszę czekać.",
+    "reconnectingError": "Połączenie nie powiodło się. Automatyczne ponowne łączenie...",
+    "reconnectNow": "Połącz ponownie teraz"
+  },
+  "checkin": {
+    "title": "Check-in",
+    "question": "Jak się dziś czujesz? Wybierz emoji opisujące Twój nastrój.",
+    "responses": "Nastrój zespołu",
+    "unknownParticipant": "Nieznany uczestnik",
+    "moodLabels": {
+      "happy": "Szczęśliwy",
+      "neutral": "Neutralny",
+      "worried": "Zaniepokojony",
+      "energized": "Pełen energii",
+      "confident": "Pewny siebie",
+      "tired": "Zmęczony"
+    },
+    "waiting": "Oczekiwanie na odpowiedzi zespołu..."
+  },
+  "feedback": {
+    "title": "Opinia o Retro",
+    "question": "Jak oceniasz tę retrospektywę? Oceń od 1 (niedobra) do 5 (doskonała).",
+    "results": "Opinie zespołu",
+    "average": "Średnia",
+    "waiting": "Oczekiwanie na opinie...",
+    "rating1": "Zła",
+    "rating2": "Słaba",
+    "rating3": "OK",
+    "rating4": "Dobra",
+    "rating5": "Doskonała"
+  },
+  "action": {
+    "edit": "Edytuj działanie",
+    "delete": "Usuń działanie"
+  }
+}

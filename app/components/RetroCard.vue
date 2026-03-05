@@ -6,9 +6,19 @@
  * Cards are anonymous — no author information is shown.
  */
 
+import DOMPurify from 'dompurify';
 import type { IRetroCard, RetroColumnType, RetroPhase } from '~/types';
+import { MAX_CARD_CONTENT_LENGTH } from '~/types';
 
 const { t } = useI18n();
+
+/**
+ * Sanitizes user-generated content to prevent XSS attacks.
+ * Returns plain text only — all HTML tags are stripped.
+ */
+function sanitize(text: string): string {
+  return DOMPurify.sanitize(text, { ALLOWED_TAGS: [] });
+}
 
 interface Props {
   /** The retro card data */
@@ -53,6 +63,11 @@ function cancelEdit(): void {
   isEditing.value = false;
 }
 
+/** Remaining characters in edit mode */
+const editCharsRemaining = computed(
+  () => MAX_CARD_CONTENT_LENGTH - editContent.value.length
+);
+
 /**
  * Column-specific card styles
  */
@@ -70,13 +85,23 @@ const cardClass = computed(() => {
   <div :class="cardClass">
     <!-- Edit Mode -->
     <div v-if="isEditing" class="space-y-2">
-      <textarea
-        v-model="editContent"
-        class="input text-sm resize-none"
-        rows="3"
-        @keydown.enter.ctrl="saveEdit"
-        @keydown.escape="cancelEdit"
-      />
+      <div class="relative">
+        <textarea
+          v-model="editContent"
+          class="input text-sm resize-none w-full"
+          rows="3"
+          :maxlength="MAX_CARD_CONTENT_LENGTH"
+          :aria-label="t('card.edit')"
+          @keydown.enter.ctrl="saveEdit"
+          @keydown.escape="cancelEdit"
+        />
+        <span
+          class="absolute bottom-1 right-2 text-xs tabular-nums leading-none"
+          :class="editCharsRemaining <= 50 ? 'text-warning-500' : 'text-secondary-300'"
+        >
+          {{ editCharsRemaining }}
+        </span>
+      </div>
       <div class="flex gap-2 justify-end">
         <button
           type="button"
@@ -94,7 +119,7 @@ const cardClass = computed(() => {
     <!-- Display Mode -->
     <div v-else>
       <p class="text-sm text-secondary-800 whitespace-pre-wrap break-words">
-        {{ card.content }}
+        {{ sanitize(card.content) }}
       </p>
 
       <div
@@ -113,6 +138,7 @@ const cardClass = computed(() => {
                   : 'bg-secondary-50 text-secondary-400 cursor-not-allowed'
             "
             :disabled="!hasVoted && !canVote"
+            :aria-label="hasVoted ? t('voting.unvoteCard') : t('voting.voteCard')"
             @click="hasVoted ? emit('unvote', card.id) : emit('vote', card.id)"
           >
             <Icon
@@ -143,6 +169,7 @@ const cardClass = computed(() => {
             v-if="(isAuthor || isHost) && phase === 'gather-data'"
             type="button"
             class="p-1 text-secondary-400 hover:text-primary-600 transition-colors"
+            :aria-label="t('card.edit')"
             :title="t('card.edit')"
             @click="startEdit"
           >
@@ -152,6 +179,7 @@ const cardClass = computed(() => {
             v-if="(isAuthor || isHost) && phase === 'gather-data'"
             type="button"
             class="p-1 text-secondary-400 hover:text-error-600 transition-colors"
+            :aria-label="t('card.delete')"
             :title="t('card.delete')"
             @click="emit('delete', card.id)"
           >

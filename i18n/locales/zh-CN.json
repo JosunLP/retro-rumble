@@ -1,0 +1,206 @@
+{
+  "app": {
+    "name": "Retro Rumble",
+    "tagline": "面向敏捷团队的匿名 Scrum 回顾会议"
+  },
+  "connection": {
+    "connected": "已连接",
+    "connecting": "连接中...",
+    "disconnected": "已断开",
+    "error": "连接错误"
+  },
+  "home": {
+    "welcome": "开始你的回顾",
+    "subtitle": "创建或加入回顾会议 — 匿名、安全、简单。",
+    "newSession": "新建会话",
+    "joinSession": "加入会话"
+  },
+  "form": {
+    "sessionName": "会话名称",
+    "sessionNamePlaceholder": "例如：Sprint 42 回顾",
+    "yourName": "你的姓名",
+    "yourNamePlaceholder": "例如：小明",
+    "maxVotes": "最大票数",
+    "timerMinutes": "计时器（分钟）",
+    "joinCode": "访问码",
+    "joinCodePlaceholder": "ABC123",
+    "createButton": "开始回顾",
+    "joinButton": "加入回顾"
+  },
+  "session": {
+    "joinCode": "访问码",
+    "participants": "位参与者",
+    "info": {
+      "sessionLabel": "会话："
+    }
+  },
+  "participants": {
+    "title": "参与者",
+    "host": "主持人",
+    "you": "（你）",
+    "online": "在线",
+    "offline": "离线"
+  },
+  "phase": {
+    "set-the-stage": "准备阶段",
+    "gather-data": "收集数据",
+    "generate-insights": "分组",
+    "voting": "投票",
+    "decide-action": "行动项",
+    "close-retro": "回顾结束",
+    "previous": "上一步",
+    "next": "下一步",
+    "description": {
+      "set-the-stage": "欢迎！分享你的心情，营造氛围。",
+      "gather-data": "匿名写下做得好的和可以改进的事情。",
+      "generate-insights": "将卡片拖入分组以发现共同主题。",
+      "voting": "为团队最关心的话题投票。",
+      "decide-action": "定义具体的行动项并分配责任。",
+      "close-retro": "查看总结并对本次回顾给出反馈。"
+    }
+  },
+  "column": {
+    "went-well": "做得好的事",
+    "to-improve": "待改进的事",
+    "action-items": "行动项",
+    "empty": "暂无卡片"
+  },
+  "card": {
+    "placeholder": "添加卡片...（Ctrl+Enter 发送）",
+    "edit": "编辑",
+    "delete": "删除",
+    "charRemaining": "还剩 {n} 个字符",
+    "charLimitReached": "已达字符限制"
+  },
+  "grouping": {
+    "instructionsHost": "将卡片拖到另一张卡片上以创建分组。将卡片从分组中拖出以取消分组。",
+    "instructionsParticipant": "将卡片拖到另一张卡片上以创建分组。将卡片从分组中拖出以取消分组。",
+    "newGroupTitle": "新分组",
+    "clickToRename": "点击重命名",
+    "deleteGroup": "删除分组",
+    "moveToColumn": "移动到 {column}",
+    "removeFromGroup": "从分组移除",
+    "resetLayout": "重置布局",
+    "maximize": "最大化",
+    "restore": "还原",
+    "emptyColumn": "此列暂无卡片"
+  },
+  "voting": {
+    "title": "投票",
+    "remaining": "剩余票数",
+    "instructions": "为最重要的卡片和分组投票以便讨论。你可以自由分配票数。",
+    "groupCardCount": "（{count} 张卡片）",
+    "voteGroup": "为分组投票",
+    "unvoteGroup": "撤销分组投票",
+    "voteCard": "为卡片投票",
+    "unvoteCard": "撤销卡片投票"
+  },
+  "timer": {
+    "title": "计时器",
+    "start": "开始",
+    "stop": "停止"
+  },
+  "summary": {
+    "totalCards": "卡片",
+    "totalVotes": "票数",
+    "totalGroups": "分组",
+    "actionsDone": "已完成的行动",
+    "cards": "张",
+    "votes": "票",
+    "actionItems": "行动项",
+    "noActions": "暂无行动项。为下个 Sprint 添加承诺吧！",
+    "actionPlaceholder": "新行动项...",
+    "assigneePlaceholder": "负责人",
+    "addAction": "添加",
+    "dueDate": "截止日期",
+    "dueDatePlaceholder": "YYYY-MM-DD",
+    "toggleDone": "切换完成状态",
+    "topVoted": "最多得票"
+  },
+  "export": {
+    "title": "导出结果",
+    "description": "下载回顾结果，与团队分享或存档。",
+    "format": {
+      "json": "JSON",
+      "markdown": "Markdown",
+      "png": "图片 (PNG)"
+    },
+    "markdown": {
+      "date": "日期",
+      "participants": "参与者",
+      "committedActions": "承诺的行动项",
+      "action": "行动",
+      "assignee": "负责人",
+      "due": "截止日期",
+      "status": "状态",
+      "vote": "票",
+      "votePlural": "票",
+      "statistics": "统计",
+      "totalCards": "卡片总数",
+      "totalVotes": "投票总数",
+      "done": "已完成",
+      "generatedBy": "由以下工具生成"
+    },
+    "canvas": {
+      "participants": "参与者",
+      "cards": "张",
+      "votes": "票",
+      "groups": "组",
+      "actions": "行动项"
+    }
+  },
+  "common": {
+    "cancel": "取消",
+    "save": "保存"
+  },
+  "errors": {
+    "fillAllFields": "请填写所有字段。",
+    "joinCodeLength": "访问码必须为 6 个字符。",
+    "enterYourName": "请输入你的姓名。",
+    "connectionFailed": "无法连接到服务器。",
+    "clipboardFailed": "无法复制到剪贴板。请手动复制。",
+    "actionLimitReached": "已达到行动项上限。",
+    "actionWrongPhase": "行动项只能在行动阶段或结束阶段添加。"
+  },
+  "ui": {
+    "leaveConfirm": "确定要离开此会话吗？",
+    "leaveSession": "离开会话",
+    "shareLink": "复制会话链接",
+    "shareLinkCopied": "链接已复制！",
+    "reconnecting": "正在重新连接...",
+    "reconnectingHint": "你的会话已保存，请稍候。",
+    "reconnectingError": "连接失败，正在自动重试...",
+    "reconnectNow": "立即重连"
+  },
+  "checkin": {
+    "title": "签到",
+    "question": "你今天感觉如何？选择一个描述你心情的表情符号。",
+    "responses": "团队心情",
+    "unknownParticipant": "未知参与者",
+    "moodLabels": {
+      "happy": "开心",
+      "neutral": "一般",
+      "worried": "担忧",
+      "energized": "充满活力",
+      "confident": "自信",
+      "tired": "疲惫"
+    },
+    "waiting": "等待团队成员回应..."
+  },
+  "feedback": {
+    "title": "回顾反馈",
+    "question": "这次回顾进行得如何？请从 1（很差）到 5（优秀）进行评分。",
+    "results": "团队反馈",
+    "average": "平均分",
+    "waiting": "等待反馈...",
+    "rating1": "很差",
+    "rating2": "较差",
+    "rating3": "一般",
+    "rating4": "良好",
+    "rating5": "优秀"
+  },
+  "action": {
+    "edit": "编辑行动项",
+    "delete": "删除行动项"
+  }
+}

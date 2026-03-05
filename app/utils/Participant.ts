@@ -13,11 +13,11 @@ export class Participant implements IParticipant {
   public isHost: boolean;
   public readonly joinedAt: Date;
 
-  constructor(name: string, isHost = false, id?: string) {
+  constructor(name: string, isHost = false, id?: string, joinedAt?: Date) {
     this.id = id ?? crypto.randomUUID();
     this.name = name.trim();
     this.isHost = isHost;
-    this.joinedAt = new Date();
+    this.joinedAt = joinedAt ?? new Date();
   }
 
   /**
@@ -33,10 +33,10 @@ export class Participant implements IParticipant {
   }
 
   /**
-   * Creates a Participant instance from JSON data
+   * Creates a Participant instance from JSON data.
+   * Passes the original joinedAt timestamp via the constructor to avoid unsafe casts.
    */
   public static fromJSON(data: IParticipant): Participant {
-    const participant = new Participant(data.name, data.isHost, data.id);
-    return participant;
+    return new Participant(data.name, data.isHost, data.id, new Date(data.joinedAt));
   }
 }

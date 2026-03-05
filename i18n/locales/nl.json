@@ -1,0 +1,206 @@
+{
+  "app": {
+    "name": "Retro Rumble",
+    "tagline": "Anonieme Scrum-retrospectives voor agile teams"
+  },
+  "connection": {
+    "connected": "Verbonden",
+    "connecting": "Verbinden...",
+    "disconnected": "Verbroken",
+    "error": "Verbindingsfout"
+  },
+  "home": {
+    "welcome": "Start je Retro",
+    "subtitle": "Maak een retrospective aan of doe mee – anoniem, veilig en eenvoudig.",
+    "newSession": "Nieuwe sessie",
+    "joinSession": "Doe mee aan sessie"
+  },
+  "form": {
+    "sessionName": "Sessienaam",
+    "sessionNamePlaceholder": "bv. Retro Sprint 42",
+    "yourName": "Jouw naam",
+    "yourNamePlaceholder": "bv. Alex",
+    "maxVotes": "Max. stemmen",
+    "timerMinutes": "Timer (min)",
+    "joinCode": "Toegangscode",
+    "joinCodePlaceholder": "ABC123",
+    "createButton": "Start de Retro",
+    "joinButton": "Doe mee aan de Retro"
+  },
+  "session": {
+    "joinCode": "Toegangscode",
+    "participants": "deelnemers",
+    "info": {
+      "sessionLabel": "Sessie:"
+    }
+  },
+  "participants": {
+    "title": "Deelnemers",
+    "host": "Host",
+    "you": "(jij)",
+    "online": "Online",
+    "offline": "Offline"
+  },
+  "phase": {
+    "set-the-stage": "Voorbereiding",
+    "gather-data": "Gegevens verzamelen",
+    "generate-insights": "Groeperen",
+    "voting": "Stemmen",
+    "decide-action": "Acties",
+    "close-retro": "Afsluiting",
+    "previous": "Vorige",
+    "next": "Volgende",
+    "description": {
+      "set-the-stage": "Welkom! Deel hoe je je voelt om de sfeer te zetten.",
+      "gather-data": "Schrijf anoniem kaarten over wat goed ging en wat beter kan.",
+      "generate-insights": "Sleep kaarten in groepen om gemeenschappelijke thema's te vinden.",
+      "voting": "Stem op de onderwerpen die het meest belangrijk zijn voor het team.",
+      "decide-action": "Definieer concrete acties en wijs verantwoordelijkheden toe.",
+      "close-retro": "Bekijk de samenvatting en geef feedback op deze retro."
+    }
+  },
+  "column": {
+    "went-well": "Wat goed ging",
+    "to-improve": "Te verbeteren",
+    "action-items": "Actiepunten",
+    "empty": "Nog geen kaarten"
+  },
+  "card": {
+    "placeholder": "Voeg een kaart toe... (Ctrl+Enter om te verzenden)",
+    "edit": "Bewerken",
+    "delete": "Verwijderen",
+    "charRemaining": "Nog {n} tekens",
+    "charLimitReached": "Tekenlimiet bereikt"
+  },
+  "grouping": {
+    "instructionsHost": "Sleep kaarten op elkaar om groepen te maken. Sleep een kaart weg van een groep om deze te ontkoppelen.",
+    "instructionsParticipant": "Sleep kaarten op elkaar om groepen te maken. Sleep een kaart weg van een groep om deze te ontkoppelen.",
+    "newGroupTitle": "Nieuwe groep",
+    "clickToRename": "Klik om te hernoemen",
+    "deleteGroup": "Groep verwijderen",
+    "moveToColumn": "Verplaatsen naar {column}",
+    "removeFromGroup": "Uit groep verwijderen",
+    "resetLayout": "Layout resetten",
+    "maximize": "Maximaliseren",
+    "restore": "Herstellen",
+    "emptyColumn": "Geen kaarten in deze kolom"
+  },
+  "voting": {
+    "title": "Stemmen",
+    "remaining": "Resterende stemmen",
+    "instructions": "Stem op de kaarten en groepen die het meest belangrijk zijn om te bespreken. U kunt uw stemmen vrij verdelen.",
+    "groupCardCount": "({count} kaarten)",
+    "voteGroup": "Stem op groep",
+    "unvoteGroup": "Stem op groep intrekken",
+    "voteCard": "Stem op kaart",
+    "unvoteCard": "Stem op kaart intrekken"
+  },
+  "timer": {
+    "title": "Timer",
+    "start": "Starten",
+    "stop": "Stoppen"
+  },
+  "summary": {
+    "totalCards": "Kaarten",
+    "totalVotes": "Stemmen",
+    "totalGroups": "Groepen",
+    "actionsDone": "Voltooide acties",
+    "cards": "kaarten",
+    "votes": "stemmen",
+    "actionItems": "Actiepunten",
+    "noActions": "Nog geen acties. Voeg toezeggingen toe voor de volgende sprint!",
+    "actionPlaceholder": "Nieuwe actie...",
+    "assigneePlaceholder": "Verantwoordelijke",
+    "addAction": "Toevoegen",
+    "dueDate": "Deadline",
+    "dueDatePlaceholder": "JJJJ-MM-DD",
+    "toggleDone": "Markeer als gedaan",
+    "topVoted": "Meeste stemmen"
+  },
+  "export": {
+    "title": "Resultaten exporteren",
+    "description": "Download je retroresultaten om te delen met het team of te archiveren.",
+    "format": {
+      "json": "JSON",
+      "markdown": "Markdown",
+      "png": "Afbeelding (PNG)"
+    },
+    "markdown": {
+      "date": "Datum",
+      "participants": "Deelnemers",
+      "committedActions": "Afgesproken acties",
+      "action": "Actie",
+      "assignee": "Verantwoordelijke",
+      "due": "Deadline",
+      "status": "Status",
+      "vote": "stem",
+      "votePlural": "stemmen",
+      "statistics": "Statistieken",
+      "totalCards": "Totaal kaarten",
+      "totalVotes": "Totaal stemmen",
+      "done": "gedaan",
+      "generatedBy": "Gegenereerd door"
+    },
+    "canvas": {
+      "participants": "Deelnemers",
+      "cards": "kaarten",
+      "votes": "stemmen",
+      "groups": "groepen",
+      "actions": "Acties"
+    }
+  },
+  "common": {
+    "cancel": "Annuleren",
+    "save": "Opslaan"
+  },
+  "errors": {
+    "fillAllFields": "Vul alle velden in.",
+    "joinCodeLength": "De toegangscode moet 6 tekens lang zijn.",
+    "enterYourName": "Voer je naam in.",
+    "connectionFailed": "Kan geen verbinding maken met de server.",
+    "clipboardFailed": "Kon niet naar klembord kopiëren. Kopieer handmatig.",
+    "actionLimitReached": "Actielimiet bereikt.",
+    "actionWrongPhase": "Acties kunnen alleen worden toegevoegd tijdens de Acties of Afsluitingsfase."
+  },
+  "ui": {
+    "leaveConfirm": "Weet je zeker dat je deze sessie wilt verlaten?",
+    "leaveSession": "Sessie verlaten",
+    "shareLink": "Sessielink kopiëren",
+    "shareLinkCopied": "Link gekopieerd!",
+    "reconnecting": "Opnieuw verbinden...",
+    "reconnectingHint": "Je sessie is opgeslagen. Een moment geduld.",
+    "reconnectingError": "Verbinding mislukt. Automatisch opnieuw proberen...",
+    "reconnectNow": "Nu opnieuw verbinden"
+  },
+  "checkin": {
+    "title": "Check-in",
+    "question": "Hoe voel je je vandaag? Kies een emoji die je stemming beschrijft.",
+    "responses": "Teamstemming",
+    "unknownParticipant": "Onbekende deelnemer",
+    "moodLabels": {
+      "happy": "Blij",
+      "neutral": "Neutraal",
+      "worried": "Bezorgd",
+      "energized": "Energiek",
+      "confident": "Zelfverzekerd",
+      "tired": "Moe"
+    },
+    "waiting": "Wachten op reacties van het team..."
+  },
+  "feedback": {
+    "title": "Retro-feedback",
+    "question": "Hoe verliep deze retrospective? Beoordeel van 1 (niet goed) tot 5 (uitstekend).",
+    "results": "Teamfeedback",
+    "average": "Gemiddelde",
+    "waiting": "Wachten op feedback...",
+    "rating1": "Slecht",
+    "rating2": "Matig",
+    "rating3": "OK",
+    "rating4": "Goed",
+    "rating5": "Uitstekend"
+  },
+  "action": {
+    "edit": "Actie bewerken",
+    "delete": "Actie verwijderen"
+  }
+}

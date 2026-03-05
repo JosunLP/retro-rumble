@@ -6,17 +6,17 @@
  */
 
 import type {
-  IActionItem,
-  ICardGroup,
-  ICheckInResponse,
-  IFeedbackResponse,
-  IRetroCard,
-  IRetroConfig,
-  IRetroSession,
-  RetroColumnType,
-  RetroPhase,
+    IActionItem,
+    ICardGroup,
+    ICheckInResponse,
+    IFeedbackResponse,
+    IRetroCard,
+    IRetroConfig,
+    IRetroSession,
+    RetroColumnType,
+    RetroPhase,
 } from '../types';
-import { isValidCheckInMood } from '../types';
+import { countVotesForParticipant, isValidCheckInMood, RETRO_PHASES } from '../types';
 import { Participant } from './Participant';
 
 const DEFAULT_CONFIG: IRetroConfig = {
@@ -121,12 +121,21 @@ export class RetroSession implements IRetroSession {
   // ============================================
 
   /**
-   * Changes the retro phase
+   * Changes the retro phase.
+   * Validates that the phase transition is sequential (forward or backward by one step).
+   * Returns true if the phase was changed, false if the transition is invalid.
    */
-  public changePhase(phase: RetroPhase): void {
+  public changePhase(phase: RetroPhase): boolean {
+    const currentIndex = RETRO_PHASES.indexOf(this.phase);
+    const targetIndex = RETRO_PHASES.indexOf(phase);
+
+    // Only allow moving one step forward or backward
+    if (Math.abs(targetIndex - currentIndex) !== 1) return false;
+
     this.phase = phase;
     this.stopTimer();
     this.touch();
+    return true;
   }
 
   // ============================================
@@ -157,7 +166,7 @@ export class RetroSession implements IRetroSession {
   }
 
   /**
-   * Edits a card's content (only by author)
+   * Edits a card's content (only by author or host during gather-data; host can edit in any phase)
    */
   public editCard(
     cardId: string,
@@ -166,8 +175,11 @@ export class RetroSession implements IRetroSession {
   ): boolean {
     const card = this.cards.find((c) => c.id === cardId);
     if (!card) return false;
+    const isHost = participantId === this.hostId;
+    // Non-host users can only edit during gather-data phase
+    if (!isHost && this.phase !== 'gather-data') return false;
     // Only the author or host can edit
-    if (card.authorId !== participantId && participantId !== this.hostId)
+    if (card.authorId !== participantId && !isHost)
       return false;
     card.content = content.trim();
     this.touch();
@@ -175,14 +187,17 @@ export class RetroSession implements IRetroSession {
   }
 
   /**
-   * Deletes a card (only by author or host)
+   * Deletes a card (only by author or host during gather-data; host can delete in any phase)
    */
   public deleteCard(cardId: string, participantId: string): boolean {
     const cardIndex = this.cards.findIndex((c) => c.id === cardId);
     if (cardIndex === -1) return false;
     const card = this.cards[cardIndex]!;
+    const isHost = participantId === this.hostId;
+    // Non-host users can only delete during gather-data phase
+    if (!isHost && this.phase !== 'gather-data') return false;
     // Only the author or host can delete
-    if (card.authorId !== participantId && participantId !== this.hostId)
+    if (card.authorId !== participantId && !isHost)
       return false;
 
     // Remove from any group
@@ -217,7 +232,17 @@ export class RetroSession implements IRetroSession {
   // ============================================
 
   /**
-   * Votes for a card
+   * Counts total votes cast by a participant across all cards and groups.
+   * Delegates to the shared pure function for DRY compliance.
+   */
+  public countUserVotes(participantId: string): number {
+    return countVotesForParticipant(this.cards, this.groups, participantId);
+  }
+
+  /**
+   * Votes for a card.
+   * A participant may place multiple votes on the same card (dot voting),
+   * limited only by the per-user vote budget.
    */
   public voteCard(cardId: string, participantId: string): boolean {
     if (this.phase !== 'voting') return false;
@@ -225,15 +250,7 @@ export class RetroSession implements IRetroSession {
     const card = this.cards.find((c) => c.id === cardId);
     if (!card) return false;
 
-    // Check max votes per user (cards + groups combined)
-    const userVoteCount = this.cards.reduce(
-      (count, c) => count + c.voterIds.filter((id) => id === participantId).length,
-      0
-    ) + this.groups.reduce(
-      (count, g) => count + g.voterIds.filter((id) => id === participantId).length,
-      0
-    );
-    if (userVoteCount >= this.maxVotesPerUser) return false;
+    if (this.countUserVotes(participantId) >= this.maxVotesPerUser) return false;
 
     card.voterIds.push(participantId);
     card.votes = card.voterIds.length;
@@ -263,14 +280,7 @@ export class RetroSession implements IRetroSession {
    * Gets remaining votes for a participant
    */
   public getRemainingVotes(participantId: string): number {
-    const usedVotes = this.cards.reduce(
-      (count, c) => count + c.voterIds.filter((id) => id === participantId).length,
-      0
-    ) + this.groups.reduce(
-      (count, g) => count + g.voterIds.filter((id) => id === participantId).length,
-      0
-    );
-    return this.maxVotesPerUser - usedVotes;
+    return this.maxVotesPerUser - this.countUserVotes(participantId);
   }
 
   // ============================================
@@ -302,6 +312,7 @@ export class RetroSession implements IRetroSession {
       cardIds: validCards,
       votes: 0,
       voterIds: [],
+      createdAt: new Date(),
     };
 
     // Assign group ID to cards
@@ -358,9 +369,10 @@ export class RetroSession implements IRetroSession {
   }
 
   /**
-   * Renames a group
+   * Renames a group (only during generate-insights phase)
    */
   public renameGroup(groupId: string, title: string): boolean {
+    if (this.phase !== 'generate-insights') return false;
     const group = this.groups.find((g) => g.id === groupId);
     if (!group) return false;
     group.title = title.trim();
@@ -381,9 +393,11 @@ export class RetroSession implements IRetroSession {
   }
 
   /**
-   * Deletes a group (cards are kept, just ungrouped)
+   * Deletes a group (cards are kept, just ungrouped).
+   * Only allowed during generate-insights phase.
    */
   public deleteGroup(groupId: string): boolean {
+    if (this.phase !== 'generate-insights') return false;
     const group = this.groups.find((g) => g.id === groupId);
     if (!group) return false;
 
@@ -403,7 +417,9 @@ export class RetroSession implements IRetroSession {
   // ============================================
 
   /**
-   * Votes for a group
+   * Votes for a group.
+   * A participant may place multiple votes on the same group (dot voting),
+   * limited only by the per-user vote budget.
    */
   public voteGroup(groupId: string, participantId: string): boolean {
     if (this.phase !== 'voting') return false;
@@ -411,15 +427,7 @@ export class RetroSession implements IRetroSession {
     const group = this.groups.find((g) => g.id === groupId);
     if (!group) return false;
 
-    // Check max votes per user (cards + groups combined)
-    const userVoteCount = this.cards.reduce(
-      (count, c) => count + c.voterIds.filter((id) => id === participantId).length,
-      0
-    ) + this.groups.reduce(
-      (count, g) => count + g.voterIds.filter((id) => id === participantId).length,
-      0
-    );
-    if (userVoteCount >= this.maxVotesPerUser) return false;
+    if (this.countUserVotes(participantId) >= this.maxVotesPerUser) return false;
 
     group.voterIds.push(participantId);
     group.votes = group.voterIds.length;
@@ -486,10 +494,13 @@ export class RetroSession implements IRetroSession {
   }
 
   /**
-   * Sets the timer duration
+   * Sets the timer duration.
+   * Clamped between 0 and 3600 seconds (1 hour).
    */
+  public static readonly MAX_TIMER_DURATION = 3600;
+
   public setTimerDuration(duration: number): void {
-    this.timerDuration = Math.max(0, duration);
+    this.timerDuration = Math.max(0, Math.min(duration, RetroSession.MAX_TIMER_DURATION));
     this.touch();
   }
 
@@ -631,6 +642,11 @@ export class RetroSession implements IRetroSession {
   /**
    * Serializes session to JSON
    */
+  /**
+   * Serializes the session to a plain data object.
+   * Returns deep copies of all collections to prevent external mutation
+   * of internal state.
+   */
   public toJSON(): IRetroSession {
     return {
       id: this.id,
@@ -638,11 +654,11 @@ export class RetroSession implements IRetroSession {
       phase: this.phase,
       hostId: this.hostId,
       participants: this.participants.map((p) => p.toJSON()),
-      cards: this.cards,
-      groups: this.groups,
-      actionItems: this.actionItems,
-      checkInResponses: this.checkInResponses,
-      feedbackResponses: this.feedbackResponses,
+      cards: this.cards.map((c) => ({ ...c, voterIds: [...c.voterIds] })),
+      groups: this.groups.map((g) => ({ ...g, cardIds: [...g.cardIds], voterIds: [...g.voterIds] })),
+      actionItems: this.actionItems.map((a) => ({ ...a })),
+      checkInResponses: [...this.checkInResponses],
+      feedbackResponses: [...this.feedbackResponses],
       maxVotesPerUser: this.maxVotesPerUser,
       timerDuration: this.timerDuration,
       timerRemaining: this.timerRemaining,
@@ -661,7 +677,7 @@ export class RetroSession implements IRetroSession {
       id: data.id,
       phase: data.phase,
       cards: data.cards ?? [],
-      groups: data.groups ?? [],
+      groups: (data.groups ?? []).map((g) => ({ ...g, createdAt: new Date(g.createdAt) })),
       actionItems: data.actionItems ?? [],
       checkInResponses: data.checkInResponses ?? [],
       feedbackResponses: data.feedbackResponses ?? [],

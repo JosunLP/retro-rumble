@@ -5,9 +5,12 @@
  * - JSON (structured data)
  * - Markdown (human-readable)
  * - PNG image (high-quality HiDPI Canvas rendering with groups, votes, stats)
+ *
+ * Fully i18n-aware: all user-facing strings come from the i18n system.
  */
 
 import type { IRetroCard, IRetroSession, RetroColumnType } from '~/types';
+import { COLUMN_META, ORDERED_COLUMNS } from '~/utils/columnConfig';
 
 /**
  * Export format type
@@ -15,41 +18,25 @@ import type { IRetroCard, IRetroSession, RetroColumnType } from '~/types';
 export type ExportFormat = 'json' | 'markdown' | 'png';
 
 /**
- * Column label helper
+ * Column emoji helper (language-independent) — uses shared column config
  */
-function columnLabel(column: RetroColumnType, locale: string): string {
-  const labels: Record<string, Record<RetroColumnType, string>> = {
-    en: {
-      'went-well': 'What went well',
-      'to-improve': 'What to improve',
-      'action-items': 'Action Items',
-    },
-    de: {
-      'went-well': 'Was lief gut',
-      'to-improve': 'Was verbessern',
-      'action-items': 'Maßnahmen',
-    },
-  };
-  return labels[locale]?.[column] ?? labels['en']![column];
+function columnEmoji(column: RetroColumnType): string {
+  return COLUMN_META[column].emoji;
 }
 
 /**
- * Column emoji helper
+ * Escapes special markdown characters in user-generated content
+ * to prevent formatting injection in exported files.
  */
-function columnEmoji(column: RetroColumnType): string {
-  const map: Record<RetroColumnType, string> = {
-    'went-well': '✅',
-    'to-improve': '⚠️',
-    'action-items': '⚡',
-  };
-  return map[column];
+function escapeMd(text: string): string {
+  return text.replace(/([\\`*_{}[\]()#+\-.!|>~])/g, '\\$1');
 }
 
 /**
  * Composable for exporting retro results
  */
 export function useExport() {
-  const { locale } = useI18n();
+  const { locale, t } = useI18n();
 
   /**
    * Trigger browser download
@@ -96,11 +83,10 @@ export function useExport() {
   }
 
   function buildExportData(session: IRetroSession) {
-    const loc = locale.value;
     const columns: Record<RetroColumnType, string> = {
-      'went-well': columnLabel('went-well', loc),
-      'to-improve': columnLabel('to-improve', loc),
-      'action-items': columnLabel('action-items', loc),
+      'went-well': t('column.went-well'),
+      'to-improve': t('column.to-improve'),
+      'action-items': t('column.action-items'),
     };
 
     const cardsByColumn = (col: RetroColumnType) =>
@@ -176,22 +162,30 @@ export function useExport() {
   // Markdown Export
   // ============================================
 
+  /**
+   * Formats a vote count as a markdown badge using i18n pluralization
+   */
+  function formatVoteBadge(votes: number): string {
+    if (votes === 0) return '';
+    const label = votes === 1 ? t('export.markdown.vote') : t('export.markdown.votePlural');
+    return ` (${votes} ${label})`;
+  }
+
   function exportMarkdown(session: IRetroSession): void {
-    const loc = locale.value;
     const lines: string[] = [];
 
-    lines.push(`# ${session.name}`);
+    lines.push(`# ${escapeMd(session.name)}`);
     lines.push('');
     lines.push(
-      `**${loc === 'de' ? 'Datum' : 'Date'}:** ${new Date(session.createdAt).toLocaleDateString(loc === 'de' ? 'de-DE' : 'en-US')}`
+      `**${t('export.markdown.date')}:** ${new Date(session.createdAt).toLocaleDateString(locale.value, { year: 'numeric', month: 'long', day: 'numeric' })}`
     );
     lines.push(
-      `**${loc === 'de' ? 'Teilnehmer' : 'Participants'}:** ${session.participants.map((p) => p.name).join(', ')}`
+      `**${t('export.markdown.participants')}:** ${session.participants.map((p) => escapeMd(p.name)).join(', ')}`
     );
     lines.push('');
 
-    for (const col of ['went-well', 'to-improve', 'action-items'] as const) {
-      lines.push(`## ${columnLabel(col, loc)}`);
+    for (const col of ORDERED_COLUMNS) {
+      lines.push(`## ${t(`column.${col}`)}`);
       lines.push('');
 
       const groups = session.groups.filter((g) => g.column === col);
@@ -200,17 +194,14 @@ export function useExport() {
       );
 
       for (const group of groups) {
-        lines.push(`### ${group.title}`);
+        lines.push(`### ${escapeMd(group.title)}`);
         const groupCards = group.cardIds
           .map((id) => session.cards.find((c) => c.id === id))
           .filter((c): c is IRetroCard => !!c)
           .sort((a, b) => b.votes - a.votes);
         for (const card of groupCards) {
-          const voteBadge =
-            card.votes > 0
-              ? ` (${card.votes} ${card.votes === 1 ? 'vote' : 'votes'})`
-              : '';
-          lines.push(`- ${card.content}${voteBadge}`);
+          const voteBadge = formatVoteBadge(card.votes);
+          lines.push(`- ${escapeMd(card.content)}${voteBadge}`);
         }
         lines.push('');
       }
@@ -219,53 +210,40 @@ export function useExport() {
         (a, b) => b.votes - a.votes
       );
       for (const card of sortedUngrouped) {
-        const voteBadge =
-          card.votes > 0
-            ? ` (${card.votes} ${card.votes === 1 ? 'vote' : 'votes'})`
-            : '';
-        lines.push(`- ${card.content}${voteBadge}`);
+        const voteBadge = formatVoteBadge(card.votes);
+        lines.push(`- ${escapeMd(card.content)}${voteBadge}`);
       }
       lines.push('');
     }
 
     if (session.actionItems.length > 0) {
-      lines.push(
-        `## ${loc === 'de' ? 'Vereinbarte Maßnahmen' : 'Committed Action Items'}`
-      );
+      lines.push(`## ${t('export.markdown.committedActions')}`);
       lines.push('');
       lines.push(
-        `| ${loc === 'de' ? 'Maßnahme' : 'Action'} | ${loc === 'de' ? 'Zuständig' : 'Assignee'} | ${loc === 'de' ? 'Fällig' : 'Due'} | ${loc === 'de' ? 'Status' : 'Status'} |`
+        `| ${t('export.markdown.action')} | ${t('export.markdown.assignee')} | ${t('export.markdown.due')} | ${t('export.markdown.status')} |`
       );
       lines.push('| --- | --- | --- | --- |');
       for (const action of session.actionItems) {
         const status = action.done ? '✅' : '⬜';
         lines.push(
-          `| ${action.text} | ${action.assignee ?? '-'} | ${action.dueDate ?? '-'} | ${status} |`
+          `| ${escapeMd(action.text)} | ${escapeMd(action.assignee ?? '-')} | ${action.dueDate ?? '-'} | ${status} |`
         );
       }
       lines.push('');
     }
 
     const stats = buildStatistics(session);
-    lines.push(`## ${loc === 'de' ? 'Statistik' : 'Statistics'}`);
+    lines.push(`## ${t('export.markdown.statistics')}`);
     lines.push('');
+    lines.push(`- **${t('export.markdown.totalCards')}:** ${stats.totalCards}`);
+    lines.push(`- **${t('export.markdown.totalVotes')}:** ${stats.totalVotes}`);
+    lines.push(`- **${t('summary.totalGroups')}:** ${stats.totalGroups}`);
     lines.push(
-      `- **${loc === 'de' ? 'Karten insgesamt' : 'Total Cards'}:** ${stats.totalCards}`
-    );
-    lines.push(
-      `- **${loc === 'de' ? 'Stimmen insgesamt' : 'Total Votes'}:** ${stats.totalVotes}`
-    );
-    lines.push(
-      `- **${loc === 'de' ? 'Gruppen' : 'Groups'}:** ${stats.totalGroups}`
-    );
-    lines.push(
-      `- **${loc === 'de' ? 'Maßnahmen' : 'Action Items'}:** ${stats.totalActions} (${stats.completedActions} ${loc === 'de' ? 'erledigt' : 'done'})`
+      `- **${t('summary.actionItems')}:** ${stats.totalActions} (${stats.completedActions} ${t('export.markdown.done')})`
     );
     lines.push('');
     lines.push('---');
-    lines.push(
-      `*${loc === 'de' ? 'Erstellt mit' : 'Generated by'} Retro Rumble*`
-    );
+    lines.push(`*${t('export.markdown.generatedBy')} Retro Rumble*`);
 
     const md = lines.join('\n');
     downloadFile(md, `${safeFilename(session)}.md`, 'text/markdown');
@@ -605,7 +583,6 @@ export function useExport() {
    * Main canvas renderer — high-quality retro board snapshot.
    */
   function renderToCanvas(session: IRetroSession): HTMLCanvasElement {
-    const loc = locale.value;
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d')!;
 
@@ -656,12 +633,12 @@ export function useExport() {
     ctx.fillStyle = COLORS.headerSub;
     ctx.font = FONT.subtitle;
     const dateStr = new Date(session.createdAt).toLocaleDateString(
-      loc === 'de' ? 'de-DE' : 'en-US',
+      locale.value,
       { year: 'numeric', month: 'long', day: 'numeric' }
     );
     const participantNames = session.participants.map((p) => p.name).join(', ');
     ctx.fillText(
-      `${dateStr}  ·  ${session.participants.length} ${loc === 'de' ? 'Teilnehmer' : 'Participants'}: ${participantNames}`,
+      `${dateStr}  ·  ${session.participants.length} ${t('export.canvas.participants')}: ${participantNames}`,
       L.padding,
       62
     );
@@ -670,21 +647,12 @@ export function useExport() {
     const statY = L.headerH + 12;
     const statW = (logicalW - L.padding * 2 - L.colGap * 3) / 4;
     const statItems = [
-      {
-        value: String(stats.totalCards),
-        label: loc === 'de' ? 'Karten' : 'Cards',
-      },
-      {
-        value: String(stats.totalVotes),
-        label: loc === 'de' ? 'Stimmen' : 'Votes',
-      },
-      {
-        value: String(stats.totalGroups),
-        label: loc === 'de' ? 'Gruppen' : 'Groups',
-      },
+      { value: String(stats.totalCards), label: t('export.canvas.cards') },
+      { value: String(stats.totalVotes), label: t('export.canvas.votes') },
+      { value: String(stats.totalGroups), label: t('export.canvas.groups') },
       {
         value: `${stats.completedActions}/${stats.totalActions}`,
-        label: loc === 'de' ? 'Maßnahmen' : 'Actions',
+        label: t('export.canvas.actions'),
       },
     ];
     for (let i = 0; i < statItems.length; i++) {
@@ -754,7 +722,7 @@ export function useExport() {
       ctx.font = FONT.colHeader;
       const emoji = columnEmoji(col);
       ctx.fillText(
-        `${emoji}  ${columnLabel(col, loc)}`,
+        `${emoji}  ${t(`column.${col}`)}`,
         cx + 14,
         colStartY + 28
       );
@@ -856,7 +824,7 @@ export function useExport() {
       ctx.fillStyle = COLORS.cardText;
       ctx.font = FONT.actionTitle;
       ctx.fillText(
-        `📋  ${loc === 'de' ? 'Vereinbarte Maßnahmen' : 'Committed Action Items'}`,
+        `📋  ${t('export.markdown.committedActions')}`,
         L.padding + 16,
         actY + 28
       );
@@ -915,12 +883,12 @@ export function useExport() {
     ctx.fillStyle = COLORS.footerFg;
     ctx.font = FONT.footer;
     ctx.fillText(
-      `Retro Rumble  ·  ${new Date().toLocaleDateString(loc === 'de' ? 'de-DE' : 'en-US', { year: 'numeric', month: 'long', day: 'numeric' })}`,
+      `Retro Rumble  ·  ${new Date().toLocaleDateString(locale.value, { year: 'numeric', month: 'long', day: 'numeric' })}`,
       L.padding,
       footerY + 24
     );
 
-    const footerRight = `${session.participants.length} ${loc === 'de' ? 'Teilnehmer' : 'participants'}  ·  ${session.cards.length} ${loc === 'de' ? 'Karten' : 'cards'}`;
+    const footerRight = `${session.participants.length} ${t('export.canvas.participants')}  ·  ${session.cards.length} ${t('export.canvas.cards')}`;
     const frW = ctx.measureText(footerRight).width;
     ctx.fillText(footerRight, logicalW - L.padding - frW, footerY + 24);
 

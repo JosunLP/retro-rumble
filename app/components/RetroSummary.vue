@@ -14,6 +14,7 @@ import type {
     IRetroSession,
     RetroColumnType,
 } from '~/types';
+import { COLUMN_META, ORDERED_COLUMNS } from '~/utils/columnConfig';
 
 const { t } = useI18n();
 
@@ -25,8 +26,8 @@ interface Props {
 const props = defineProps<Props>();
 
 const emit = defineEmits<{
-  addActionItem: [text: string, assignee?: string];
-  editActionItem: [id: string, text: string, assignee?: string];
+  addActionItem: [text: string, assignee?: string, dueDate?: string];
+  editActionItem: [id: string, text: string, assignee?: string, dueDate?: string];
   deleteActionItem: [id: string];
   toggleActionItem: [id: string];
 }>();
@@ -34,35 +35,15 @@ const emit = defineEmits<{
 // New action item form
 const newActionText = ref('');
 const newActionAssignee = ref('');
+const newActionDueDate = ref('');
 const editingActionId = ref<string | null>(null);
 const editActionText = ref('');
 const editActionAssignee = ref('');
+const editActionDueDate = ref('');
 
-const columns: RetroColumnType[] = ['went-well', 'to-improve', 'action-items'];
+const columns = ORDERED_COLUMNS;
 
-const columnConfig: Record<
-  RetroColumnType,
-  { icon: string; colorClass: string; bgClass: string; borderClass: string }
-> = {
-  'went-well': {
-    icon: 'heroicons:check-circle',
-    colorClass: 'text-success-700',
-    bgClass: 'bg-success-50',
-    borderClass: 'border-success-200',
-  },
-  'to-improve': {
-    icon: 'heroicons:exclamation-triangle',
-    colorClass: 'text-warning-700',
-    bgClass: 'bg-warning-50',
-    borderClass: 'border-warning-200',
-  },
-  'action-items': {
-    icon: 'heroicons:bolt',
-    colorClass: 'text-primary-700',
-    bgClass: 'bg-primary-50',
-    borderClass: 'border-primary-200',
-  },
-};
+const columnConfig = COLUMN_META;
 
 function cardsForColumn(col: RetroColumnType): IRetroCard[] {
   return props.session.cards
@@ -109,15 +90,18 @@ function handleAddAction(): void {
   const text = newActionText.value.trim();
   if (!text) return;
   const assignee = newActionAssignee.value.trim() || undefined;
-  emit('addActionItem', text, assignee);
+  const dueDate = newActionDueDate.value.trim() || undefined;
+  emit('addActionItem', text, assignee, dueDate);
   newActionText.value = '';
   newActionAssignee.value = '';
+  newActionDueDate.value = '';
 }
 
 function startEditAction(action: IActionItem): void {
   editingActionId.value = action.id;
   editActionText.value = action.text;
   editActionAssignee.value = action.assignee ?? '';
+  editActionDueDate.value = action.dueDate ?? '';
 }
 
 function saveEditAction(): void {
@@ -125,7 +109,8 @@ function saveEditAction(): void {
   const text = editActionText.value.trim();
   if (!text) return;
   const assignee = editActionAssignee.value.trim() || undefined;
-  emit('editActionItem', editingActionId.value, text, assignee);
+  const dueDate = editActionDueDate.value.trim() || undefined;
+  emit('editActionItem', editingActionId.value, text, assignee, dueDate);
   editingActionId.value = null;
 }
 
@@ -187,9 +172,9 @@ function cancelEditAction(): void {
           <Icon
             :name="columnConfig[col].icon"
             class="w-5 h-5"
-            :class="columnConfig[col].colorClass"
+            :class="columnConfig[col].headerTextClass"
           />
-          <h3 class="font-bold" :class="columnConfig[col].colorClass">
+          <h3 class="font-bold" :class="columnConfig[col].headerTextClass">
             {{ t(`column.${col}`) }}
           </h3>
           <span class="ml-auto text-xs text-secondary-500">
@@ -291,15 +276,24 @@ function cancelEditAction(): void {
             <input
               v-model="editActionText"
               type="text"
-              class="input-field flex-1 text-sm"
+              class="input flex-1 text-sm"
+              :aria-label="t('summary.actionPlaceholder')"
               @keydown.enter="saveEditAction"
               @keydown.escape="cancelEditAction"
             >
             <input
               v-model="editActionAssignee"
               type="text"
-              class="input-field w-32 text-sm"
+              class="input w-28 text-sm"
               :placeholder="t('summary.assigneePlaceholder')"
+              :aria-label="t('summary.assigneePlaceholder')"
+              @keydown.enter="saveEditAction"
+              @keydown.escape="cancelEditAction"
+            >
+            <input
+              v-model="editActionDueDate"
+              type="date"
+              class="input w-36 text-sm"
               @keydown.enter="saveEditAction"
               @keydown.escape="cancelEditAction"
             >
@@ -325,6 +319,7 @@ function cancelEditAction(): void {
               v-if="isHost"
               type="button"
               class="flex-shrink-0"
+              :aria-label="t('summary.toggleDone')"
               @click="$emit('toggleActionItem', action.id)"
             >
               <Icon
@@ -372,6 +367,7 @@ function cancelEditAction(): void {
               <button
                 type="button"
                 class="text-secondary-400 hover:text-primary-600"
+                :aria-label="t('action.edit')"
                 @click="startEditAction(action)"
               >
                 <Icon name="heroicons:pencil-square" class="w-4 h-4" />
@@ -379,6 +375,7 @@ function cancelEditAction(): void {
               <button
                 type="button"
                 class="text-secondary-400 hover:text-error-600"
+                :aria-label="t('action.delete')"
                 @click="$emit('deleteActionItem', action.id)"
               >
                 <Icon name="heroicons:trash" class="w-4 h-4" />
@@ -396,19 +393,26 @@ function cancelEditAction(): void {
       </div>
 
       <!-- Add action item form (host only) -->
-      <div v-if="isHost" class="flex gap-2">
+      <div v-if="isHost" class="flex flex-wrap gap-2">
         <input
           v-model="newActionText"
           type="text"
-          class="input-field flex-1 text-sm"
+          class="input flex-1 min-w-0 text-sm"
           :placeholder="t('summary.actionPlaceholder')"
           @keydown.enter="handleAddAction"
         >
         <input
           v-model="newActionAssignee"
           type="text"
-          class="input-field w-32 text-sm"
+          class="input w-28 text-sm"
           :placeholder="t('summary.assigneePlaceholder')"
+          @keydown.enter="handleAddAction"
+        >
+        <input
+          v-model="newActionDueDate"
+          type="date"
+          class="input w-36 text-sm"
+          :title="t('summary.dueDate')"
           @keydown.enter="handleAddAction"
         >
         <button

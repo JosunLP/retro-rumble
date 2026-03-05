@@ -7,10 +7,11 @@
 
 import type {
     CheckInMood,
-    ISessionState,
+    IExtendedSessionState,
     RetroColumnType,
     RetroPhase,
 } from '~/types';
+import { countVotesForParticipant } from '~/types';
 import type {
     ParticipantJoinedPayload,
     ParticipantLeftPayload,
@@ -24,13 +25,6 @@ import type {
 } from '~/types/websocket';
 
 /**
- * Extended state with join code and connection status
- */
-interface ExtendedSessionState extends ISessionState {
-  joinCode: string | null;
-}
-
-/**
  * Composable for retro session management with WebSocket
  *
  * @example
@@ -40,6 +34,11 @@ interface ExtendedSessionState extends ISessionState {
  */
 export function useRetroSession() {
   /**
+   * i18n for translated error messages (composable runs inside setup())
+   */
+  const { t } = useI18n();
+
+  /**
    * WebSocket Composable
    */
   const {
@@ -47,6 +46,7 @@ export function useRetroSession() {
     send,
     on,
     connect,
+    forceReconnect,
   } = useWebSocket({
     autoConnect: true,
     autoReconnect: true,
@@ -55,7 +55,7 @@ export function useRetroSession() {
   /**
    * Reactive session state
    */
-  const state = useState<ExtendedSessionState>('retro-session', () => ({
+  const state = useState<IExtendedSessionState>('retro-session', () => ({
     session: null,
     currentParticipant: null,
     isHost: false,
@@ -272,16 +272,13 @@ export function useRetroSession() {
 
   const remainingVotes = computed(() => {
     if (!state.value.session || !state.value.currentParticipant) return 0;
-    const pid = state.value.currentParticipant!.id;
-    const cardVotes = state.value.session.cards.reduce(
-      (count, c) => count + c.voterIds.filter((id) => id === pid).length,
-      0
+    const pid = state.value.currentParticipant.id;
+    const used = countVotesForParticipant(
+      state.value.session.cards,
+      state.value.session.groups,
+      pid
     );
-    const groupVotes = state.value.session.groups.reduce(
-      (count, g) => count + g.voterIds.filter((id) => id === pid).length,
-      0
-    );
-    return state.value.session.maxVotesPerUser - cardVotes - groupVotes;
+    return state.value.session.maxVotesPerUser - used;
   });
 
   const currentPhase = computed(() => state.value.session?.phase ?? 'set-the-stage');
@@ -297,7 +294,7 @@ export function useRetroSession() {
     timerDuration?: number
   ): Promise<void> {
     if (!sessionName.trim() || !participantName.trim()) {
-      state.value = { ...state.value, error: 'Please fill in all fields.' };
+      state.value = { ...state.value, error: t('errors.fillAllFields') };
       return;
     }
 
@@ -305,7 +302,7 @@ export function useRetroSession() {
     if (!connected) {
       state.value = {
         ...state.value,
-        error: 'Could not connect to the server.',
+        error: t('errors.connectionFailed'),
       };
       return;
     }
@@ -326,12 +323,12 @@ export function useRetroSession() {
     if (normalizedCode.length !== 6) {
       state.value = {
         ...state.value,
-        error: 'The join code must be 6 characters long.',
+        error: t('errors.joinCodeLength'),
       };
       return;
     }
     if (!participantName.trim()) {
-      state.value = { ...state.value, error: 'Please enter your name.' };
+      state.value = { ...state.value, error: t('errors.enterYourName') };
       return;
     }
 
@@ -339,7 +336,7 @@ export function useRetroSession() {
     if (!connected) {
       state.value = {
         ...state.value,
-        error: 'Could not connect to the server.',
+        error: t('errors.connectionFailed'),
       };
       return;
     }
@@ -516,6 +513,15 @@ export function useRetroSession() {
     state.value = { ...state.value, error: null };
   }
 
+  /**
+   * Manually triggers a reconnect attempt.
+   * Closes the current socket (without blocking auto-reconnect)
+   * and initiates a fresh connection.
+   */
+  function reconnect(): void {
+    forceReconnect();
+  }
+
   return {
     // State
     session,
@@ -557,5 +563,6 @@ export function useRetroSession() {
     submitCheckIn,
     submitFeedback,
     clearError,
+    reconnect,
   };
 }

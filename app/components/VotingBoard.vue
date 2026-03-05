@@ -9,6 +9,7 @@
 
 import type { ICardGroup, IRetroCard, IRetroSession, RetroColumnType } from '~/types';
 import { RETRO_COLUMNS } from '~/types';
+import { COLUMN_META } from '~/utils/columnConfig';
 
 const { t } = useI18n();
 
@@ -26,29 +27,7 @@ const emit = defineEmits<{
 }>();
 
 // ---- Column Metadata ----
-const columnMeta: Record<
-  RetroColumnType,
-  { emoji: string; label: string; cardClass: string; headerClass: string }
-> = {
-  'went-well': {
-    emoji: '✅',
-    label: 'column.went-well',
-    cardClass: 'bg-success-50 border-success-200',
-    headerClass: 'text-success-700',
-  },
-  'to-improve': {
-    emoji: '⚠️',
-    label: 'column.to-improve',
-    cardClass: 'bg-warning-50 border-warning-200',
-    headerClass: 'text-warning-700',
-  },
-  'action-items': {
-    emoji: '🎯',
-    label: 'column.action-items',
-    cardClass: 'bg-primary-50 border-primary-200',
-    headerClass: 'text-primary-700',
-  },
-};
+const columnMeta = COLUMN_META;
 
 // ---- Helpers ----
 function getUngroupedCards(column: RetroColumnType): IRetroCard[] {
@@ -78,9 +57,8 @@ function userGroupVotes(group: ICardGroup): number {
   return group.voterIds.filter((id) => id === props.currentUserId).length;
 }
 
-function canVote(): boolean {
-  return props.remainingVotes > 0;
-}
+/** Whether the user can still cast a vote */
+const canVote = computed(() => props.remainingVotes > 0);
 
 function handleVoteCard(cardId: string) {
   emit('voteCard', cardId);
@@ -145,9 +123,9 @@ function hasContent(column: RetroColumnType): boolean {
           <span class="text-lg">{{ columnMeta[column].emoji }}</span>
           <h4
             class="text-sm font-semibold uppercase tracking-wider"
-            :class="columnMeta[column].headerClass"
+            :class="columnMeta[column].headerTextClass"
           >
-            {{ t(columnMeta[column].label) }}
+            {{ t(columnMeta[column].labelKey) }}
           </h4>
         </div>
 
@@ -200,11 +178,11 @@ function hasContent(column: RetroColumnType): boolean {
                 class="p-1 rounded-full transition-colors"
                 :aria-label="t('voting.voteGroup')"
                 :class="
-                  canVote()
+                  canVote
                     ? 'text-primary-600 hover:text-primary-700 hover:bg-primary-50'
                     : 'text-secondary-300 cursor-not-allowed'
                 "
-                :disabled="!canVote()"
+                :disabled="!canVote"
                 @click="handleVoteGroup(group.id)"
               >
                 <Icon name="heroicons:plus-circle" class="w-4 h-4" />
@@ -255,11 +233,11 @@ function hasContent(column: RetroColumnType): boolean {
                     class="p-0.5 rounded-full transition-colors"
                     :aria-label="t('voting.voteCard')"
                     :class="
-                      canVote()
+                      canVote
                         ? 'text-primary-600 hover:text-primary-700 hover:bg-primary-50'
                         : 'text-secondary-300 cursor-not-allowed'
                     "
-                    :disabled="!canVote()"
+                    :disabled="!canVote"
                     @click="handleVoteCard(card.id)"
                   >
                     <Icon name="heroicons:plus-circle" class="w-3.5 h-3.5" />
@@ -312,11 +290,11 @@ function hasContent(column: RetroColumnType): boolean {
                 class="p-0.5 rounded-full transition-colors"
                 :aria-label="t('voting.voteCard')"
                 :class="
-                  canVote()
+                  canVote
                     ? 'text-primary-600 hover:text-primary-700 hover:bg-primary-50'
                     : 'text-secondary-300 cursor-not-allowed'
                 "
-                :disabled="!canVote()"
+                :disabled="!canVote"
                 @click="handleVoteCard(card.id)"
               >
                 <Icon name="heroicons:plus-circle" class="w-3.5 h-3.5" />

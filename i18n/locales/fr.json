@@ -1,0 +1,206 @@
+{
+  "app": {
+    "name": "Retro Rumble",
+    "tagline": "Rétrospectives Scrum anonymes pour les équipes agiles"
+  },
+  "connection": {
+    "connected": "Connecté",
+    "connecting": "Connexion...",
+    "disconnected": "Déconnecté",
+    "error": "Erreur de connexion"
+  },
+  "home": {
+    "welcome": "Démarrez votre Rétro",
+    "subtitle": "Créez ou rejoignez une rétrospective – anonyme, sécurisée et simple.",
+    "newSession": "Nouvelle session",
+    "joinSession": "Rejoindre une session"
+  },
+  "form": {
+    "sessionName": "Nom de la session",
+    "sessionNamePlaceholder": "ex. Rétro Sprint 42",
+    "yourName": "Votre nom",
+    "yourNamePlaceholder": "ex. Alex",
+    "maxVotes": "Votes max.",
+    "timerMinutes": "Minuteur (min)",
+    "joinCode": "Code d'accès",
+    "joinCodePlaceholder": "ABC123",
+    "createButton": "Démarrer la Rétro",
+    "joinButton": "Rejoindre la Rétro"
+  },
+  "session": {
+    "joinCode": "Code d'accès",
+    "participants": "participants",
+    "info": {
+      "sessionLabel": "Session :"
+    }
+  },
+  "participants": {
+    "title": "Participants",
+    "host": "Hôte",
+    "you": "(vous)",
+    "online": "En ligne",
+    "offline": "Hors ligne"
+  },
+  "phase": {
+    "set-the-stage": "Mise en scène",
+    "gather-data": "Collecte de données",
+    "generate-insights": "Regroupement",
+    "voting": "Vote",
+    "decide-action": "Actions",
+    "close-retro": "Clôture",
+    "previous": "Précédent",
+    "next": "Suivant",
+    "description": {
+      "set-the-stage": "Bienvenue ! Partagez votre humeur pour donner le ton.",
+      "gather-data": "Écrivez des cartes anonymes sur ce qui a bien fonctionné et ce qui peut être amélioré.",
+      "generate-insights": "Glissez les cartes en groupes pour trouver des thèmes communs.",
+      "voting": "Votez sur les sujets les plus importants pour l'équipe.",
+      "decide-action": "Définissez des actions concrètes et attribuez des responsabilités.",
+      "close-retro": "Vérifiez le résumé et donnez votre avis sur cette rétro."
+    }
+  },
+  "column": {
+    "went-well": "Ce qui a bien fonctionné",
+    "to-improve": "Ce qui peut s'améliorer",
+    "action-items": "Actions",
+    "empty": "Aucune carte pour l'instant"
+  },
+  "card": {
+    "placeholder": "Ajouter une carte... (Ctrl+Entrée pour envoyer)",
+    "edit": "Modifier",
+    "delete": "Supprimer",
+    "charRemaining": "{n} caractères restants",
+    "charLimitReached": "Limite de caractères atteinte"
+  },
+  "grouping": {
+    "instructionsHost": "Faites glisser les cartes les unes sur les autres pour créer des groupes. Éloignez une carte d'un groupe pour la dissocier.",
+    "instructionsParticipant": "Faites glisser les cartes les unes sur les autres pour créer des groupes. Éloignez une carte d'un groupe pour la dissocier.",
+    "newGroupTitle": "Nouveau groupe",
+    "clickToRename": "Cliquer pour renommer",
+    "deleteGroup": "Supprimer le groupe",
+    "moveToColumn": "Déplacer vers {column}",
+    "removeFromGroup": "Retirer du groupe",
+    "resetLayout": "Réinitialiser la mise en page",
+    "maximize": "Agrandir",
+    "restore": "Restaurer",
+    "emptyColumn": "Aucune carte dans cette colonne"
+  },
+  "voting": {
+    "title": "Vote",
+    "remaining": "Votes restants",
+    "instructions": "Votez pour les cartes et groupes les plus importants à discuter. Vous pouvez distribuer vos votes librement.",
+    "groupCardCount": "({count} cartes)",
+    "voteGroup": "Voter pour le groupe",
+    "unvoteGroup": "Retirer le vote du groupe",
+    "voteCard": "Voter pour la carte",
+    "unvoteCard": "Retirer le vote de la carte"
+  },
+  "timer": {
+    "title": "Minuteur",
+    "start": "Démarrer",
+    "stop": "Arrêter"
+  },
+  "summary": {
+    "totalCards": "Cartes",
+    "totalVotes": "Votes",
+    "totalGroups": "Groupes",
+    "actionsDone": "Actions réalisées",
+    "cards": "cartes",
+    "votes": "votes",
+    "actionItems": "Actions",
+    "noActions": "Aucune action pour l'instant. Ajoutez des engagements pour le prochain sprint !",
+    "actionPlaceholder": "Nouvelle action...",
+    "assigneePlaceholder": "Responsable",
+    "addAction": "Ajouter",
+    "dueDate": "Date d'échéance",
+    "dueDatePlaceholder": "AAAA-MM-JJ",
+    "toggleDone": "Marquer comme fait",
+    "topVoted": "Les plus votés"
+  },
+  "export": {
+    "title": "Exporter les résultats",
+    "description": "Téléchargez vos résultats de rétro pour les partager avec l'équipe ou les archiver.",
+    "format": {
+      "json": "JSON",
+      "markdown": "Markdown",
+      "png": "Image (PNG)"
+    },
+    "markdown": {
+      "date": "Date",
+      "participants": "Participants",
+      "committedActions": "Actions engagées",
+      "action": "Action",
+      "assignee": "Responsable",
+      "due": "Échéance",
+      "status": "Statut",
+      "vote": "vote",
+      "votePlural": "votes",
+      "statistics": "Statistiques",
+      "totalCards": "Total cartes",
+      "totalVotes": "Total votes",
+      "done": "réalisé",
+      "generatedBy": "Généré par"
+    },
+    "canvas": {
+      "participants": "Participants",
+      "cards": "cartes",
+      "votes": "votes",
+      "groups": "groupes",
+      "actions": "Actions"
+    }
+  },
+  "common": {
+    "cancel": "Annuler",
+    "save": "Enregistrer"
+  },
+  "errors": {
+    "fillAllFields": "Veuillez remplir tous les champs.",
+    "joinCodeLength": "Le code d'accès doit comporter 6 caractères.",
+    "enterYourName": "Veuillez entrer votre nom.",
+    "connectionFailed": "Impossible de se connecter au serveur.",
+    "clipboardFailed": "Impossible de copier dans le presse-papiers. Veuillez copier manuellement.",
+    "actionLimitReached": "Limite d'actions atteinte.",
+    "actionWrongPhase": "Les actions ne peuvent être ajoutées que pendant la phase Actions ou Clôture."
+  },
+  "ui": {
+    "leaveConfirm": "Êtes-vous sûr de vouloir quitter cette session ?",
+    "leaveSession": "Quitter la session",
+    "shareLink": "Copier le lien de la session",
+    "shareLinkCopied": "Lien copié !",
+    "reconnecting": "Reconnexion...",
+    "reconnectingHint": "Votre session est sauvegardée. Veuillez patienter.",
+    "reconnectingError": "Connexion échouée. Nouvelle tentative automatique...",
+    "reconnectNow": "Reconnecter maintenant"
+  },
+  "checkin": {
+    "title": "Check-In",
+    "question": "Comment vous sentez-vous aujourd'hui ? Choisissez un emoji qui décrit votre humeur.",
+    "responses": "Humeur de l'équipe",
+    "unknownParticipant": "Participant inconnu",
+    "moodLabels": {
+      "happy": "Heureux",
+      "neutral": "Neutre",
+      "worried": "Inquiet",
+      "energized": "Énergisé",
+      "confident": "Confiant",
+      "tired": "Fatigué"
+    },
+    "waiting": "En attente des réponses de l'équipe..."
+  },
+  "feedback": {
+    "title": "Retour sur la Rétro",
+    "question": "Comment s'est passée cette rétrospective ? Notez de 1 (pas terrible) à 5 (excellent).",
+    "results": "Retour de l'équipe",
+    "average": "Moyenne",
+    "waiting": "En attente des retours...",
+    "rating1": "Mauvais",
+    "rating2": "Passable",
+    "rating3": "OK",
+    "rating4": "Bien",
+    "rating5": "Excellent"
+  },
+  "action": {
+    "edit": "Modifier l'action",
+    "delete": "Supprimer l'action"
+  }
+}

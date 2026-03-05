@@ -1,0 +1,206 @@
+{
+  "app": {
+    "name": "Retro Rumble",
+    "tagline": "Retrospettive Scrum anonime per team agili"
+  },
+  "connection": {
+    "connected": "Connesso",
+    "connecting": "Connessione...",
+    "disconnected": "Disconnesso",
+    "error": "Errore di connessione"
+  },
+  "home": {
+    "welcome": "Avvia la tua Retro",
+    "subtitle": "Crea o unisciti a una retrospettiva – anonima, sicura e semplice.",
+    "newSession": "Nuova sessione",
+    "joinSession": "Unisciti a una sessione"
+  },
+  "form": {
+    "sessionName": "Nome sessione",
+    "sessionNamePlaceholder": "es. Retro Sprint 42",
+    "yourName": "Il tuo nome",
+    "yourNamePlaceholder": "es. Alex",
+    "maxVotes": "Voti max.",
+    "timerMinutes": "Timer (min)",
+    "joinCode": "Codice di accesso",
+    "joinCodePlaceholder": "ABC123",
+    "createButton": "Avvia la Retro",
+    "joinButton": "Unisciti alla Retro"
+  },
+  "session": {
+    "joinCode": "Codice di accesso",
+    "participants": "partecipanti",
+    "info": {
+      "sessionLabel": "Sessione:"
+    }
+  },
+  "participants": {
+    "title": "Partecipanti",
+    "host": "Host",
+    "you": "(tu)",
+    "online": "Online",
+    "offline": "Offline"
+  },
+  "phase": {
+    "set-the-stage": "Preparazione",
+    "gather-data": "Raccolta dati",
+    "generate-insights": "Raggruppamento",
+    "voting": "Votazione",
+    "decide-action": "Azioni",
+    "close-retro": "Chiusura",
+    "previous": "Precedente",
+    "next": "Successivo",
+    "description": {
+      "set-the-stage": "Benvenuto! Condividi come ti senti per rompere il ghiaccio.",
+      "gather-data": "Scrivi schede anonime su cosa è andato bene e cosa migliorare.",
+      "generate-insights": "Trascina le schede in gruppi per trovare temi comuni.",
+      "voting": "Vota i temi più importanti per il team.",
+      "decide-action": "Definisci azioni concrete e assegna le responsabilità.",
+      "close-retro": "Rivedi il riepilogo e dai il tuo feedback su questa retro."
+    }
+  },
+  "column": {
+    "went-well": "Cosa ha funzionato",
+    "to-improve": "Da migliorare",
+    "action-items": "Azioni",
+    "empty": "Nessuna scheda ancora"
+  },
+  "card": {
+    "placeholder": "Aggiungi una scheda... (Ctrl+Invio per inviare)",
+    "edit": "Modifica",
+    "delete": "Elimina",
+    "charRemaining": "{n} caratteri rimanenti",
+    "charLimitReached": "Limite di caratteri raggiunto"
+  },
+  "grouping": {
+    "instructionsHost": "Trascina le schede l'una sull'altra per creare gruppi. Allontana una scheda da un gruppo per separarla.",
+    "instructionsParticipant": "Trascina le schede l'una sull'altra per creare gruppi. Allontana una scheda da un gruppo per separarla.",
+    "newGroupTitle": "Nuovo gruppo",
+    "clickToRename": "Clicca per rinominare",
+    "deleteGroup": "Elimina gruppo",
+    "moveToColumn": "Sposta in {column}",
+    "removeFromGroup": "Rimuovi dal gruppo",
+    "resetLayout": "Reimposta layout",
+    "maximize": "Ingrandisci",
+    "restore": "Ripristina",
+    "emptyColumn": "Nessuna scheda in questa colonna"
+  },
+  "voting": {
+    "title": "Votazione",
+    "remaining": "Voti rimanenti",
+    "instructions": "Vota per le schede e i gruppi più importanti da discutere. Puoi distribuire i tuoi voti liberamente.",
+    "groupCardCount": "({count} schede)",
+    "voteGroup": "Vota per il gruppo",
+    "unvoteGroup": "Rimuovi voto dal gruppo",
+    "voteCard": "Vota per la scheda",
+    "unvoteCard": "Rimuovi voto dalla scheda"
+  },
+  "timer": {
+    "title": "Timer",
+    "start": "Avvia",
+    "stop": "Ferma"
+  },
+  "summary": {
+    "totalCards": "Schede",
+    "totalVotes": "Voti",
+    "totalGroups": "Gruppi",
+    "actionsDone": "Azioni completate",
+    "cards": "schede",
+    "votes": "voti",
+    "actionItems": "Azioni",
+    "noActions": "Nessuna azione ancora. Aggiungi impegni per il prossimo sprint!",
+    "actionPlaceholder": "Nuova azione...",
+    "assigneePlaceholder": "Responsabile",
+    "addAction": "Aggiungi",
+    "dueDate": "Scadenza",
+    "dueDatePlaceholder": "AAAA-MM-GG",
+    "toggleDone": "Segna come fatto",
+    "topVoted": "Più votati"
+  },
+  "export": {
+    "title": "Esporta risultati",
+    "description": "Scarica i risultati della retro per condividerli con il team o archiviarli.",
+    "format": {
+      "json": "JSON",
+      "markdown": "Markdown",
+      "png": "Immagine (PNG)"
+    },
+    "markdown": {
+      "date": "Data",
+      "participants": "Partecipanti",
+      "committedActions": "Azioni concordate",
+      "action": "Azione",
+      "assignee": "Responsabile",
+      "due": "Scadenza",
+      "status": "Stato",
+      "vote": "voto",
+      "votePlural": "voti",
+      "statistics": "Statistiche",
+      "totalCards": "Schede totali",
+      "totalVotes": "Voti totali",
+      "done": "completato",
+      "generatedBy": "Generato da"
+    },
+    "canvas": {
+      "participants": "Partecipanti",
+      "cards": "schede",
+      "votes": "voti",
+      "groups": "gruppi",
+      "actions": "Azioni"
+    }
+  },
+  "common": {
+    "cancel": "Annulla",
+    "save": "Salva"
+  },
+  "errors": {
+    "fillAllFields": "Si prega di compilare tutti i campi.",
+    "joinCodeLength": "Il codice di accesso deve essere di 6 caratteri.",
+    "enterYourName": "Si prega di inserire il proprio nome.",
+    "connectionFailed": "Impossibile connettersi al server.",
+    "clipboardFailed": "Impossibile copiare negli appunti. Si prega di copiare manualmente.",
+    "actionLimitReached": "Limite di azioni raggiunto.",
+    "actionWrongPhase": "Le azioni possono essere aggiunte solo durante la fase Azioni o Chiusura."
+  },
+  "ui": {
+    "leaveConfirm": "Sei sicuro di voler abbandonare questa sessione?",
+    "leaveSession": "Abbandona sessione",
+    "shareLink": "Copia link sessione",
+    "shareLinkCopied": "Link copiato!",
+    "reconnecting": "Riconnessione...",
+    "reconnectingHint": "La tua sessione è salvata. Attendi.",
+    "reconnectingError": "Connessione fallita. Nuovo tentativo automatico...",
+    "reconnectNow": "Riconnetti ora"
+  },
+  "checkin": {
+    "title": "Check-In",
+    "question": "Come ti senti oggi? Scegli un'emoji che descriva il tuo umore.",
+    "responses": "Umore del team",
+    "unknownParticipant": "Partecipante sconosciuto",
+    "moodLabels": {
+      "happy": "Felice",
+      "neutral": "Neutrale",
+      "worried": "Preoccupato",
+      "energized": "Energico",
+      "confident": "Fiducioso",
+      "tired": "Stanco"
+    },
+    "waiting": "In attesa delle risposte del team..."
+  },
+  "feedback": {
+    "title": "Feedback sulla Retro",
+    "question": "Com'è andata questa retrospettiva? Vota da 1 (non buona) a 5 (eccellente).",
+    "results": "Feedback del team",
+    "average": "Media",
+    "waiting": "In attesa del feedback...",
+    "rating1": "Pessimo",
+    "rating2": "Scarso",
+    "rating3": "OK",
+    "rating4": "Buono",
+    "rating5": "Ottimo"
+  },
+  "action": {
+    "edit": "Modifica azione",
+    "delete": "Elimina azione"
+  }
+}

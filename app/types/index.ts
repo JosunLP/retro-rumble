@@ -1,20 +1,9 @@
 /**
  * Index file for type definitions
  *
- * Exports all types for easy import.
+ * Re-exports all types, interfaces, constants, and validation functions
+ * from the retro and websocket modules for convenient single-path imports.
  */
 
 export * from './retro';
 export * from './websocket';
-
-// Re-export validation functions
-export {
-    CHECK_IN_MOODS,
-    JOIN_CODE_CHARS,
-    JOIN_CODE_LENGTH,
-    RETRO_COLUMNS,
-    RETRO_PHASES,
-    formatJoinCode,
-    isValidColumnType,
-    isValidJoinCode
-} from './retro';

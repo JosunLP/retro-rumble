@@ -17,6 +17,25 @@ export const JOIN_CODE_LENGTH = 6;
 export const JOIN_CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 
 /**
+ * Content length constraints
+ */
+export const MAX_CARD_CONTENT_LENGTH = 500;
+export const MAX_PARTICIPANT_NAME_LENGTH = 50;
+export const MAX_SESSION_NAME_LENGTH = 80;
+export const MAX_GROUP_TITLE_LENGTH = 80;
+export const MAX_ACTION_ITEM_TEXT_LENGTH = 500;
+
+/**
+ * Rate limiting: maximum cards a single participant can create per session
+ */
+export const MAX_CARDS_PER_USER = 50;
+
+/**
+ * Rate limiting: maximum action items per session
+ */
+export const MAX_ACTION_ITEMS_PER_SESSION = 50;
+
+/**
  * Retro column types
  */
 export const RETRO_COLUMNS = [
@@ -101,6 +120,47 @@ export function isValidCheckInMood(value: unknown): value is CheckInMood {
   );
 }
 
+/**
+ * Validates a retro phase value
+ */
+export function isValidPhase(value: unknown): value is RetroPhase {
+  return (
+    typeof value === 'string' &&
+    (RETRO_PHASES as readonly string[]).includes(value)
+  );
+}
+
+/**
+ * Validates an ISO date string (YYYY-MM-DD).
+ * Returns true only if the string represents a real calendar date.
+ */
+export function isValidISODate(value: string): boolean {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const date = new Date(value + 'T00:00:00Z');
+  return !isNaN(date.getTime()) && date.toISOString().startsWith(value);
+}
+
+/**
+ * Counts total votes cast by a participant across cards and groups.
+ * Works on plain data (IRetroSession) so both client composables and
+ * server code can reuse this without needing a class instance.
+ */
+export function countVotesForParticipant(
+  cards: Pick<IRetroCard, 'voterIds'>[],
+  groups: Pick<ICardGroup, 'voterIds'>[],
+  participantId: string
+): number {
+  const cardVotes = cards.reduce(
+    (count, c) => count + c.voterIds.filter((id) => id === participantId).length,
+    0
+  );
+  const groupVotes = groups.reduce(
+    (count, g) => count + g.voterIds.filter((id) => id === participantId).length,
+    0
+  );
+  return cardVotes + groupVotes;
+}
+
 // ============================================
 // Core Interfaces
 // ============================================
@@ -143,6 +203,8 @@ export interface ICardGroup {
   votes: number;
   /** IDs of participants who voted for this group */
   voterIds: string[];
+  /** Creation timestamp */
+  createdAt: Date;
 }
 
 /**
@@ -255,4 +317,13 @@ export interface ISessionState {
   isConnected: boolean;
   /** Error message */
   error: string | null;
+}
+
+/**
+ * Extended session state including join code.
+ * Used by the retro session composable for client-side state management.
+ */
+export interface IExtendedSessionState extends ISessionState {
+  /** Join code for the current session */
+  joinCode: string | null;
 }
