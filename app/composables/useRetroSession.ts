@@ -46,7 +46,6 @@ export function useRetroSession() {
     send,
     on,
     connect,
-    disconnect: _disconnect,
     forceReconnect,
   } = useWebSocket({
     autoConnect: true,
