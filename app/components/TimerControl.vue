@@ -60,7 +60,8 @@ const timerOptions = [60, 120, 180, 300, 600];
     <div class="text-center mb-3">
       <div
         class="text-3xl font-mono font-bold"
-        :class="{
+        aria-live="polite"
+        :aria-label="t('timer.title') + ': ' + (running && remaining !== null ? formatTime(remaining) : formatTime(duration))"        :class="{
           'text-error-600': running && remaining !== null && remaining <= 30,
           'text-warning-600':
             running && remaining !== null && remaining > 30 && remaining <= 60,
@@ -129,6 +130,8 @@ const timerOptions = [60, 120, 180, 300, 600];
               ? 'bg-primary-100 text-primary-700 font-medium'
               : 'bg-secondary-100 text-secondary-600 hover:bg-secondary-200'
           "
+          :aria-pressed="duration === option"
+          :aria-label="formatTime(option)"
           @click="emit('setDuration', option)"
         >
           {{ formatTime(option) }}

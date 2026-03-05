@@ -52,7 +52,7 @@ function prevPhase(): void {
 <template>
   <div class="card-container">
     <!-- Phase Steps -->
-    <div class="flex items-center justify-between mb-4">
+    <div class="flex items-center justify-between mb-2">
       <div
         v-for="(phase, idx) in RETRO_PHASES"
         :key="phase"
@@ -77,12 +77,18 @@ function prevPhase(): void {
       </div>
     </div>
 
+    <!-- Phase description -->
+    <p class="text-sm text-secondary-500 text-center mb-4">
+      {{ t(`phase.description.${currentPhase}`) }}
+    </p>
+
     <!-- Host Controls -->
     <div v-if="isHost" class="flex items-center justify-between">
       <button
         type="button"
         class="btn btn-sm btn-secondary"
         :disabled="phaseIndex === 0"
+        :aria-label="t('phase.previous') + (phaseIndex > 0 ? ': ' + t(`phase.${RETRO_PHASES[phaseIndex - 1]}`) : '')"
         @click="prevPhase"
       >
         <Icon name="heroicons:chevron-left" class="w-4 h-4 mr-1" />
@@ -92,6 +98,7 @@ function prevPhase(): void {
         type="button"
         class="btn btn-sm btn-primary"
         :disabled="phaseIndex === RETRO_PHASES.length - 1"
+        :aria-label="t('phase.next') + (phaseIndex < RETRO_PHASES.length - 1 ? ': ' + t(`phase.${RETRO_PHASES[phaseIndex + 1]}`) : '')"
         @click="nextPhase"
       >
         {{ t('phase.next') }}

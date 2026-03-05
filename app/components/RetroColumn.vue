@@ -7,6 +7,7 @@
 
 import type { IRetroCard, RetroColumnType, RetroPhase } from '~/types';
 import { MAX_CARD_CONTENT_LENGTH } from '~/types';
+import { COLUMN_META } from '~/utils/columnConfig';
 
 const { t } = useI18n();
 
@@ -38,32 +39,9 @@ const emit = defineEmits<{
 const newCardContent = ref('');
 
 /**
- * Column configuration
+ * Column configuration from shared metadata
  */
-const columnConfig: Record<
-  RetroColumnType,
-  {
-    icon: string;
-    headerClass: string;
-    emptyIcon: string;
-  }
-> = {
-  'went-well': {
-    icon: 'heroicons:face-smile',
-    headerClass: 'text-success-700 bg-success-50 border-success-200',
-    emptyIcon: 'heroicons:sparkles',
-  },
-  'to-improve': {
-    icon: 'heroicons:exclamation-triangle',
-    headerClass: 'text-warning-700 bg-warning-50 border-warning-200',
-    emptyIcon: 'heroicons:light-bulb',
-  },
-  'action-items': {
-    icon: 'heroicons:rocket-launch',
-    headerClass: 'text-primary-700 bg-primary-50 border-primary-200',
-    emptyIcon: 'heroicons:clipboard-document-check',
-  },
-};
+const columnConfig = COLUMN_META;
 
 const config = computed(() => columnConfig[props.column]);
 
@@ -100,7 +78,7 @@ const newCardCharsRemaining = computed(
     <!-- Column Header -->
     <div
       class="flex items-center gap-2 px-4 py-3 rounded-t-xl border font-semibold"
-      :class="config.headerClass"
+      :class="[config.headerTextClass, config.headerBgClass, config.headerBorderClass]"
     >
       <Icon :name="config.icon" class="w-5 h-5" />
       <span>{{ t(`column.${column}`) }}</span>
@@ -158,12 +136,16 @@ const newCardCharsRemaining = computed(
             class="input text-sm resize-none w-full"
             :placeholder="t('card.placeholder')"
             :maxlength="MAX_CARD_CONTENT_LENGTH"
+            :aria-label="t(`column.${column}`) + ' — ' + t('card.placeholder')"
+            aria-describedby="char-counter"
             rows="2"
             @keydown.enter.ctrl="addCard"
           />
           <span
+            id="char-counter"
             class="absolute bottom-1 right-2 text-xs tabular-nums leading-none"
             :class="newCardCharsRemaining <= 50 ? 'text-warning-500' : 'text-secondary-300'"
+            aria-live="polite"
           >
             {{ newCardCharsRemaining }}
           </span>

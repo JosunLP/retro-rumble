@@ -14,6 +14,7 @@ import type {
     IRetroSession,
     RetroColumnType,
 } from '~/types';
+import { COLUMN_META, ORDERED_COLUMNS } from '~/utils/columnConfig';
 
 const { t } = useI18n();
 
@@ -40,31 +41,9 @@ const editActionText = ref('');
 const editActionAssignee = ref('');
 const editActionDueDate = ref('');
 
-const columns: RetroColumnType[] = ['went-well', 'to-improve', 'action-items'];
+const columns = ORDERED_COLUMNS;
 
-const columnConfig: Record<
-  RetroColumnType,
-  { icon: string; colorClass: string; bgClass: string; borderClass: string }
-> = {
-  'went-well': {
-    icon: 'heroicons:check-circle',
-    colorClass: 'text-success-700',
-    bgClass: 'bg-success-50',
-    borderClass: 'border-success-200',
-  },
-  'to-improve': {
-    icon: 'heroicons:exclamation-triangle',
-    colorClass: 'text-warning-700',
-    bgClass: 'bg-warning-50',
-    borderClass: 'border-warning-200',
-  },
-  'action-items': {
-    icon: 'heroicons:bolt',
-    colorClass: 'text-primary-700',
-    bgClass: 'bg-primary-50',
-    borderClass: 'border-primary-200',
-  },
-};
+const columnConfig = COLUMN_META;
 
 function cardsForColumn(col: RetroColumnType): IRetroCard[] {
   return props.session.cards
@@ -193,9 +172,9 @@ function cancelEditAction(): void {
           <Icon
             :name="columnConfig[col].icon"
             class="w-5 h-5"
-            :class="columnConfig[col].colorClass"
+            :class="columnConfig[col].headerTextClass"
           />
-          <h3 class="font-bold" :class="columnConfig[col].colorClass">
+          <h3 class="font-bold" :class="columnConfig[col].headerTextClass">
             {{ t(`column.${col}`) }}
           </h3>
           <span class="ml-auto text-xs text-secondary-500">
@@ -298,6 +277,7 @@ function cancelEditAction(): void {
               v-model="editActionText"
               type="text"
               class="input flex-1 text-sm"
+              :aria-label="t('summary.actionPlaceholder')"
               @keydown.enter="saveEditAction"
               @keydown.escape="cancelEditAction"
             >
@@ -306,6 +286,7 @@ function cancelEditAction(): void {
               type="text"
               class="input w-28 text-sm"
               :placeholder="t('summary.assigneePlaceholder')"
+              :aria-label="t('summary.assigneePlaceholder')"
               @keydown.enter="saveEditAction"
               @keydown.escape="cancelEditAction"
             >
@@ -385,6 +366,7 @@ function cancelEditAction(): void {
               <button
                 type="button"
                 class="text-secondary-400 hover:text-primary-600"
+                :aria-label="t('action.edit')"
                 @click="startEditAction(action)"
               >
                 <Icon name="heroicons:pencil-square" class="w-4 h-4" />
@@ -392,6 +374,7 @@ function cancelEditAction(): void {
               <button
                 type="button"
                 class="text-secondary-400 hover:text-error-600"
+                :aria-label="t('action.delete')"
                 @click="$emit('deleteActionItem', action.id)"
               >
                 <Icon name="heroicons:trash" class="w-4 h-4" />

@@ -10,6 +10,7 @@
  */
 
 import type { IRetroCard, IRetroSession, RetroColumnType } from '~/types';
+import { COLUMN_META, ORDERED_COLUMNS } from '~/utils/columnConfig';
 
 /**
  * Export format type
@@ -17,15 +18,18 @@ import type { IRetroCard, IRetroSession, RetroColumnType } from '~/types';
 export type ExportFormat = 'json' | 'markdown' | 'png';
 
 /**
- * Column emoji helper (language-independent)
+ * Column emoji helper (language-independent) — uses shared column config
  */
 function columnEmoji(column: RetroColumnType): string {
-  const map: Record<RetroColumnType, string> = {
-    'went-well': '✅',
-    'to-improve': '⚠️',
-    'action-items': '⚡',
-  };
-  return map[column];
+  return COLUMN_META[column].emoji;
+}
+
+/**
+ * Escapes special markdown characters in user-generated content
+ * to prevent formatting injection in exported files.
+ */
+function escapeMd(text: string): string {
+  return text.replace(/([\\`*_{}[\]()#+\-.!|>~])/g, '\\$1');
 }
 
 /**
@@ -161,17 +165,17 @@ export function useExport() {
   function exportMarkdown(session: IRetroSession): void {
     const lines: string[] = [];
 
-    lines.push(`# ${session.name}`);
+    lines.push(`# ${escapeMd(session.name)}`);
     lines.push('');
     lines.push(
       `**${t('export.markdown.date')}:** ${new Date(session.createdAt).toLocaleDateString(locale.value, { year: 'numeric', month: 'long', day: 'numeric' })}`
     );
     lines.push(
-      `**${t('export.markdown.participants')}:** ${session.participants.map((p) => p.name).join(', ')}`
+      `**${t('export.markdown.participants')}:** ${session.participants.map((p) => escapeMd(p.name)).join(', ')}`
     );
     lines.push('');
 
-    for (const col of ['went-well', 'to-improve', 'action-items'] as const) {
+    for (const col of ORDERED_COLUMNS) {
       lines.push(`## ${t(`column.${col}`)}`);
       lines.push('');
 
@@ -181,7 +185,7 @@ export function useExport() {
       );
 
       for (const group of groups) {
-        lines.push(`### ${group.title}`);
+        lines.push(`### ${escapeMd(group.title)}`);
         const groupCards = group.cardIds
           .map((id) => session.cards.find((c) => c.id === id))
           .filter((c): c is IRetroCard => !!c)
@@ -191,7 +195,7 @@ export function useExport() {
             card.votes > 0
               ? ` (${card.votes} ${card.votes === 1 ? 'vote' : 'votes'})`
               : '';
-          lines.push(`- ${card.content}${voteBadge}`);
+          lines.push(`- ${escapeMd(card.content)}${voteBadge}`);
         }
         lines.push('');
       }
@@ -204,7 +208,7 @@ export function useExport() {
           card.votes > 0
             ? ` (${card.votes} ${card.votes === 1 ? 'vote' : 'votes'})`
             : '';
-        lines.push(`- ${card.content}${voteBadge}`);
+        lines.push(`- ${escapeMd(card.content)}${voteBadge}`);
       }
       lines.push('');
     }
@@ -219,7 +223,7 @@ export function useExport() {
       for (const action of session.actionItems) {
         const status = action.done ? '✅' : '⬜';
         lines.push(
-          `| ${action.text} | ${action.assignee ?? '-'} | ${action.dueDate ?? '-'} | ${status} |`
+          `| ${escapeMd(action.text)} | ${escapeMd(action.assignee ?? '-')} | ${action.dueDate ?? '-'} | ${status} |`
         );
       }
       lines.push('');

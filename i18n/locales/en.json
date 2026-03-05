@@ -47,7 +47,15 @@
     "decide-action": "Actions",
     "close-retro": "Close",
     "previous": "Previous",
-    "next": "Next"
+    "next": "Next",
+    "description": {
+      "set-the-stage": "Welcome! Share how you're feeling to set the mood.",
+      "gather-data": "Write cards anonymously about what went well and what to improve.",
+      "generate-insights": "Drag cards into groups to find common themes.",
+      "voting": "Vote on the topics that matter most to the team.",
+      "decide-action": "Define concrete action items and assign responsibilities.",
+      "close-retro": "Review the summary and give feedback on this retro."
+    }
   },
   "column": {
     "went-well": "What went well",
@@ -179,5 +187,9 @@
     "rating3": "OK",
     "rating4": "Good",
     "rating5": "Great"
+  },
+  "action": {
+    "edit": "Edit action item",
+    "delete": "Delete action item"
   }
 }

@@ -6,17 +6,17 @@
  */
 
 import type {
-  IActionItem,
-  ICardGroup,
-  ICheckInResponse,
-  IFeedbackResponse,
-  IRetroCard,
-  IRetroConfig,
-  IRetroSession,
-  RetroColumnType,
-  RetroPhase,
+    IActionItem,
+    ICardGroup,
+    ICheckInResponse,
+    IFeedbackResponse,
+    IRetroCard,
+    IRetroConfig,
+    IRetroSession,
+    RetroColumnType,
+    RetroPhase,
 } from '../types';
-import { isValidCheckInMood } from '../types';
+import { isValidCheckInMood, RETRO_PHASES } from '../types';
 import { Participant } from './Participant';
 
 const DEFAULT_CONFIG: IRetroConfig = {
@@ -121,12 +121,21 @@ export class RetroSession implements IRetroSession {
   // ============================================
 
   /**
-   * Changes the retro phase
+   * Changes the retro phase.
+   * Validates that the phase transition is sequential (forward or backward by one step).
+   * Returns true if the phase was changed, false if the transition is invalid.
    */
-  public changePhase(phase: RetroPhase): void {
+  public changePhase(phase: RetroPhase): boolean {
+    const currentIndex = RETRO_PHASES.indexOf(this.phase);
+    const targetIndex = RETRO_PHASES.indexOf(phase);
+
+    // Only allow moving one step forward or backward
+    if (Math.abs(targetIndex - currentIndex) !== 1) return false;
+
     this.phase = phase;
     this.stopTimer();
     this.touch();
+    return true;
   }
 
   // ============================================
@@ -217,6 +226,21 @@ export class RetroSession implements IRetroSession {
   // ============================================
 
   /**
+   * Counts total votes cast by a participant across all cards and groups
+   */
+  private countUserVotes(participantId: string): number {
+    const cardVotes = this.cards.reduce(
+      (count, c) => count + c.voterIds.filter((id) => id === participantId).length,
+      0
+    );
+    const groupVotes = this.groups.reduce(
+      (count, g) => count + g.voterIds.filter((id) => id === participantId).length,
+      0
+    );
+    return cardVotes + groupVotes;
+  }
+
+  /**
    * Votes for a card
    */
   public voteCard(cardId: string, participantId: string): boolean {
@@ -225,15 +249,7 @@ export class RetroSession implements IRetroSession {
     const card = this.cards.find((c) => c.id === cardId);
     if (!card) return false;
 
-    // Check max votes per user (cards + groups combined)
-    const userVoteCount = this.cards.reduce(
-      (count, c) => count + c.voterIds.filter((id) => id === participantId).length,
-      0
-    ) + this.groups.reduce(
-      (count, g) => count + g.voterIds.filter((id) => id === participantId).length,
-      0
-    );
-    if (userVoteCount >= this.maxVotesPerUser) return false;
+    if (this.countUserVotes(participantId) >= this.maxVotesPerUser) return false;
 
     card.voterIds.push(participantId);
     card.votes = card.voterIds.length;
@@ -263,14 +279,7 @@ export class RetroSession implements IRetroSession {
    * Gets remaining votes for a participant
    */
   public getRemainingVotes(participantId: string): number {
-    const usedVotes = this.cards.reduce(
-      (count, c) => count + c.voterIds.filter((id) => id === participantId).length,
-      0
-    ) + this.groups.reduce(
-      (count, g) => count + g.voterIds.filter((id) => id === participantId).length,
-      0
-    );
-    return this.maxVotesPerUser - usedVotes;
+    return this.maxVotesPerUser - this.countUserVotes(participantId);
   }
 
   // ============================================
@@ -411,15 +420,7 @@ export class RetroSession implements IRetroSession {
     const group = this.groups.find((g) => g.id === groupId);
     if (!group) return false;
 
-    // Check max votes per user (cards + groups combined)
-    const userVoteCount = this.cards.reduce(
-      (count, c) => count + c.voterIds.filter((id) => id === participantId).length,
-      0
-    ) + this.groups.reduce(
-      (count, g) => count + g.voterIds.filter((id) => id === participantId).length,
-      0
-    );
-    if (userVoteCount >= this.maxVotesPerUser) return false;
+    if (this.countUserVotes(participantId) >= this.maxVotesPerUser) return false;
 
     group.voterIds.push(participantId);
     group.votes = group.voterIds.length;

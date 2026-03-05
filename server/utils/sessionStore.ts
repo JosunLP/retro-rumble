@@ -17,6 +17,7 @@ import {
   JOIN_CODE_LENGTH,
   MAX_ACTION_ITEM_TEXT_LENGTH,
   MAX_CARD_CONTENT_LENGTH,
+  MAX_CARDS_PER_USER,
   MAX_GROUP_TITLE_LENGTH,
   MAX_PARTICIPANT_NAME_LENGTH,
   MAX_SESSION_NAME_LENGTH,
@@ -354,14 +355,14 @@ class SessionStore {
   }
 
   /**
-   * Changes the retro phase
+   * Changes the retro phase (validates sequential progression)
    */
   public changePhase(peer: Peer, phase: RetroPhase): IRetroSession | null {
     const session = this.getSessionForPeer(peer);
     if (!session) return null;
     if (!this.isHost(peer)) return null;
-    session.changePhase(phase);
-    return session.toJSON();
+    const success = session.changePhase(phase);
+    return success ? session.toJSON() : null;
   }
 
   /**
@@ -380,6 +381,12 @@ class SessionStore {
 
     // Only allow adding cards in the gather-data phase
     if (entry.session.phase !== 'gather-data') return null;
+
+    // Rate limit: prevent card spam per user
+    const userCardCount = entry.session.cards.filter(
+      (c) => c.authorId === info.participantId
+    ).length;
+    if (userCardCount >= MAX_CARDS_PER_USER) return null;
 
     // Validate content length
     const safeContent = content.trim().slice(0, MAX_CARD_CONTENT_LENGTH);

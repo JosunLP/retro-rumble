@@ -10,6 +10,7 @@
 import { CARD_W } from '~/composables/useClusterCanvas';
 import type { IRetroCard, IRetroSession, RetroColumnType } from '~/types';
 import { RETRO_COLUMNS } from '~/types';
+import { COLUMN_META } from '~/utils/columnConfig';
 
 const { t } = useI18n();
 
@@ -57,26 +58,7 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown));
 const cards = computed(() => props.session.cards);
 const groups = computed(() => props.session.groups);
 
-const columnMeta: Record<
-  RetroColumnType,
-  { emoji: string; cardClass: string; groupClass: string }
-> = {
-  'went-well': {
-    emoji: '✅',
-    cardClass: 'bg-success-50 border-success-200',
-    groupClass: 'border-success-200 bg-success-50/30',
-  },
-  'to-improve': {
-    emoji: '⚠️',
-    cardClass: 'bg-warning-50 border-warning-200',
-    groupClass: 'border-warning-200 bg-warning-50/30',
-  },
-  'action-items': {
-    emoji: '🎯',
-    cardClass: 'bg-primary-50 border-primary-200',
-    groupClass: 'border-primary-200 bg-primary-50/30',
-  },
-};
+const columnMeta = COLUMN_META;
 
 /** Get ungrouped cards for a column */
 function getUngroupedCards(column: RetroColumnType): IRetroCard[] {

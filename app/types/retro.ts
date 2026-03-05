@@ -26,6 +26,11 @@ export const MAX_GROUP_TITLE_LENGTH = 80;
 export const MAX_ACTION_ITEM_TEXT_LENGTH = 500;
 
 /**
+ * Rate limiting: maximum cards a single participant can create per session
+ */
+export const MAX_CARDS_PER_USER = 50;
+
+/**
  * Retro column types
  */
 export const RETRO_COLUMNS = [

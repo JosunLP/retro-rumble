@@ -47,7 +47,15 @@
     "decide-action": "Maßnahmen",
     "close-retro": "Abschluss",
     "previous": "Zurück",
-    "next": "Weiter"
+    "next": "Weiter",
+    "description": {
+      "set-the-stage": "Willkommen! Teile deine Stimmung, um den Einstieg zu erleichtern.",
+      "gather-data": "Schreibe anonyme Karten darüber, was gut lief und was verbessert werden kann.",
+      "generate-insights": "Ziehe Karten in Gruppen, um gemeinsame Themen zu finden.",
+      "voting": "Stimme für die Themen ab, die dem Team am wichtigsten sind.",
+      "decide-action": "Definiere konkrete Maßnahmen und weise Verantwortlichkeiten zu.",
+      "close-retro": "Überprüfe die Zusammenfassung und gib Feedback zu dieser Retro."
+    }
   },
   "column": {
     "went-well": "Was lief gut",
@@ -179,5 +187,9 @@
     "rating3": "OK",
     "rating4": "Gut",
     "rating5": "Super"
+  },
+  "action": {
+    "edit": "Aktionspunkt bearbeiten",
+    "delete": "Aktionspunkt löschen"
   }
 }
