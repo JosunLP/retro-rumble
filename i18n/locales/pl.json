@@ -37,7 +37,9 @@
   "participants": {
     "title": "Uczestnicy",
     "host": "Host",
-    "you": "(ty)"
+    "you": "(ty)",
+    "online": "Online",
+    "offline": "Offline"
   },
   "phase": {
     "set-the-stage": "Przygotowanie",
@@ -47,7 +49,15 @@
     "decide-action": "Działania",
     "close-retro": "Zamknięcie",
     "previous": "Poprzednia",
-    "next": "Następna"
+    "next": "Następna",
+    "description": {
+      "set-the-stage": "Witaj! Podziel się swoim nastrojem, aby ustawić atmosferę.",
+      "gather-data": "Pisz anonimowe karty o tym, co poszło dobrze i co można poprawić.",
+      "generate-insights": "Przeciągaj karty do grup, aby znaleźć wspólne tematy.",
+      "voting": "Głosuj na tematy najważniejsze dla zespołu.",
+      "decide-action": "Zdefiniuj konkretne działania i przypisz odpowiedzialności.",
+      "close-retro": "Przejrzyj podsumowanie i oceń tę retrospektywę."
+    }
   },
   "column": {
     "went-well": "Co poszło dobrze",
@@ -103,7 +113,9 @@
     "assigneePlaceholder": "Odpowiedzialny",
     "addAction": "Dodaj",
     "dueDate": "Termin",
-    "dueDatePlaceholder": "RRRR-MM-DD"
+    "dueDatePlaceholder": "RRRR-MM-DD",
+    "toggleDone": "Oznacz jako ukończone",
+    "topVoted": "Najczęściej wybierane"
   },
   "export": {
     "title": "Eksportuj wyniki",
@@ -146,7 +158,9 @@
     "joinCodeLength": "Kod dostępu musi mieć 6 znaków.",
     "enterYourName": "Proszę podać swoje imię.",
     "connectionFailed": "Nie można połączyć się z serwerem.",
-    "clipboardFailed": "Nie udało się skopiować do schowka. Proszę skopiować ręcznie."
+    "clipboardFailed": "Nie udało się skopiować do schowka. Proszę skopiować ręcznie.",
+    "actionLimitReached": "Osiągnięto limit działań.",
+    "actionWrongPhase": "Działania można dodawać tylko w fazie Działań lub Zamknięcia."
   },
   "ui": {
     "leaveConfirm": "Czy na pewno chcesz opuścić tę sesję?",
@@ -155,7 +169,8 @@
     "shareLinkCopied": "Link skopiowany!",
     "reconnecting": "Ponowne łączenie...",
     "reconnectingHint": "Sesja jest zapisana. Proszę czekać.",
-    "reconnectingError": "Połączenie nie powiodło się. Automatyczne ponowne łączenie..."
+    "reconnectingError": "Połączenie nie powiodło się. Automatyczne ponowne łączenie...",
+    "reconnectNow": "Połącz ponownie teraz"
   },
   "checkin": {
     "title": "Check-in",
@@ -183,5 +198,9 @@
     "rating3": "OK",
     "rating4": "Dobra",
     "rating5": "Doskonała"
+  },
+  "action": {
+    "edit": "Edytuj działanie",
+    "delete": "Usuń działanie"
   }
 }

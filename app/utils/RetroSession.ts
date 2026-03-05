@@ -312,6 +312,7 @@ export class RetroSession implements IRetroSession {
       cardIds: validCards,
       votes: 0,
       voterIds: [],
+      createdAt: new Date(),
     };
 
     // Assign group ID to cards
@@ -641,6 +642,11 @@ export class RetroSession implements IRetroSession {
   /**
    * Serializes session to JSON
    */
+  /**
+   * Serializes the session to a plain data object.
+   * Returns deep copies of all collections to prevent external mutation
+   * of internal state.
+   */
   public toJSON(): IRetroSession {
     return {
       id: this.id,
@@ -648,11 +654,11 @@ export class RetroSession implements IRetroSession {
       phase: this.phase,
       hostId: this.hostId,
       participants: this.participants.map((p) => p.toJSON()),
-      cards: this.cards,
-      groups: this.groups,
-      actionItems: this.actionItems,
-      checkInResponses: this.checkInResponses,
-      feedbackResponses: this.feedbackResponses,
+      cards: this.cards.map((c) => ({ ...c })),
+      groups: this.groups.map((g) => ({ ...g, cardIds: [...g.cardIds], voterIds: [...g.voterIds] })),
+      actionItems: this.actionItems.map((a) => ({ ...a })),
+      checkInResponses: [...this.checkInResponses],
+      feedbackResponses: [...this.feedbackResponses],
       maxVotesPerUser: this.maxVotesPerUser,
       timerDuration: this.timerDuration,
       timerRemaining: this.timerRemaining,

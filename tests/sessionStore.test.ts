@@ -7,6 +7,8 @@
  */
 import { describe, expect, test } from 'bun:test';
 import type { Peer } from 'crossws';
+import type { RetroPhase } from '../app/types/retro';
+import { RETRO_PHASES } from '../app/types/retro';
 
 // We import the class directly for testing; the exported singleton is not used.
 // Re-export the private class by importing the module and casting.
@@ -22,6 +24,18 @@ import type { Peer } from 'crossws';
  */
 function makePeer(): Peer {
   return {} as unknown as Peer;
+}
+
+/**
+ * Advances the store session to the target phase step-by-step via the host peer.
+ * Phase order: set-the-stage → gather-data → generate-insights → voting → decide-action → close-retro
+ */
+function advanceToPhase(hostPeer: Peer, target: RetroPhase): void {
+  const targetIdx = RETRO_PHASES.indexOf(target);
+  // Always start from set-the-stage (index 0) and advance forward
+  for (let i = 1; i <= targetIdx; i++) {
+    sessionStore.changePhase(hostPeer, RETRO_PHASES[i]!);
+  }
 }
 
 // ─── Re-create a fresh SessionStore per test ──────────────────────────────────
@@ -298,10 +312,7 @@ describe('SessionStore', () => {
     test('strips invalid due dates', () => {
       const peer = makePeer();
       sessionStore.createSession('Action Date', 'Host', peer);
-      sessionStore.changePhase(peer, 'gather-data');
-      sessionStore.changePhase(peer, 'generate-insights');
-      sessionStore.changePhase(peer, 'voting');
-      sessionStore.changePhase(peer, 'decide-action');
+      advanceToPhase(peer, 'decide-action');
       const result = sessionStore.addActionItem(peer, 'Fix bug', undefined, 'not-a-date');
       expect(result).not.toBeNull();
       // The action item should have a null dueDate since the input was invalid
@@ -312,10 +323,7 @@ describe('SessionStore', () => {
     test('accepts valid due dates', () => {
       const peer = makePeer();
       sessionStore.createSession('Action Date OK', 'Host', peer);
-      sessionStore.changePhase(peer, 'gather-data');
-      sessionStore.changePhase(peer, 'generate-insights');
-      sessionStore.changePhase(peer, 'voting');
-      sessionStore.changePhase(peer, 'decide-action');
+      advanceToPhase(peer, 'decide-action');
       const result = sessionStore.addActionItem(peer, 'Ship feature', undefined, '2025-06-15');
       expect(result).not.toBeNull();
       const action = result!.actionItems[result!.actionItems.length - 1];
@@ -387,6 +395,7 @@ describe('SessionStore', () => {
     test('host can toggle action item done status', () => {
       const peer = makePeer();
       sessionStore.createSession('Toggle Test', 'Host', peer);
+      advanceToPhase(peer, 'decide-action');
       const addResult = sessionStore.addActionItem(peer, 'Do something');
       expect(addResult).not.toBeNull();
       const actionId = addResult!.actionItems[0]!.id;
@@ -400,9 +409,469 @@ describe('SessionStore', () => {
       const { joinCode } = sessionStore.createSession('Toggle Guard', 'Host', hostPeer);
       const memberPeer = makePeer();
       sessionStore.joinSession(joinCode, 'Member', memberPeer);
-      sessionStore.addActionItem(hostPeer, 'Something');
+      // Navigate to decide-action phase so addActionItem succeeds
+      advanceToPhase(hostPeer, 'decide-action');
+      const addResult = sessionStore.addActionItem(hostPeer, 'Something');
+      expect(addResult).not.toBeNull();
       // memberPeer tries to toggle — should fail
-      expect(sessionStore.toggleActionItem(memberPeer, 'any-id')).toBeNull();
+      const actionId = addResult!.actionItems[0]!.id;
+      expect(sessionStore.toggleActionItem(memberPeer, actionId)).toBeNull();
+    });
+  });
+
+  describe('addActionItem() phase restriction', () => {
+    test('rejects action items during set-the-stage phase', () => {
+      const peer = makePeer();
+      sessionStore.createSession('Phase Guard 1', 'Host', peer);
+      // Default phase is set-the-stage
+      expect(sessionStore.addActionItem(peer, 'Nope')).toBeNull();
+    });
+
+    test('rejects action items during gather-data phase', () => {
+      const peer = makePeer();
+      sessionStore.createSession('Phase Guard 2', 'Host', peer);
+      sessionStore.changePhase(peer, 'gather-data');
+      expect(sessionStore.addActionItem(peer, 'Nope')).toBeNull();
+    });
+
+    test('rejects action items during generate-insights phase', () => {
+      const peer = makePeer();
+      sessionStore.createSession('Phase Guard 3', 'Host', peer);
+      advanceToPhase(peer, 'generate-insights');
+      expect(sessionStore.addActionItem(peer, 'Nope')).toBeNull();
+    });
+
+    test('rejects action items during voting phase', () => {
+      const peer = makePeer();
+      sessionStore.createSession('Phase Guard 4', 'Host', peer);
+      advanceToPhase(peer, 'voting');
+      expect(sessionStore.addActionItem(peer, 'Nope')).toBeNull();
+    });
+
+    test('allows action items during decide-action phase', () => {
+      const peer = makePeer();
+      sessionStore.createSession('Phase OK 1', 'Host', peer);
+      advanceToPhase(peer, 'decide-action');
+      expect(sessionStore.addActionItem(peer, 'Ship it')).not.toBeNull();
+    });
+
+    test('allows action items during close-retro phase', () => {
+      const peer = makePeer();
+      sessionStore.createSession('Phase OK 2', 'Host', peer);
+      advanceToPhase(peer, 'close-retro');
+      expect(sessionStore.addActionItem(peer, 'Retrospect')).not.toBeNull();
+    });
+  });
+
+  describe('addActionItem() rate limiting', () => {
+    test('rejects action items after MAX_ACTION_ITEMS_PER_SESSION', () => {
+      const peer = makePeer();
+      sessionStore.createSession('Rate Limit', 'Host', peer);
+      advanceToPhase(peer, 'decide-action');
+
+      // Add items up to the limit
+      for (let i = 0; i < 50; i++) {
+        const result = sessionStore.addActionItem(peer, `Action ${i}`);
+        expect(result).not.toBeNull();
+      }
+
+      // The 51st should be rejected
+      expect(sessionStore.addActionItem(peer, 'One too many')).toBeNull();
+    });
+  });
+
+  describe('stripHtml edge cases', () => {
+    test('strips nested angle brackets like <<script>>', () => {
+      const peer = makePeer();
+      sessionStore.createSession('Nested HTML', 'Host', peer);
+      sessionStore.changePhase(peer, 'gather-data');
+      const result = sessionStore.addCard(peer, 'went-well', '<<script>>alert("xss")<</script>>');
+      expect(result).not.toBeNull();
+      const card = result!.cards[result!.cards.length - 1];
+      expect(card!.content).not.toContain('<');
+      expect(card!.content).not.toContain('>');
+    });
+
+    test('strips lone angle brackets', () => {
+      const peer = makePeer();
+      sessionStore.createSession('Lone Angles', 'Host', peer);
+      sessionStore.changePhase(peer, 'gather-data');
+      const result = sessionStore.addCard(peer, 'went-well', 'a < b > c');
+      expect(result).not.toBeNull();
+      const card = result!.cards[result!.cards.length - 1];
+      expect(card!.content).not.toContain('<');
+      expect(card!.content).not.toContain('>');
+    });
+
+    test('handles deeply nested tags', () => {
+      const peer = makePeer();
+      sessionStore.createSession('Deep Nest', 'Host', peer);
+      sessionStore.changePhase(peer, 'gather-data');
+      const result = sessionStore.addCard(peer, 'went-well', '<<<b>>>text<<<</b>>>');
+      expect(result).not.toBeNull();
+      const card = result!.cards[result!.cards.length - 1];
+      expect(card!.content).not.toContain('<');
+      expect(card!.content).not.toContain('>');
+      expect(card!.content).toContain('text');
+    });
+  });
+
+  describe('ICardGroup.createdAt', () => {
+    test('createGroup includes createdAt timestamp', () => {
+      const peer = makePeer();
+      sessionStore.createSession('Group TS', 'Host', peer);
+      sessionStore.changePhase(peer, 'gather-data');
+      const r1 = sessionStore.addCard(peer, 'went-well', 'Card A');
+      const cardId1 = r1!.cards[r1!.cards.length - 1]!.id;
+      const r2 = sessionStore.addCard(peer, 'went-well', 'Card B');
+      const cardId2 = r2!.cards[r2!.cards.length - 1]!.id;
+      sessionStore.changePhase(peer, 'generate-insights');
+
+      const groupResult = sessionStore.createGroup(peer, 'Group Title', 'went-well', [cardId1, cardId2]);
+      expect(groupResult).not.toBeNull();
+      expect(groupResult!.groups).toHaveLength(1);
+      expect(groupResult!.groups[0]!.createdAt).toBeDefined();
+    });
+  });
+
+  describe('card operations', () => {
+    test('addCard returns updated session with new card', () => {
+      const peer = makePeer();
+      sessionStore.createSession('Card Add', 'Host', peer);
+      sessionStore.changePhase(peer, 'gather-data');
+      const result = sessionStore.addCard(peer, 'to-improve', 'Better docs');
+      expect(result).not.toBeNull();
+      expect(result!.cards).toHaveLength(1);
+      expect(result!.cards[0]!.content).toBe('Better docs');
+      expect(result!.cards[0]!.column).toBe('to-improve');
+    });
+
+    test('addCard truncates content to MAX_CARD_CONTENT_LENGTH', () => {
+      const peer = makePeer();
+      sessionStore.createSession('Long Card', 'Host', peer);
+      sessionStore.changePhase(peer, 'gather-data');
+      const longContent = 'A'.repeat(1000);
+      const result = sessionStore.addCard(peer, 'went-well', longContent);
+      expect(result).not.toBeNull();
+      expect(result!.cards[0]!.content.length).toBeLessThanOrEqual(500);
+    });
+
+    test('addCard rate limiting per user', () => {
+      const peer = makePeer();
+      sessionStore.createSession('Rate Cards', 'Host', peer);
+      sessionStore.changePhase(peer, 'gather-data');
+      for (let i = 0; i < 50; i++) {
+        const result = sessionStore.addCard(peer, 'went-well', `Card ${i}`);
+        expect(result).not.toBeNull();
+      }
+      // 51st card should be rejected
+      expect(sessionStore.addCard(peer, 'went-well', 'overflow')).toBeNull();
+    });
+  });
+
+  describe('voting operations', () => {
+    test('voteCard adds vote and returns session', () => {
+      const peer = makePeer();
+      sessionStore.createSession('Vote Test', 'Host', peer);
+      sessionStore.changePhase(peer, 'gather-data');
+      const addResult = sessionStore.addCard(peer, 'went-well', 'Great work');
+      sessionStore.changePhase(peer, 'generate-insights');
+      sessionStore.changePhase(peer, 'voting');
+
+      const cardId = addResult!.cards[0]!.id;
+      const voteResult = sessionStore.voteCard(peer, cardId);
+      expect(voteResult).not.toBeNull();
+      expect(voteResult!.cards[0]!.votes).toBe(1);
+    });
+
+    test('unvoteCard removes a vote', () => {
+      const peer = makePeer();
+      sessionStore.createSession('Unvote Test', 'Host', peer);
+      sessionStore.changePhase(peer, 'gather-data');
+      const addResult = sessionStore.addCard(peer, 'went-well', 'Card');
+      sessionStore.changePhase(peer, 'generate-insights');
+      sessionStore.changePhase(peer, 'voting');
+
+      const cardId = addResult!.cards[0]!.id;
+      sessionStore.voteCard(peer, cardId);
+      const result = sessionStore.unvoteCard(peer, cardId);
+      expect(result).not.toBeNull();
+      expect(result!.cards[0]!.votes).toBe(0);
+    });
+
+    test('voteCard rejects when vote budget exhausted', () => {
+      const peer = makePeer();
+      sessionStore.createSession('Budget Test', 'Host', peer);
+      sessionStore.changePhase(peer, 'gather-data');
+      // Add enough cards to exhaust budget
+      const cards: string[] = [];
+      for (let i = 0; i < 10; i++) {
+        const r = sessionStore.addCard(peer, 'went-well', `Card ${i}`);
+        cards.push(r!.cards[r!.cards.length - 1]!.id);
+      }
+      sessionStore.changePhase(peer, 'generate-insights');
+      sessionStore.changePhase(peer, 'voting');
+
+      // Default maxVotesPerUser is 5, use all votes
+      for (let i = 0; i < 5; i++) {
+        expect(sessionStore.voteCard(peer, cards[i]!)).not.toBeNull();
+      }
+      // 6th vote should fail
+      expect(sessionStore.voteCard(peer, cards[5]!)).toBeNull();
+    });
+  });
+
+  describe('timer operations', () => {
+    test('startTimer returns session with timerRunning=true', () => {
+      const peer = makePeer();
+      sessionStore.createSession('Timer Start', 'Host', peer);
+      const result = sessionStore.startTimer(peer);
+      expect(result).not.toBeNull();
+      expect(result!.timerRunning).toBe(true);
+      expect(result!.timerRemaining).not.toBeNull();
+    });
+
+    test('stopTimer returns session with timerRunning=false', () => {
+      const peer = makePeer();
+      sessionStore.createSession('Timer Stop', 'Host', peer);
+      sessionStore.startTimer(peer);
+      const result = sessionStore.stopTimer(peer);
+      expect(result).not.toBeNull();
+      expect(result!.timerRunning).toBe(false);
+    });
+
+    test('non-host cannot start timer', () => {
+      const hostPeer = makePeer();
+      const { joinCode } = sessionStore.createSession('Timer Auth', 'Host', hostPeer);
+      const memberPeer = makePeer();
+      sessionStore.joinSession(joinCode, 'Member', memberPeer);
+      expect(sessionStore.startTimer(memberPeer)).toBeNull();
+    });
+
+    test('non-host cannot stop timer', () => {
+      const hostPeer = makePeer();
+      const { joinCode } = sessionStore.createSession('Timer Auth2', 'Host', hostPeer);
+      const memberPeer = makePeer();
+      sessionStore.joinSession(joinCode, 'Member', memberPeer);
+      sessionStore.startTimer(hostPeer);
+      expect(sessionStore.stopTimer(memberPeer)).toBeNull();
+    });
+
+    test('setTimerDuration rejects zero', () => {
+      const peer = makePeer();
+      sessionStore.createSession('Timer Zero', 'Host', peer);
+      const result = sessionStore.setTimerDuration(peer, 0);
+      // Zero should result in min clamp (1s or be accepted as 0)
+      expect(result).not.toBeNull();
+    });
+
+    test('setTimerDuration rejects negative values', () => {
+      const peer = makePeer();
+      sessionStore.createSession('Timer Neg', 'Host', peer);
+      const result = sessionStore.setTimerDuration(peer, -100);
+      expect(result).not.toBeNull();
+      expect(result!.timerDuration).toBeGreaterThanOrEqual(0);
+    });
+  });
+
+  describe('editActionItem()', () => {
+    test('host can edit action item text', () => {
+      const peer = makePeer();
+      sessionStore.createSession('Edit Action', 'Host', peer);
+      advanceToPhase(peer, 'decide-action');
+      const addResult = sessionStore.addActionItem(peer, 'Original text');
+      expect(addResult).not.toBeNull();
+      const actionId = addResult!.actionItems[0]!.id;
+
+      const editResult = sessionStore.editActionItem(peer, actionId, 'Updated text');
+      expect(editResult).not.toBeNull();
+      expect(editResult!.actionItems[0]!.text).toBe('Updated text');
+    });
+
+    test('non-host cannot edit action item', () => {
+      const hostPeer = makePeer();
+      const { joinCode } = sessionStore.createSession('Edit Guard', 'Host', hostPeer);
+      const memberPeer = makePeer();
+      sessionStore.joinSession(joinCode, 'Member', memberPeer);
+      advanceToPhase(hostPeer, 'decide-action');
+      const addResult = sessionStore.addActionItem(hostPeer, 'Action');
+      const actionId = addResult!.actionItems[0]!.id;
+
+      expect(sessionStore.editActionItem(memberPeer, actionId, 'Hacked')).toBeNull();
+    });
+  });
+
+  describe('deleteActionItem()', () => {
+    test('host can delete action item', () => {
+      const peer = makePeer();
+      sessionStore.createSession('Delete Action', 'Host', peer);
+      advanceToPhase(peer, 'decide-action');
+      const addResult = sessionStore.addActionItem(peer, 'Delete me');
+      expect(addResult).not.toBeNull();
+      const actionId = addResult!.actionItems[0]!.id;
+
+      const delResult = sessionStore.deleteActionItem(peer, actionId);
+      expect(delResult).not.toBeNull();
+      expect(delResult!.actionItems).toHaveLength(0);
+    });
+
+    test('non-host cannot delete action item', () => {
+      const hostPeer = makePeer();
+      const { joinCode } = sessionStore.createSession('Del Guard', 'Host', hostPeer);
+      const memberPeer = makePeer();
+      sessionStore.joinSession(joinCode, 'Member', memberPeer);
+      advanceToPhase(hostPeer, 'decide-action');
+      const addResult = sessionStore.addActionItem(hostPeer, 'Keep me');
+      const actionId = addResult!.actionItems[0]!.id;
+
+      expect(sessionStore.deleteActionItem(memberPeer, actionId)).toBeNull();
+    });
+  });
+
+  describe('action item phase restriction (edit/delete/toggle)', () => {
+    test('editActionItem rejects during gather-data phase', () => {
+      const peer = makePeer();
+      sessionStore.createSession('Phase Edit', 'Host', peer);
+      advanceToPhase(peer, 'gather-data');
+      // gather-data phase should reject edit
+      expect(sessionStore.editActionItem(peer, 'any-id', 'text')).toBeNull();
+    });
+
+    test('deleteActionItem rejects during generate-insights phase', () => {
+      const peer = makePeer();
+      sessionStore.createSession('Phase Delete', 'Host', peer);
+      advanceToPhase(peer, 'generate-insights');
+      expect(sessionStore.deleteActionItem(peer, 'any-id')).toBeNull();
+    });
+
+    test('toggleActionItem rejects during set-the-stage phase', () => {
+      const peer = makePeer();
+      sessionStore.createSession('Phase Toggle', 'Host', peer);
+      // Already in set-the-stage
+      expect(sessionStore.toggleActionItem(peer, 'any-id')).toBeNull();
+    });
+
+    test('editActionItem succeeds during close-retro phase', () => {
+      const peer = makePeer();
+      sessionStore.createSession('Phase Edit OK', 'Host', peer);
+      advanceToPhase(peer, 'decide-action');
+      const addResult = sessionStore.addActionItem(peer, 'Original');
+      const actionId = addResult!.actionItems[0]!.id;
+      advanceToPhase(peer, 'close-retro');
+      const result = sessionStore.editActionItem(peer, actionId, 'Updated');
+      expect(result).not.toBeNull();
+      expect(result!.actionItems[0]!.text).toBe('Updated');
+    });
+  });
+
+  describe('checkin operations', () => {
+    test('submitCheckIn records mood', () => {
+      const peer = makePeer();
+      sessionStore.createSession('CheckIn Test', 'Host', peer);
+      const result = sessionStore.submitCheckIn(peer, '😊');
+      expect(result).not.toBeNull();
+      expect(result!.checkInResponses).toHaveLength(1);
+      expect(result!.checkInResponses[0]!.mood).toBe('😊');
+    });
+
+    test('submitCheckIn rejects invalid mood', () => {
+      const peer = makePeer();
+      sessionStore.createSession('Bad Mood', 'Host', peer);
+      const result = sessionStore.submitCheckIn(peer, '🤡' as never);
+      expect(result).toBeNull();
+    });
+  });
+
+  describe('feedback operations', () => {
+    test('submitFeedback records rating', () => {
+      const peer = makePeer();
+      sessionStore.createSession('Feedback Test', 'Host', peer);
+      advanceToPhase(peer, 'close-retro');
+      const result = sessionStore.submitFeedback(peer, 4);
+      expect(result).not.toBeNull();
+      expect(result!.feedbackResponses).toHaveLength(1);
+      expect(result!.feedbackResponses[0]!.rating).toBe(4);
+    });
+
+    test('submitFeedback rejects non-finite rating', () => {
+      const peer = makePeer();
+      sessionStore.createSession('Bad Rating', 'Host', peer);
+      advanceToPhase(peer, 'close-retro');
+      expect(sessionStore.submitFeedback(peer, NaN)).toBeNull();
+      expect(sessionStore.submitFeedback(peer, Infinity)).toBeNull();
+    });
+
+    test('submitFeedback clamps out-of-range values', () => {
+      const peer = makePeer();
+      sessionStore.createSession('Clamp Rating', 'Host', peer);
+      advanceToPhase(peer, 'close-retro');
+      // 0 gets clamped to 1, 6 gets clamped to 5
+      const r1 = sessionStore.submitFeedback(peer, 0);
+      expect(r1).not.toBeNull();
+      expect(r1!.feedbackResponses[0]!.rating).toBe(1);
+      const r2 = sessionStore.submitFeedback(peer, 6);
+      expect(r2).not.toBeNull();
+      expect(r2!.feedbackResponses[0]!.rating).toBe(5);
+    });
+  });
+
+  describe('group operations via store', () => {
+    /**
+     * Helper: toJSON() now returns deep copies, so card IDs must be
+     * captured from each addCard return value independently.
+     */
+    test('createGroup and addCardToGroup work end-to-end', () => {
+      const peer = makePeer();
+      sessionStore.createSession('Group Store', 'Host', peer);
+      sessionStore.changePhase(peer, 'gather-data');
+
+      const r1 = sessionStore.addCard(peer, 'went-well', 'Card 1');
+      const cardId1 = r1!.cards[r1!.cards.length - 1]!.id;
+
+      const r2 = sessionStore.addCard(peer, 'went-well', 'Card 2');
+      const cardId2 = r2!.cards[r2!.cards.length - 1]!.id;
+
+      const r3 = sessionStore.addCard(peer, 'went-well', 'Card 3');
+      const cardId3 = r3!.cards[r3!.cards.length - 1]!.id;
+
+      // Verify 3 distinct IDs
+      expect(new Set([cardId1, cardId2, cardId3]).size).toBe(3);
+
+      sessionStore.changePhase(peer, 'generate-insights');
+
+      // Create group with two cards
+      const groupResult = sessionStore.createGroup(peer, 'My Group', 'went-well', [cardId1, cardId2]);
+      expect(groupResult).not.toBeNull();
+      expect(groupResult!.groups).toHaveLength(1);
+      expect(groupResult!.groups[0]!.cardIds).toHaveLength(2);
+
+      // Add a third card
+      const groupId = groupResult!.groups[0]!.id;
+      const addResult = sessionStore.addCardToGroup(peer, groupId, cardId3);
+      expect(addResult).not.toBeNull();
+      expect(addResult!.groups[0]!.cardIds).toHaveLength(3);
+    });
+
+    test('removeCardFromGroup removes card from group', () => {
+      const peer = makePeer();
+      sessionStore.createSession('Ungroup Store', 'Host', peer);
+      sessionStore.changePhase(peer, 'gather-data');
+      const r1 = sessionStore.addCard(peer, 'went-well', 'A');
+      const cardId1 = r1!.cards[r1!.cards.length - 1]!.id;
+
+      const r2 = sessionStore.addCard(peer, 'went-well', 'B');
+      const cardId2 = r2!.cards[r2!.cards.length - 1]!.id;
+
+      sessionStore.changePhase(peer, 'generate-insights');
+
+      const groupResult = sessionStore.createGroup(peer, 'Temp Group', 'went-well', [cardId1, cardId2]);
+      const groupId = groupResult!.groups[0]!.id;
+
+      const removeResult = sessionStore.removeCardFromGroup(peer, groupId, cardId1);
+      expect(removeResult).not.toBeNull();
+      // Group should still exist with one card
+      const group = removeResult!.groups.find(g => g.id === groupId);
+      expect(group!.cardIds).toHaveLength(1);
     });
   });
 });

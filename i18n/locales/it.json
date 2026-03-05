@@ -37,7 +37,9 @@
   "participants": {
     "title": "Partecipanti",
     "host": "Host",
-    "you": "(tu)"
+    "you": "(tu)",
+    "online": "Online",
+    "offline": "Offline"
   },
   "phase": {
     "set-the-stage": "Preparazione",
@@ -47,7 +49,15 @@
     "decide-action": "Azioni",
     "close-retro": "Chiusura",
     "previous": "Precedente",
-    "next": "Successivo"
+    "next": "Successivo",
+    "description": {
+      "set-the-stage": "Benvenuto! Condividi come ti senti per rompere il ghiaccio.",
+      "gather-data": "Scrivi schede anonime su cosa è andato bene e cosa migliorare.",
+      "generate-insights": "Trascina le schede in gruppi per trovare temi comuni.",
+      "voting": "Vota i temi più importanti per il team.",
+      "decide-action": "Definisci azioni concrete e assegna le responsabilità.",
+      "close-retro": "Rivedi il riepilogo e dai il tuo feedback su questa retro."
+    }
   },
   "column": {
     "went-well": "Cosa ha funzionato",
@@ -103,7 +113,9 @@
     "assigneePlaceholder": "Responsabile",
     "addAction": "Aggiungi",
     "dueDate": "Scadenza",
-    "dueDatePlaceholder": "AAAA-MM-GG"
+    "dueDatePlaceholder": "AAAA-MM-GG",
+    "toggleDone": "Segna come fatto",
+    "topVoted": "Più votati"
   },
   "export": {
     "title": "Esporta risultati",
@@ -146,7 +158,9 @@
     "joinCodeLength": "Il codice di accesso deve essere di 6 caratteri.",
     "enterYourName": "Si prega di inserire il proprio nome.",
     "connectionFailed": "Impossibile connettersi al server.",
-    "clipboardFailed": "Impossibile copiare negli appunti. Si prega di copiare manualmente."
+    "clipboardFailed": "Impossibile copiare negli appunti. Si prega di copiare manualmente.",
+    "actionLimitReached": "Limite di azioni raggiunto.",
+    "actionWrongPhase": "Le azioni possono essere aggiunte solo durante la fase Azioni o Chiusura."
   },
   "ui": {
     "leaveConfirm": "Sei sicuro di voler abbandonare questa sessione?",
@@ -155,7 +169,8 @@
     "shareLinkCopied": "Link copiato!",
     "reconnecting": "Riconnessione...",
     "reconnectingHint": "La tua sessione è salvata. Attendi.",
-    "reconnectingError": "Connessione fallita. Nuovo tentativo automatico..."
+    "reconnectingError": "Connessione fallita. Nuovo tentativo automatico...",
+    "reconnectNow": "Riconnetti ora"
   },
   "checkin": {
     "title": "Check-In",
@@ -183,5 +198,9 @@
     "rating3": "OK",
     "rating4": "Buono",
     "rating5": "Ottimo"
+  },
+  "action": {
+    "edit": "Modifica azione",
+    "delete": "Elimina azione"
   }
 }

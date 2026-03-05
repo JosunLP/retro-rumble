@@ -37,7 +37,9 @@
   "participants": {
     "title": "Participantes",
     "host": "Anfitrião",
-    "you": "(você)"
+    "you": "(você)",
+    "online": "Online",
+    "offline": "Offline"
   },
   "phase": {
     "set-the-stage": "Preparação",
@@ -47,7 +49,15 @@
     "decide-action": "Ações",
     "close-retro": "Encerramento",
     "previous": "Anterior",
-    "next": "Próximo"
+    "next": "Próximo",
+    "description": {
+      "set-the-stage": "Bem-vindo! Compartilhe como você está se sentindo para aquecer.",
+      "gather-data": "Escreva cartões anônimos sobre o que foi bem e o que pode melhorar.",
+      "generate-insights": "Arraste cartões para grupos para encontrar temas em comum.",
+      "voting": "Vote nos tópicos mais importantes para a equipe.",
+      "decide-action": "Defina ações concretas e atribua responsabilidades.",
+      "close-retro": "Revise o resumo e dê seu feedback sobre esta retro."
+    }
   },
   "column": {
     "went-well": "O que foi bem",
@@ -103,7 +113,9 @@
     "assigneePlaceholder": "Responsável",
     "addAction": "Adicionar",
     "dueDate": "Prazo",
-    "dueDatePlaceholder": "AAAA-MM-DD"
+    "dueDatePlaceholder": "AAAA-MM-DD",
+    "toggleDone": "Marcar como concluído",
+    "topVoted": "Mais votado"
   },
   "export": {
     "title": "Exportar resultados",
@@ -146,7 +158,9 @@
     "joinCodeLength": "O código de acesso deve ter 6 caracteres.",
     "enterYourName": "Por favor, insira seu nome.",
     "connectionFailed": "Não foi possível conectar ao servidor.",
-    "clipboardFailed": "Não foi possível copiar para a área de transferência. Por favor, copie manualmente."
+    "clipboardFailed": "Não foi possível copiar para a área de transferência. Por favor, copie manualmente.",
+    "actionLimitReached": "Limite de ações atingido.",
+    "actionWrongPhase": "Ações só podem ser adicionadas durante a fase de Ações ou Encerramento."
   },
   "ui": {
     "leaveConfirm": "Tem certeza que deseja sair desta sessão?",
@@ -155,7 +169,8 @@
     "shareLinkCopied": "Link copiado!",
     "reconnecting": "Reconectando...",
     "reconnectingHint": "Sua sessão está salva. Por favor, aguarde.",
-    "reconnectingError": "Conexão falhou. Tentando novamente automaticamente..."
+    "reconnectingError": "Conexão falhou. Tentando novamente automaticamente...",
+    "reconnectNow": "Reconectar agora"
   },
   "checkin": {
     "title": "Check-in",
@@ -183,5 +198,9 @@
     "rating3": "OK",
     "rating4": "Bom",
     "rating5": "Excelente"
+  },
+  "action": {
+    "edit": "Editar ação",
+    "delete": "Excluir ação"
   }
 }

@@ -19,6 +19,7 @@ import {
   JOIN_CODE_CHARS,
   JOIN_CODE_LENGTH,
   MAX_ACTION_ITEM_TEXT_LENGTH,
+  MAX_ACTION_ITEMS_PER_SESSION,
   MAX_CARD_CONTENT_LENGTH,
   MAX_CARDS_PER_USER,
   MAX_GROUP_TITLE_LENGTH,
@@ -53,9 +54,19 @@ const SESSION_CLEANUP_INTERVAL_MS = 60 * 1000; // 1 minute
  * Strips HTML tags from a string.
  * Defense-in-depth: all user-provided text is plain-text only,
  * so we remove anything that looks like a tag before storing.
+ *
+ * The regex is applied iteratively to handle nested / malformed constructs
+ * such as `<<script>>` which a single pass would miss.
  */
 function stripHtml(text: string): string {
-  return text.replace(/<[^>]*>/g, '');
+  let result = text;
+  let previous: string;
+  do {
+    previous = result;
+    result = result.replace(/<[^>]*>/g, '');
+  } while (result !== previous);
+  // Remove any remaining lone angle brackets as a final safety measure
+  return result.replace(/[<>]/g, '');
 }
 
 class SessionStore {
@@ -672,7 +683,9 @@ class SessionStore {
   // ============================================
 
   /**
-   * Adds an action item
+   * Adds an action item.
+   * Rate-limited to MAX_ACTION_ITEMS_PER_SESSION per session.
+   * Only allowed during decide-action or close-retro phases.
    */
   public addActionItem(
     peer: Peer,
@@ -682,6 +695,14 @@ class SessionStore {
   ): IRetroSession | null {
     const session = this.getSessionForPeer(peer);
     if (!session) return null;
+
+    // Phase restriction: action items belong to decide-action or close-retro
+    if (session.phase !== 'decide-action' && session.phase !== 'close-retro') {
+      return null;
+    }
+
+    // Rate limit: prevent unbounded action items
+    if (session.actionItems.length >= MAX_ACTION_ITEMS_PER_SESSION) return null;
 
     const safeText = stripHtml(text).trim().slice(0, MAX_ACTION_ITEM_TEXT_LENGTH);
     if (!safeText) return null;
@@ -693,7 +714,7 @@ class SessionStore {
   }
 
   /**
-   * Edits an action item (host only)
+   * Edits an action item (host only, decide-action or close-retro phase)
    */
   public editActionItem(
     peer: Peer,
@@ -706,6 +727,8 @@ class SessionStore {
 
     const session = this.getSessionForPeer(peer);
     if (!session) return null;
+
+    if (session.phase !== 'decide-action' && session.phase !== 'close-retro') return null;
 
     const safeText = stripHtml(text).trim().slice(0, MAX_ACTION_ITEM_TEXT_LENGTH);
     if (!safeText) return null;
@@ -722,7 +745,7 @@ class SessionStore {
   }
 
   /**
-   * Deletes an action item (host only)
+   * Deletes an action item (host only, decide-action or close-retro phase)
    */
   public deleteActionItem(peer: Peer, actionId: string): IRetroSession | null {
     if (!this.isHost(peer)) return null;
@@ -730,18 +753,22 @@ class SessionStore {
     const session = this.getSessionForPeer(peer);
     if (!session) return null;
 
+    if (session.phase !== 'decide-action' && session.phase !== 'close-retro') return null;
+
     const success = session.deleteActionItem(actionId);
     return success ? session.toJSON() : null;
   }
 
   /**
-   * Toggles an action item's done status (host only)
+   * Toggles an action item's done status (host only, decide-action or close-retro phase)
    */
   public toggleActionItem(peer: Peer, actionId: string): IRetroSession | null {
     if (!this.isHost(peer)) return null;
 
     const session = this.getSessionForPeer(peer);
     if (!session) return null;
+
+    if (session.phase !== 'decide-action' && session.phase !== 'close-retro') return null;
 
     const success = session.toggleActionItem(actionId);
     return success ? session.toJSON() : null;

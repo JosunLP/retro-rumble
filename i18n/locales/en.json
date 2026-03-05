@@ -37,7 +37,9 @@
   "participants": {
     "title": "Participants",
     "host": "Host",
-    "you": "(you)"
+    "you": "(you)",
+    "online": "Online",
+    "offline": "Offline"
   },
   "phase": {
     "set-the-stage": "Set the Stage",
@@ -111,7 +113,9 @@
     "assigneePlaceholder": "Assignee",
     "addAction": "Add",
     "dueDate": "Due Date",
-    "dueDatePlaceholder": "YYYY-MM-DD"
+    "dueDatePlaceholder": "YYYY-MM-DD",
+    "toggleDone": "Toggle done",
+    "topVoted": "Top Voted"
   },
   "export": {
     "title": "Export Results",
@@ -154,7 +158,9 @@
     "joinCodeLength": "The join code must be 6 characters long.",
     "enterYourName": "Please enter your name.",
     "connectionFailed": "Could not connect to the server.",
-    "clipboardFailed": "Could not copy to clipboard. Please copy manually."
+    "clipboardFailed": "Could not copy to clipboard. Please copy manually.",
+    "actionLimitReached": "Action item limit reached.",
+    "actionWrongPhase": "Action items can only be added during the Actions or Close phase."
   },
   "ui": {
     "leaveConfirm": "Are you sure you want to leave this session?",
@@ -163,7 +169,8 @@
     "shareLinkCopied": "Link copied!",
     "reconnecting": "Reconnecting...",
     "reconnectingHint": "Your session is saved. Please wait.",
-    "reconnectingError": "Connection failed. Retrying automatically..."
+    "reconnectingError": "Connection failed. Retrying automatically...",
+    "reconnectNow": "Reconnect now"
   },
   "checkin": {
     "title": "Check-In",

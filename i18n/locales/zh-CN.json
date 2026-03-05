@@ -37,7 +37,9 @@
   "participants": {
     "title": "参与者",
     "host": "主持人",
-    "you": "（你）"
+    "you": "（你）",
+    "online": "在线",
+    "offline": "离线"
   },
   "phase": {
     "set-the-stage": "准备阶段",
@@ -47,7 +49,15 @@
     "decide-action": "行动项",
     "close-retro": "回顾结束",
     "previous": "上一步",
-    "next": "下一步"
+    "next": "下一步",
+    "description": {
+      "set-the-stage": "欢迎！分享你的心情，营造氛围。",
+      "gather-data": "匿名写下做得好的和可以改进的事情。",
+      "generate-insights": "将卡片拖入分组以发现共同主题。",
+      "voting": "为团队最关心的话题投票。",
+      "decide-action": "定义具体的行动项并分配责任。",
+      "close-retro": "查看总结并对本次回顾给出反馈。"
+    }
   },
   "column": {
     "went-well": "做得好的事",
@@ -103,7 +113,9 @@
     "assigneePlaceholder": "负责人",
     "addAction": "添加",
     "dueDate": "截止日期",
-    "dueDatePlaceholder": "YYYY-MM-DD"
+    "dueDatePlaceholder": "YYYY-MM-DD",
+    "toggleDone": "切换完成状态",
+    "topVoted": "最多得票"
   },
   "export": {
     "title": "导出结果",
@@ -146,7 +158,9 @@
     "joinCodeLength": "访问码必须为 6 个字符。",
     "enterYourName": "请输入你的姓名。",
     "connectionFailed": "无法连接到服务器。",
-    "clipboardFailed": "无法复制到剪贴板。请手动复制。"
+    "clipboardFailed": "无法复制到剪贴板。请手动复制。",
+    "actionLimitReached": "已达到行动项上限。",
+    "actionWrongPhase": "行动项只能在行动阶段或结束阶段添加。"
   },
   "ui": {
     "leaveConfirm": "确定要离开此会话吗？",
@@ -155,7 +169,8 @@
     "shareLinkCopied": "链接已复制！",
     "reconnecting": "正在重新连接...",
     "reconnectingHint": "你的会话已保存，请稍候。",
-    "reconnectingError": "连接失败，正在自动重试..."
+    "reconnectingError": "连接失败，正在自动重试...",
+    "reconnectNow": "立即重连"
   },
   "checkin": {
     "title": "签到",
@@ -183,5 +198,9 @@
     "rating3": "一般",
     "rating4": "良好",
     "rating5": "优秀"
+  },
+  "action": {
+    "edit": "编辑行动项",
+    "delete": "删除行动项"
   }
 }

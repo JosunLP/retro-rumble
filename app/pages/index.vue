@@ -48,6 +48,7 @@ const {
   submitCheckIn,
   submitFeedback,
   clearError,
+  reconnect,
 } = useRetroSession();
 
 /**
@@ -335,6 +336,7 @@ function handleJoinSession(code: string, participantName: string): void {
     <ReconnectingOverlay
       :status="connectionStatus"
       :has-session="!!session"
+      @reconnect="reconnect"
     />
 
     <!-- Footer -->

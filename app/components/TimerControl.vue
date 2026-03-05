@@ -61,7 +61,8 @@ const timerOptions = [60, 120, 180, 300, 600];
       <div
         class="text-3xl font-mono font-bold"
         aria-live="polite"
-        :aria-label="t('timer.title') + ': ' + (running && remaining !== null ? formatTime(remaining) : formatTime(duration))"        :class="{
+        :aria-label="t('timer.title') + ': ' + (running && remaining !== null ? formatTime(remaining) : formatTime(duration))"
+        :class="{
           'text-error-600': running && remaining !== null && remaining <= 30,
           'text-warning-600':
             running && remaining !== null && remaining > 30 && remaining <= 60,

@@ -46,6 +46,8 @@ export function useRetroSession() {
     send,
     on,
     connect,
+    disconnect: _disconnect,
+    forceReconnect,
   } = useWebSocket({
     autoConnect: true,
     autoReconnect: true,
@@ -512,6 +514,15 @@ export function useRetroSession() {
     state.value = { ...state.value, error: null };
   }
 
+  /**
+   * Manually triggers a reconnect attempt.
+   * Closes the current socket (without blocking auto-reconnect)
+   * and initiates a fresh connection.
+   */
+  function reconnect(): void {
+    forceReconnect();
+  }
+
   return {
     // State
     session,
@@ -553,5 +564,6 @@ export function useRetroSession() {
     submitCheckIn,
     submitFeedback,
     clearError,
+    reconnect,
   };
 }

@@ -319,6 +319,7 @@ function cancelEditAction(): void {
               v-if="isHost"
               type="button"
               class="flex-shrink-0"
+              :aria-label="t('summary.toggleDone')"
               @click="$emit('toggleActionItem', action.id)"
             >
               <Icon

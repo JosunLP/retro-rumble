@@ -423,6 +423,36 @@ describe('RetroSession', () => {
       expect(restored.actionItems).toHaveLength(1);
       expect(restored.participants).toHaveLength(2);
     });
+
+    test('toJSON returns deep copies (no shared references)', () => {
+      const session = makeSession();
+      addHost(session);
+      advanceToPhase(session, 'gather-data');
+      session.addCard('went-well', 'Card 1', 'host-id');
+
+      const snap1 = session.toJSON();
+      session.addCard('went-well', 'Card 2', 'host-id');
+      const snap2 = session.toJSON();
+
+      // snap1 must not reflect the second card added after it was captured
+      expect(snap1.cards).toHaveLength(1);
+      expect(snap2.cards).toHaveLength(2);
+    });
+
+    test('toJSON card mutation does not affect session internals', () => {
+      const session = makeSession();
+      addHost(session);
+      advanceToPhase(session, 'gather-data');
+      session.addCard('went-well', 'Original', 'host-id');
+
+      const json = session.toJSON();
+      // Mutate the returned object
+      json.cards[0]!.content = 'HACKED';
+
+      // Internal state must be unaffected
+      const fresh = session.toJSON();
+      expect(fresh.cards[0]!.content).toBe('Original');
+    });
   });
 
   // ─── Phase Validation ────────────────────────────────────────────────────

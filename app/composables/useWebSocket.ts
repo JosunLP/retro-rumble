@@ -56,6 +56,8 @@ interface UseWebSocketReturn {
   connect: () => void;
   /** Disconnect from server */
   disconnect: () => void;
+  /** Force a fresh reconnect (close, reset attempts, connect) */
+  forceReconnect: () => void;
 }
 
 /**
@@ -123,6 +125,7 @@ export function useWebSocket(
       off: () => {},
       connect: () => {},
       disconnect: () => {},
+      forceReconnect: () => {},
     };
   }
 
@@ -200,6 +203,23 @@ export function useWebSocket(
     state.ws?.close();
     state.ws = null;
     state.status.value = 'disconnected';
+  }
+
+  /**
+   * Forces a fresh connection by closing the current socket,
+   * resetting the reconnect counter, and connecting again.
+   * Useful as a manual "try again" action.
+   */
+  function forceReconnect(): void {
+    if (state.reconnectTimer) {
+      clearTimeout(state.reconnectTimer);
+      state.reconnectTimer = null;
+    }
+    stopPingInterval();
+    state.ws?.close();
+    state.ws = null;
+    state.reconnectAttempts = 0;
+    connect();
   }
 
   /**
@@ -316,5 +336,6 @@ export function useWebSocket(
     off,
     connect,
     disconnect,
+    forceReconnect,
   };
 }

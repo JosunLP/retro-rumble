@@ -31,6 +31,11 @@ export const MAX_ACTION_ITEM_TEXT_LENGTH = 500;
 export const MAX_CARDS_PER_USER = 50;
 
 /**
+ * Rate limiting: maximum action items per session
+ */
+export const MAX_ACTION_ITEMS_PER_SESSION = 50;
+
+/**
  * Retro column types
  */
 export const RETRO_COLUMNS = [
@@ -198,6 +203,8 @@ export interface ICardGroup {
   votes: number;
   /** IDs of participants who voted for this group */
   voterIds: string[];
+  /** Creation timestamp */
+  createdAt: Date;
 }
 
 /**

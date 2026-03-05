@@ -37,7 +37,9 @@
   "participants": {
     "title": "Participants",
     "host": "Hôte",
-    "you": "(vous)"
+    "you": "(vous)",
+    "online": "En ligne",
+    "offline": "Hors ligne"
   },
   "phase": {
     "set-the-stage": "Mise en scène",
@@ -47,7 +49,15 @@
     "decide-action": "Actions",
     "close-retro": "Clôture",
     "previous": "Précédent",
-    "next": "Suivant"
+    "next": "Suivant",
+    "description": {
+      "set-the-stage": "Bienvenue ! Partagez votre humeur pour donner le ton.",
+      "gather-data": "Écrivez des cartes anonymes sur ce qui a bien fonctionné et ce qui peut être amélioré.",
+      "generate-insights": "Glissez les cartes en groupes pour trouver des thèmes communs.",
+      "voting": "Votez sur les sujets les plus importants pour l'équipe.",
+      "decide-action": "Définissez des actions concrètes et attribuez des responsabilités.",
+      "close-retro": "Vérifiez le résumé et donnez votre avis sur cette rétro."
+    }
   },
   "column": {
     "went-well": "Ce qui a bien fonctionné",
@@ -103,7 +113,9 @@
     "assigneePlaceholder": "Responsable",
     "addAction": "Ajouter",
     "dueDate": "Date d'échéance",
-    "dueDatePlaceholder": "AAAA-MM-JJ"
+    "dueDatePlaceholder": "AAAA-MM-JJ",
+    "toggleDone": "Marquer comme fait",
+    "topVoted": "Les plus votés"
   },
   "export": {
     "title": "Exporter les résultats",
@@ -146,7 +158,9 @@
     "joinCodeLength": "Le code d'accès doit comporter 6 caractères.",
     "enterYourName": "Veuillez entrer votre nom.",
     "connectionFailed": "Impossible de se connecter au serveur.",
-    "clipboardFailed": "Impossible de copier dans le presse-papiers. Veuillez copier manuellement."
+    "clipboardFailed": "Impossible de copier dans le presse-papiers. Veuillez copier manuellement.",
+    "actionLimitReached": "Limite d'actions atteinte.",
+    "actionWrongPhase": "Les actions ne peuvent être ajoutées que pendant la phase Actions ou Clôture."
   },
   "ui": {
     "leaveConfirm": "Êtes-vous sûr de vouloir quitter cette session ?",
@@ -155,7 +169,8 @@
     "shareLinkCopied": "Lien copié !",
     "reconnecting": "Reconnexion...",
     "reconnectingHint": "Votre session est sauvegardée. Veuillez patienter.",
-    "reconnectingError": "Connexion échouée. Nouvelle tentative automatique..."
+    "reconnectingError": "Connexion échouée. Nouvelle tentative automatique...",
+    "reconnectNow": "Reconnecter maintenant"
   },
   "checkin": {
     "title": "Check-In",
@@ -183,5 +198,9 @@
     "rating3": "OK",
     "rating4": "Bien",
     "rating5": "Excellent"
+  },
+  "action": {
+    "edit": "Modifier l'action",
+    "delete": "Supprimer l'action"
   }
 }

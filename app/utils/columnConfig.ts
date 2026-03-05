@@ -6,6 +6,7 @@
  */
 
 import type { RetroColumnType } from '../types';
+import { RETRO_COLUMNS } from '../types';
 
 /**
  * Column visual metadata
@@ -84,9 +85,6 @@ export const COLUMN_META: Record<RetroColumnType, ColumnMeta> = {
 
 /**
  * Ordered list of all retro columns for iteration.
+ * Derives from the canonical RETRO_COLUMNS constant (DRY).
  */
-export const ORDERED_COLUMNS: readonly RetroColumnType[] = [
-  'went-well',
-  'to-improve',
-  'action-items',
-] as const;
+export const ORDERED_COLUMNS: readonly RetroColumnType[] = RETRO_COLUMNS;

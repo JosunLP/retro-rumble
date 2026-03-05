@@ -4,12 +4,17 @@ import type { ConnectionStatus } from '~/composables/useWebSocket';
 /**
  * Full-screen overlay shown when a live session loses its WebSocket connection.
  * Only visible while status is 'connecting' or 'error' AND a session is active.
+ * Provides a manual reconnect button when the auto-reconnect has failed.
  */
 const props = defineProps<{
   /** Current WebSocket connection status */
   status: ConnectionStatus;
   /** Whether there is an active session that should be preserved */
   hasSession: boolean;
+}>();
+
+const emit = defineEmits<{
+  reconnect: [];
 }>();
 
 const { t } = useI18n();
@@ -52,10 +57,19 @@ const isVisible = computed(
         {{ t('ui.reconnectingHint') }}
       </p>
 
-      <!-- Error hint — shown only when status is definitively 'error' -->
-      <p v-if="status === 'error'" class="text-xs text-error-300">
-        {{ t('ui.reconnectingError') }}
-      </p>
+      <!-- Error hint and manual reconnect button — shown when auto-reconnect fails -->
+      <template v-if="status === 'error'">
+        <p class="text-xs text-error-300">
+          {{ t('ui.reconnectingError') }}
+        </p>
+        <button
+          type="button"
+          class="mt-2 px-4 py-2 rounded-lg bg-primary-600 text-white text-sm font-medium hover:bg-primary-700 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-400"
+          @click="emit('reconnect')"
+        >
+          {{ t('ui.reconnectNow') }}
+        </button>
+      </template>
     </div>
   </Transition>
 </template>

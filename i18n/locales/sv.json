@@ -37,7 +37,9 @@
   "participants": {
     "title": "Deltagare",
     "host": "Värd",
-    "you": "(du)"
+    "you": "(du)",
+    "online": "Online",
+    "offline": "Offline"
   },
   "phase": {
     "set-the-stage": "Förberedelse",
@@ -47,7 +49,15 @@
     "decide-action": "Åtgärder",
     "close-retro": "Avslutning",
     "previous": "Föregående",
-    "next": "Nästa"
+    "next": "Nästa",
+    "description": {
+      "set-the-stage": "Välkommen! Dela med dig av hur du mår för att sätta stämningen.",
+      "gather-data": "Skriv anonyma kort om vad som gick bra och vad som kan förbättras.",
+      "generate-insights": "Dra kort till grupper för att hitta gemensamma teman.",
+      "voting": "Rösta på de ämnen som är viktigast för teamet.",
+      "decide-action": "Definiera konkreta åtgärder och tilldela ansvar.",
+      "close-retro": "Granska sammanfattningen och ge feedback på denna retro."
+    }
   },
   "column": {
     "went-well": "Vad gick bra",
@@ -103,7 +113,9 @@
     "assigneePlaceholder": "Ansvarig",
     "addAction": "Lägg till",
     "dueDate": "Deadline",
-    "dueDatePlaceholder": "ÅÅÅÅ-MM-DD"
+    "dueDatePlaceholder": "ÅÅÅÅ-MM-DD",
+    "toggleDone": "Markera som klar",
+    "topVoted": "Flest röster"
   },
   "export": {
     "title": "Exportera resultat",
@@ -146,7 +158,9 @@
     "joinCodeLength": "Åtkomstkoden måste vara 6 tecken.",
     "enterYourName": "Ange ditt namn.",
     "connectionFailed": "Det gick inte att ansluta till servern.",
-    "clipboardFailed": "Kunde inte kopiera till urklipp. Vänligen kopiera manuellt."
+    "clipboardFailed": "Kunde inte kopiera till urklipp. Vänligen kopiera manuellt.",
+    "actionLimitReached": "Åtgärdsgränsen har nåtts.",
+    "actionWrongPhase": "Åtgärder kan bara läggas till under Åtgärds- eller Avslutningsfasen."
   },
   "ui": {
     "leaveConfirm": "Är du säker på att du vill lämna den här sessionen?",
@@ -155,7 +169,8 @@
     "shareLinkCopied": "Länk kopierad!",
     "reconnecting": "Återansluter...",
     "reconnectingHint": "Din session är sparad. Vänta.",
-    "reconnectingError": "Anslutning misslyckades. Återansluter automatiskt..."
+    "reconnectingError": "Anslutning misslyckades. Återansluter automatiskt...",
+    "reconnectNow": "Återanslut nu"
   },
   "checkin": {
     "title": "Check-in",
@@ -183,5 +198,9 @@
     "rating3": "Bra",
     "rating4": "Mycket bra",
     "rating5": "Utmärkt"
+  },
+  "action": {
+    "edit": "Redigera åtgärd",
+    "delete": "Ta bort åtgärd"
   }
 }

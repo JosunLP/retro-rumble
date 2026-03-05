@@ -37,7 +37,9 @@
   "participants": {
     "title": "Deelnemers",
     "host": "Host",
-    "you": "(jij)"
+    "you": "(jij)",
+    "online": "Online",
+    "offline": "Offline"
   },
   "phase": {
     "set-the-stage": "Voorbereiding",
@@ -47,7 +49,15 @@
     "decide-action": "Acties",
     "close-retro": "Afsluiting",
     "previous": "Vorige",
-    "next": "Volgende"
+    "next": "Volgende",
+    "description": {
+      "set-the-stage": "Welkom! Deel hoe je je voelt om de sfeer te zetten.",
+      "gather-data": "Schrijf anoniem kaarten over wat goed ging en wat beter kan.",
+      "generate-insights": "Sleep kaarten in groepen om gemeenschappelijke thema's te vinden.",
+      "voting": "Stem op de onderwerpen die het meest belangrijk zijn voor het team.",
+      "decide-action": "Definieer concrete acties en wijs verantwoordelijkheden toe.",
+      "close-retro": "Bekijk de samenvatting en geef feedback op deze retro."
+    }
   },
   "column": {
     "went-well": "Wat goed ging",
@@ -103,7 +113,9 @@
     "assigneePlaceholder": "Verantwoordelijke",
     "addAction": "Toevoegen",
     "dueDate": "Deadline",
-    "dueDatePlaceholder": "JJJJ-MM-DD"
+    "dueDatePlaceholder": "JJJJ-MM-DD",
+    "toggleDone": "Markeer als gedaan",
+    "topVoted": "Meeste stemmen"
   },
   "export": {
     "title": "Resultaten exporteren",
@@ -146,7 +158,9 @@
     "joinCodeLength": "De toegangscode moet 6 tekens lang zijn.",
     "enterYourName": "Voer je naam in.",
     "connectionFailed": "Kan geen verbinding maken met de server.",
-    "clipboardFailed": "Kon niet naar klembord kopiëren. Kopieer handmatig."
+    "clipboardFailed": "Kon niet naar klembord kopiëren. Kopieer handmatig.",
+    "actionLimitReached": "Actielimiet bereikt.",
+    "actionWrongPhase": "Acties kunnen alleen worden toegevoegd tijdens de Acties of Afsluitingsfase."
   },
   "ui": {
     "leaveConfirm": "Weet je zeker dat je deze sessie wilt verlaten?",
@@ -155,7 +169,8 @@
     "shareLinkCopied": "Link gekopieerd!",
     "reconnecting": "Opnieuw verbinden...",
     "reconnectingHint": "Je sessie is opgeslagen. Een moment geduld.",
-    "reconnectingError": "Verbinding mislukt. Automatisch opnieuw proberen..."
+    "reconnectingError": "Verbinding mislukt. Automatisch opnieuw proberen...",
+    "reconnectNow": "Nu opnieuw verbinden"
   },
   "checkin": {
     "title": "Check-in",
@@ -183,5 +198,9 @@
     "rating3": "OK",
     "rating4": "Goed",
     "rating5": "Uitstekend"
+  },
+  "action": {
+    "edit": "Actie bewerken",
+    "delete": "Actie verwijderen"
   }
 }
