@@ -40,6 +40,11 @@ interface ExtendedSessionState extends ISessionState {
  */
 export function useRetroSession() {
   /**
+   * i18n for translated error messages (composable runs inside setup())
+   */
+  const { t } = useI18n();
+
+  /**
    * WebSocket Composable
    */
   const {
@@ -297,7 +302,7 @@ export function useRetroSession() {
     timerDuration?: number
   ): Promise<void> {
     if (!sessionName.trim() || !participantName.trim()) {
-      state.value = { ...state.value, error: 'Please fill in all fields.' };
+      state.value = { ...state.value, error: t('errors.fillAllFields') };
       return;
     }
 
@@ -305,7 +310,7 @@ export function useRetroSession() {
     if (!connected) {
       state.value = {
         ...state.value,
-        error: 'Could not connect to the server.',
+        error: t('errors.connectionFailed'),
       };
       return;
     }
@@ -326,12 +331,12 @@ export function useRetroSession() {
     if (normalizedCode.length !== 6) {
       state.value = {
         ...state.value,
-        error: 'The join code must be 6 characters long.',
+        error: t('errors.joinCodeLength'),
       };
       return;
     }
     if (!participantName.trim()) {
-      state.value = { ...state.value, error: 'Please enter your name.' };
+      state.value = { ...state.value, error: t('errors.enterYourName') };
       return;
     }
 
@@ -339,7 +344,7 @@ export function useRetroSession() {
     if (!connected) {
       state.value = {
         ...state.value,
-        error: 'Could not connect to the server.',
+        error: t('errors.connectionFailed'),
       };
       return;
     }

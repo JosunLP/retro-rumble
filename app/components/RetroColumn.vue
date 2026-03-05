@@ -6,6 +6,7 @@
  */
 
 import type { IRetroCard, RetroColumnType, RetroPhase } from '~/types';
+import { MAX_CARD_CONTENT_LENGTH } from '~/types';
 
 const { t } = useI18n();
 
@@ -87,6 +88,11 @@ function addCard(): void {
   emit('addCard', props.column, newCardContent.value.trim());
   newCardContent.value = '';
 }
+
+/** Remaining characters for new card input */
+const newCardCharsRemaining = computed(
+  () => MAX_CARD_CONTENT_LENGTH - newCardContent.value.length
+);
 </script>
 
 <template>
@@ -146,13 +152,22 @@ function addCard(): void {
       class="p-3 border border-t-0 border-secondary-200 rounded-b-xl bg-white"
     >
       <div class="flex gap-2">
-        <textarea
-          v-model="newCardContent"
-          class="input text-sm resize-none"
-          :placeholder="t('card.placeholder')"
-          rows="2"
-          @keydown.enter.ctrl="addCard"
-        />
+        <div class="flex-1 relative">
+          <textarea
+            v-model="newCardContent"
+            class="input text-sm resize-none w-full"
+            :placeholder="t('card.placeholder')"
+            :maxlength="MAX_CARD_CONTENT_LENGTH"
+            rows="2"
+            @keydown.enter.ctrl="addCard"
+          />
+          <span
+            class="absolute bottom-1 right-2 text-xs tabular-nums leading-none"
+            :class="newCardCharsRemaining <= 50 ? 'text-warning-500' : 'text-secondary-300'"
+          >
+            {{ newCardCharsRemaining }}
+          </span>
+        </div>
         <button
           type="button"
           class="btn btn-sm btn-primary self-end"

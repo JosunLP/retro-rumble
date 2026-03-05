@@ -7,33 +7,33 @@
 
 import type { Peer } from 'crossws';
 import type {
-  AddActionItemPayload,
-  AddCardPayload,
-  AddCardToGroupPayload,
-  CheckInRespondPayload,
-  ClientMessage,
-  CreateGroupPayload,
-  CreateSessionPayload,
-  DeleteActionItemPayload,
-  DeleteCardPayload,
-  DeleteGroupPayload,
-  EditActionItemPayload,
-  EditCardPayload,
-  FeedbackRespondPayload,
-  JoinSessionPayload,
-  MoveCardPayload,
-  MoveGroupPayload,
-  PhaseChangePayload,
-  RejoinSessionPayload,
-  RemoveCardFromGroupPayload,
-  RenameGroupPayload,
-  ServerMessage,
-  TimerSetPayload,
-  ToggleActionItemPayload,
-  UnvoteCardPayload,
-  UnvoteGroupPayload,
-  VoteCardPayload,
-  VoteGroupPayload,
+    AddActionItemPayload,
+    AddCardPayload,
+    AddCardToGroupPayload,
+    CheckInRespondPayload,
+    ClientMessage,
+    CreateGroupPayload,
+    CreateSessionPayload,
+    DeleteActionItemPayload,
+    DeleteCardPayload,
+    DeleteGroupPayload,
+    EditActionItemPayload,
+    EditCardPayload,
+    FeedbackRespondPayload,
+    JoinSessionPayload,
+    MoveCardPayload,
+    MoveGroupPayload,
+    PhaseChangePayload,
+    RejoinSessionPayload,
+    RemoveCardFromGroupPayload,
+    RenameGroupPayload,
+    ServerMessage,
+    TimerSetPayload,
+    ToggleActionItemPayload,
+    UnvoteCardPayload,
+    UnvoteGroupPayload,
+    VoteCardPayload,
+    VoteGroupPayload,
 } from '../../app/types/websocket';
 import { sessionStore } from '../utils/sessionStore';
 
@@ -202,21 +202,28 @@ function handleMessage(peer: Peer, data: string): void {
 // ============================================
 
 function handleCreateSession(peer: Peer, payload: CreateSessionPayload): void {
-  const result = sessionStore.createSession(
-    payload.sessionName,
-    payload.participantName,
-    peer,
-    {
-      maxVotesPerUser: payload.maxVotesPerUser,
-      timerDuration: payload.timerDuration,
-    }
-  );
+  try {
+    const result = sessionStore.createSession(
+      payload.sessionName,
+      payload.participantName,
+      peer,
+      {
+        maxVotesPerUser: payload.maxVotesPerUser,
+        timerDuration: payload.timerDuration,
+      }
+    );
 
-  sendMessage(peer, 'session:created', {
-    session: result.session,
-    joinCode: result.joinCode,
-    participant: result.participant,
-  });
+    sendMessage(peer, 'session:created', {
+      session: result.session,
+      joinCode: result.joinCode,
+      participant: result.participant,
+    });
+  } catch {
+    sendMessage(peer, 'session:error', {
+      message: 'Could not create session. Please check your input.',
+      code: 'SESSION_CREATE_FAILED',
+    });
+  }
 }
 
 function handleJoinSession(peer: Peer, payload: JoinSessionPayload): void {

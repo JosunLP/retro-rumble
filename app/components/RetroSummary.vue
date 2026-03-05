@@ -25,8 +25,8 @@ interface Props {
 const props = defineProps<Props>();
 
 const emit = defineEmits<{
-  addActionItem: [text: string, assignee?: string];
-  editActionItem: [id: string, text: string, assignee?: string];
+  addActionItem: [text: string, assignee?: string, dueDate?: string];
+  editActionItem: [id: string, text: string, assignee?: string, dueDate?: string];
   deleteActionItem: [id: string];
   toggleActionItem: [id: string];
 }>();
@@ -34,9 +34,11 @@ const emit = defineEmits<{
 // New action item form
 const newActionText = ref('');
 const newActionAssignee = ref('');
+const newActionDueDate = ref('');
 const editingActionId = ref<string | null>(null);
 const editActionText = ref('');
 const editActionAssignee = ref('');
+const editActionDueDate = ref('');
 
 const columns: RetroColumnType[] = ['went-well', 'to-improve', 'action-items'];
 
@@ -109,15 +111,18 @@ function handleAddAction(): void {
   const text = newActionText.value.trim();
   if (!text) return;
   const assignee = newActionAssignee.value.trim() || undefined;
-  emit('addActionItem', text, assignee);
+  const dueDate = newActionDueDate.value.trim() || undefined;
+  emit('addActionItem', text, assignee, dueDate);
   newActionText.value = '';
   newActionAssignee.value = '';
+  newActionDueDate.value = '';
 }
 
 function startEditAction(action: IActionItem): void {
   editingActionId.value = action.id;
   editActionText.value = action.text;
   editActionAssignee.value = action.assignee ?? '';
+  editActionDueDate.value = action.dueDate ?? '';
 }
 
 function saveEditAction(): void {
@@ -125,7 +130,8 @@ function saveEditAction(): void {
   const text = editActionText.value.trim();
   if (!text) return;
   const assignee = editActionAssignee.value.trim() || undefined;
-  emit('editActionItem', editingActionId.value, text, assignee);
+  const dueDate = editActionDueDate.value.trim() || undefined;
+  emit('editActionItem', editingActionId.value, text, assignee, dueDate);
   editingActionId.value = null;
 }
 
@@ -291,15 +297,22 @@ function cancelEditAction(): void {
             <input
               v-model="editActionText"
               type="text"
-              class="input-field flex-1 text-sm"
+              class="input flex-1 text-sm"
               @keydown.enter="saveEditAction"
               @keydown.escape="cancelEditAction"
             >
             <input
               v-model="editActionAssignee"
               type="text"
-              class="input-field w-32 text-sm"
+              class="input w-28 text-sm"
               :placeholder="t('summary.assigneePlaceholder')"
+              @keydown.enter="saveEditAction"
+              @keydown.escape="cancelEditAction"
+            >
+            <input
+              v-model="editActionDueDate"
+              type="date"
+              class="input w-36 text-sm"
               @keydown.enter="saveEditAction"
               @keydown.escape="cancelEditAction"
             >
@@ -396,19 +409,26 @@ function cancelEditAction(): void {
       </div>
 
       <!-- Add action item form (host only) -->
-      <div v-if="isHost" class="flex gap-2">
+      <div v-if="isHost" class="flex flex-wrap gap-2">
         <input
           v-model="newActionText"
           type="text"
-          class="input-field flex-1 text-sm"
+          class="input flex-1 min-w-0 text-sm"
           :placeholder="t('summary.actionPlaceholder')"
           @keydown.enter="handleAddAction"
         >
         <input
           v-model="newActionAssignee"
           type="text"
-          class="input-field w-32 text-sm"
+          class="input w-28 text-sm"
           :placeholder="t('summary.assigneePlaceholder')"
+          @keydown.enter="handleAddAction"
+        >
+        <input
+          v-model="newActionDueDate"
+          type="date"
+          class="input w-36 text-sm"
+          :title="t('summary.dueDate')"
           @keydown.enter="handleAddAction"
         >
         <button

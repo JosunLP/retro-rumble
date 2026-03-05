@@ -331,6 +331,12 @@ function handleJoinSession(code: string, participantName: string): void {
       </div>
     </main>
 
+    <!-- Reconnection Overlay — shown when the WS drops during an active session -->
+    <ReconnectingOverlay
+      :status="connectionStatus"
+      :has-session="!!session"
+    />
+
     <!-- Footer -->
     <footer class="mt-auto py-6 text-center text-sm text-secondary-500">
       <p>

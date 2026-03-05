@@ -58,7 +58,9 @@
   "card": {
     "placeholder": "Add a card... (Ctrl+Enter to submit)",
     "edit": "Edit",
-    "delete": "Delete"
+    "delete": "Delete",
+    "charRemaining": "{n} chars remaining",
+    "charLimitReached": "Character limit reached"
   },
   "grouping": {
     "instructionsHost": "Drag cards onto each other to create groups. Drag away from a group to ungroup.",
@@ -99,7 +101,9 @@
     "noActions": "No action items yet. Add commitments for the next sprint!",
     "actionPlaceholder": "New action item...",
     "assigneePlaceholder": "Assignee",
-    "addAction": "Add"
+    "addAction": "Add",
+    "dueDate": "Due Date",
+    "dueDatePlaceholder": "YYYY-MM-DD"
   },
   "export": {
     "title": "Export Results",
@@ -113,6 +117,21 @@
   "common": {
     "cancel": "Cancel",
     "save": "Save"
+  },
+  "errors": {
+    "fillAllFields": "Please fill in all fields.",
+    "joinCodeLength": "The join code must be 6 characters long.",
+    "enterYourName": "Please enter your name.",
+    "connectionFailed": "Could not connect to the server."
+  },
+  "ui": {
+    "leaveConfirm": "Are you sure you want to leave this session?",
+    "leaveSession": "Leave session",
+    "shareLink": "Copy session link",
+    "shareLinkCopied": "Link copied!",
+    "reconnecting": "Reconnecting...",
+    "reconnectingHint": "Your session is saved. Please wait.",
+    "reconnectingError": "Connection failed. Retrying automatically..."
   },
   "checkin": {
     "title": "Check-In",

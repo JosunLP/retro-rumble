@@ -58,7 +58,9 @@
   "card": {
     "placeholder": "Karte hinzufügen... (Strg+Enter zum Absenden)",
     "edit": "Bearbeiten",
-    "delete": "Löschen"
+    "delete": "Löschen",
+    "charRemaining": "Noch {n} Zeichen",
+    "charLimitReached": "Zeichenlimit erreicht"
   },
   "grouping": {
     "instructionsHost": "Ziehe Karten aufeinander, um Gruppen zu erstellen. Ziehe Karten weg von einer Gruppe, um sie zu lösen.",
@@ -99,7 +101,9 @@
     "noActions": "Noch keine Maßnahmen. Füge Vereinbarungen für den nächsten Sprint hinzu!",
     "actionPlaceholder": "Neue Maßnahme...",
     "assigneePlaceholder": "Zuständig",
-    "addAction": "Hinzufügen"
+    "addAction": "Hinzufügen",
+    "dueDate": "Fälligkeitsdatum",
+    "dueDatePlaceholder": "JJJJ-MM-TT"
   },
   "export": {
     "title": "Ergebnisse exportieren",
@@ -113,6 +117,21 @@
   "common": {
     "cancel": "Abbrechen",
     "save": "Speichern"
+  },
+  "errors": {
+    "fillAllFields": "Bitte alle Felder ausfüllen.",
+    "joinCodeLength": "Der Beitrittscode muss 6 Zeichen lang sein.",
+    "enterYourName": "Bitte gib deinen Namen ein.",
+    "connectionFailed": "Verbindung zum Server fehlgeschlagen."
+  },
+  "ui": {
+    "leaveConfirm": "Möchtest du die Session wirklich verlassen?",
+    "leaveSession": "Session verlassen",
+    "shareLink": "Session-Link kopieren",
+    "shareLinkCopied": "Link kopiert!",
+    "reconnecting": "Verbinde neu...",
+    "reconnectingHint": "Deine Session ist gespeichert. Bitte warte.",
+    "reconnectingError": "Verbindung fehlgeschlagen. Wiederhole automatisch..."
   },
   "checkin": {
     "title": "Check-In",

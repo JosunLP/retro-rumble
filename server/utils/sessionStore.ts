@@ -12,7 +12,15 @@ import type {
   RetroColumnType,
   RetroPhase,
 } from '../../app/types/retro';
-import { JOIN_CODE_CHARS, JOIN_CODE_LENGTH } from '../../app/types/retro';
+import {
+  JOIN_CODE_CHARS,
+  JOIN_CODE_LENGTH,
+  MAX_ACTION_ITEM_TEXT_LENGTH,
+  MAX_CARD_CONTENT_LENGTH,
+  MAX_GROUP_TITLE_LENGTH,
+  MAX_PARTICIPANT_NAME_LENGTH,
+  MAX_SESSION_NAME_LENGTH,
+} from '../../app/types/retro';
 import { Participant } from '../../app/utils/Participant';
 import { RetroSession } from '../../app/utils/RetroSession';
 
@@ -103,8 +111,14 @@ class SessionStore {
     peer: Peer,
     config?: { maxVotesPerUser?: number; timerDuration?: number }
   ): { session: IRetroSession; joinCode: string; participant: Participant } {
-    const participant = new Participant(participantName, true);
-    const session = new RetroSession(sessionName, participant.id, {
+    // Validate and sanitize input lengths
+    const safeName = sessionName.trim().slice(0, MAX_SESSION_NAME_LENGTH);
+    const safeParticipantName = participantName.trim().slice(0, MAX_PARTICIPANT_NAME_LENGTH);
+    if (!safeName || !safeParticipantName) {
+      throw new Error('SESSION_NAME_EMPTY');
+    }
+    const participant = new Participant(safeParticipantName, true);
+    const session = new RetroSession(safeName, participant.id, {
       maxVotesPerUser: config?.maxVotesPerUser ?? 5,
       timerDuration: config?.timerDuration ?? 300,
       anonymousCards: true,
@@ -152,7 +166,10 @@ class SessionStore {
     const entry = this.sessions.get(sessionId);
     if (!entry) return null;
 
-    const participant = new Participant(participantName, false);
+    const safeParticipantName = participantName.trim().slice(0, MAX_PARTICIPANT_NAME_LENGTH);
+    if (!safeParticipantName) return null;
+
+    const participant = new Participant(safeParticipantName, false);
     entry.session.addParticipant(participant);
     entry.connections.set(participant.id, peer);
     entry.emptySince = null;
@@ -364,7 +381,11 @@ class SessionStore {
     // Only allow adding cards in the gather-data phase
     if (entry.session.phase !== 'gather-data') return null;
 
-    entry.session.addCard(column, content, info.participantId);
+    // Validate content length
+    const safeContent = content.trim().slice(0, MAX_CARD_CONTENT_LENGTH);
+    if (!safeContent) return null;
+
+    entry.session.addCard(column, safeContent, info.participantId);
     return entry.session.toJSON();
   }
 
@@ -382,7 +403,10 @@ class SessionStore {
     const entry = this.sessions.get(info.sessionId);
     if (!entry) return null;
 
-    const success = entry.session.editCard(cardId, content, info.participantId);
+    const safeContent = content.trim().slice(0, MAX_CARD_CONTENT_LENGTH);
+    if (!safeContent) return null;
+
+    const success = entry.session.editCard(cardId, safeContent, info.participantId);
     return success ? entry.session.toJSON() : null;
   }
 
@@ -460,7 +484,8 @@ class SessionStore {
     const session = this.getSessionForPeer(peer);
     if (!session) return null;
 
-    const group = session.createGroup(title, column, cardIds);
+    const safeTitle = title.trim().slice(0, MAX_GROUP_TITLE_LENGTH) || 'Group';
+    const group = session.createGroup(safeTitle, column, cardIds);
     return group ? session.toJSON() : null;
   }
 
@@ -505,7 +530,9 @@ class SessionStore {
     const session = this.getSessionForPeer(peer);
     if (!session) return null;
 
-    const success = session.renameGroup(groupId, title);
+    const safeTitle = title.trim().slice(0, MAX_GROUP_TITLE_LENGTH);
+    if (!safeTitle) return null;
+    const success = session.renameGroup(groupId, safeTitle);
     return success ? session.toJSON() : null;
   }
 
@@ -628,7 +655,12 @@ class SessionStore {
     const session = this.getSessionForPeer(peer);
     if (!session) return null;
 
-    session.addActionItem(text, assignee ?? null, dueDate ?? null);
+    const safeText = text.trim().slice(0, MAX_ACTION_ITEM_TEXT_LENGTH);
+    if (!safeText) return null;
+    const safeAssignee = assignee?.trim().slice(0, MAX_PARTICIPANT_NAME_LENGTH) ?? null;
+    const safeDueDate = dueDate?.trim().slice(0, 10) ?? null; // ISO date max length
+
+    session.addActionItem(safeText, safeAssignee, safeDueDate);
     return session.toJSON();
   }
 
@@ -647,11 +679,16 @@ class SessionStore {
     const session = this.getSessionForPeer(peer);
     if (!session) return null;
 
+    const safeText = text.trim().slice(0, MAX_ACTION_ITEM_TEXT_LENGTH);
+    if (!safeText) return null;
+    const safeAssignee = assignee?.trim().slice(0, MAX_PARTICIPANT_NAME_LENGTH) ?? null;
+    const safeDueDate = dueDate?.trim().slice(0, 10) ?? null;
+
     const success = session.editActionItem(
       actionId,
-      text,
-      assignee ?? null,
-      dueDate ?? null
+      safeText,
+      safeAssignee,
+      safeDueDate
     );
     return success ? session.toJSON() : null;
   }

@@ -17,6 +17,15 @@ export const JOIN_CODE_LENGTH = 6;
 export const JOIN_CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 
 /**
+ * Content length constraints
+ */
+export const MAX_CARD_CONTENT_LENGTH = 500;
+export const MAX_PARTICIPANT_NAME_LENGTH = 50;
+export const MAX_SESSION_NAME_LENGTH = 80;
+export const MAX_GROUP_TITLE_LENGTH = 80;
+export const MAX_ACTION_ITEM_TEXT_LENGTH = 500;
+
+/**
  * Retro column types
  */
 export const RETRO_COLUMNS = [
