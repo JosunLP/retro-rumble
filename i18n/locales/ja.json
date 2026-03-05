@@ -120,6 +120,9 @@
       "action": "アクション",
       "assignee": "担当者",
       "due": "期限",
+      "status": "ステータス",
+      "vote": "票",
+      "votePlural": "票",
       "statistics": "統計",
       "totalCards": "カード合計",
       "totalVotes": "投票合計",
@@ -142,7 +145,8 @@
     "fillAllFields": "すべてのフィールドを入力してください。",
     "joinCodeLength": "参加コードは6文字でなければなりません。",
     "enterYourName": "名前を入力してください。",
-    "connectionFailed": "サーバーに接続できませんでした。"
+    "connectionFailed": "サーバーに接続できませんでした。",
+    "clipboardFailed": "クリップボードにコピーできませんでした。手動でコピーしてください。"
   },
   "ui": {
     "leaveConfirm": "本当にこのセッションを離れますか？",

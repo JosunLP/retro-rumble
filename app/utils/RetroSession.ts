@@ -16,7 +16,7 @@ import type {
     RetroColumnType,
     RetroPhase,
 } from '../types';
-import { isValidCheckInMood, RETRO_PHASES } from '../types';
+import { countVotesForParticipant, isValidCheckInMood, RETRO_PHASES } from '../types';
 import { Participant } from './Participant';
 
 const DEFAULT_CONFIG: IRetroConfig = {
@@ -226,18 +226,11 @@ export class RetroSession implements IRetroSession {
   // ============================================
 
   /**
-   * Counts total votes cast by a participant across all cards and groups
+   * Counts total votes cast by a participant across all cards and groups.
+   * Delegates to the shared pure function for DRY compliance.
    */
-  private countUserVotes(participantId: string): number {
-    const cardVotes = this.cards.reduce(
-      (count, c) => count + c.voterIds.filter((id) => id === participantId).length,
-      0
-    );
-    const groupVotes = this.groups.reduce(
-      (count, g) => count + g.voterIds.filter((id) => id === participantId).length,
-      0
-    );
-    return cardVotes + groupVotes;
+  public countUserVotes(participantId: string): number {
+    return countVotesForParticipant(this.cards, this.groups, participantId);
   }
 
   /**

@@ -120,6 +120,9 @@
       "action": "Działanie",
       "assignee": "Odpowiedzialny",
       "due": "Termin",
+      "status": "Status",
+      "vote": "głos",
+      "votePlural": "głosów",
       "statistics": "Statystyki",
       "totalCards": "Łącznie kart",
       "totalVotes": "Łącznie głosów",
@@ -142,7 +145,8 @@
     "fillAllFields": "Proszę wypełnić wszystkie pola.",
     "joinCodeLength": "Kod dostępu musi mieć 6 znaków.",
     "enterYourName": "Proszę podać swoje imię.",
-    "connectionFailed": "Nie można połączyć się z serwerem."
+    "connectionFailed": "Nie można połączyć się z serwerem.",
+    "clipboardFailed": "Nie udało się skopiować do schowka. Proszę skopiować ręcznie."
   },
   "ui": {
     "leaveConfirm": "Czy na pewno chcesz opuścić tę sesję?",

@@ -128,6 +128,9 @@
       "action": "Maßnahme",
       "assignee": "Zuständig",
       "due": "Fällig",
+      "status": "Status",
+      "vote": "Stimme",
+      "votePlural": "Stimmen",
       "statistics": "Statistik",
       "totalCards": "Karten insgesamt",
       "totalVotes": "Stimmen insgesamt",
@@ -150,7 +153,8 @@
     "fillAllFields": "Bitte alle Felder ausfüllen.",
     "joinCodeLength": "Der Beitrittscode muss 6 Zeichen lang sein.",
     "enterYourName": "Bitte gib deinen Namen ein.",
-    "connectionFailed": "Verbindung zum Server fehlgeschlagen."
+    "connectionFailed": "Verbindung zum Server fehlgeschlagen.",
+    "clipboardFailed": "Kopieren in die Zwischenablage fehlgeschlagen. Bitte manuell kopieren."
   },
   "ui": {
     "leaveConfirm": "Möchtest du die Session wirklich verlassen?",

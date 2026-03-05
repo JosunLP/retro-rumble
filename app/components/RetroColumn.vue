@@ -145,6 +145,7 @@ const newCardCharsRemaining = computed(
             id="char-counter"
             class="absolute bottom-1 right-2 text-xs tabular-nums leading-none"
             :class="newCardCharsRemaining <= 50 ? 'text-warning-500' : 'text-secondary-300'"
+            role="status"
             aria-live="polite"
           >
             {{ newCardCharsRemaining }}

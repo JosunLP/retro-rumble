@@ -11,6 +11,7 @@ import type {
     RetroColumnType,
     RetroPhase,
 } from '~/types';
+import { countVotesForParticipant } from '~/types';
 import type {
     ParticipantJoinedPayload,
     ParticipantLeftPayload,
@@ -277,16 +278,13 @@ export function useRetroSession() {
 
   const remainingVotes = computed(() => {
     if (!state.value.session || !state.value.currentParticipant) return 0;
-    const pid = state.value.currentParticipant!.id;
-    const cardVotes = state.value.session.cards.reduce(
-      (count, c) => count + c.voterIds.filter((id) => id === pid).length,
-      0
+    const pid = state.value.currentParticipant.id;
+    const used = countVotesForParticipant(
+      state.value.session.cards,
+      state.value.session.groups,
+      pid
     );
-    const groupVotes = state.value.session.groups.reduce(
-      (count, g) => count + g.voterIds.filter((id) => id === pid).length,
-      0
-    );
-    return state.value.session.maxVotesPerUser - cardVotes - groupVotes;
+    return state.value.session.maxVotesPerUser - used;
   });
 
   const currentPhase = computed(() => state.value.session?.phase ?? 'set-the-stage');

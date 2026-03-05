@@ -120,6 +120,9 @@
       "action": "Azione",
       "assignee": "Responsabile",
       "due": "Scadenza",
+      "status": "Stato",
+      "vote": "voto",
+      "votePlural": "voti",
       "statistics": "Statistiche",
       "totalCards": "Schede totali",
       "totalVotes": "Voti totali",
@@ -142,7 +145,8 @@
     "fillAllFields": "Si prega di compilare tutti i campi.",
     "joinCodeLength": "Il codice di accesso deve essere di 6 caratteri.",
     "enterYourName": "Si prega di inserire il proprio nome.",
-    "connectionFailed": "Impossibile connettersi al server."
+    "connectionFailed": "Impossibile connettersi al server.",
+    "clipboardFailed": "Impossibile copiare negli appunti. Si prega di copiare manualmente."
   },
   "ui": {
     "leaveConfirm": "Sei sicuro di voler abbandonare questa sessione?",

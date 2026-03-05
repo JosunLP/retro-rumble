@@ -115,6 +115,47 @@ export function isValidCheckInMood(value: unknown): value is CheckInMood {
   );
 }
 
+/**
+ * Validates a retro phase value
+ */
+export function isValidPhase(value: unknown): value is RetroPhase {
+  return (
+    typeof value === 'string' &&
+    (RETRO_PHASES as readonly string[]).includes(value)
+  );
+}
+
+/**
+ * Validates an ISO date string (YYYY-MM-DD).
+ * Returns true only if the string represents a real calendar date.
+ */
+export function isValidISODate(value: string): boolean {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const date = new Date(value + 'T00:00:00Z');
+  return !isNaN(date.getTime()) && date.toISOString().startsWith(value);
+}
+
+/**
+ * Counts total votes cast by a participant across cards and groups.
+ * Works on plain data (IRetroSession) so both client composables and
+ * server code can reuse this without needing a class instance.
+ */
+export function countVotesForParticipant(
+  cards: Pick<IRetroCard, 'voterIds'>[],
+  groups: Pick<ICardGroup, 'voterIds'>[],
+  participantId: string
+): number {
+  const cardVotes = cards.reduce(
+    (count, c) => count + c.voterIds.filter((id) => id === participantId).length,
+    0
+  );
+  const groupVotes = groups.reduce(
+    (count, g) => count + g.voterIds.filter((id) => id === participantId).length,
+    0
+  );
+  return cardVotes + groupVotes;
+}
+
 // ============================================
 // Core Interfaces
 // ============================================

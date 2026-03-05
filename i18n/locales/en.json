@@ -128,6 +128,9 @@
       "action": "Action",
       "assignee": "Assignee",
       "due": "Due",
+      "status": "Status",
+      "vote": "vote",
+      "votePlural": "votes",
       "statistics": "Statistics",
       "totalCards": "Total Cards",
       "totalVotes": "Total Votes",
@@ -150,7 +153,8 @@
     "fillAllFields": "Please fill in all fields.",
     "joinCodeLength": "The join code must be 6 characters long.",
     "enterYourName": "Please enter your name.",
-    "connectionFailed": "Could not connect to the server."
+    "connectionFailed": "Could not connect to the server.",
+    "clipboardFailed": "Could not copy to clipboard. Please copy manually."
   },
   "ui": {
     "leaveConfirm": "Are you sure you want to leave this session?",

@@ -162,6 +162,15 @@ export function useExport() {
   // Markdown Export
   // ============================================
 
+  /**
+   * Formats a vote count as a markdown badge using i18n pluralization
+   */
+  function formatVoteBadge(votes: number): string {
+    if (votes === 0) return '';
+    const label = votes === 1 ? t('export.markdown.vote') : t('export.markdown.votePlural');
+    return ` (${votes} ${label})`;
+  }
+
   function exportMarkdown(session: IRetroSession): void {
     const lines: string[] = [];
 
@@ -191,10 +200,7 @@ export function useExport() {
           .filter((c): c is IRetroCard => !!c)
           .sort((a, b) => b.votes - a.votes);
         for (const card of groupCards) {
-          const voteBadge =
-            card.votes > 0
-              ? ` (${card.votes} ${card.votes === 1 ? 'vote' : 'votes'})`
-              : '';
+          const voteBadge = formatVoteBadge(card.votes);
           lines.push(`- ${escapeMd(card.content)}${voteBadge}`);
         }
         lines.push('');
@@ -204,10 +210,7 @@ export function useExport() {
         (a, b) => b.votes - a.votes
       );
       for (const card of sortedUngrouped) {
-        const voteBadge =
-          card.votes > 0
-            ? ` (${card.votes} ${card.votes === 1 ? 'vote' : 'votes'})`
-            : '';
+        const voteBadge = formatVoteBadge(card.votes);
         lines.push(`- ${escapeMd(card.content)}${voteBadge}`);
       }
       lines.push('');

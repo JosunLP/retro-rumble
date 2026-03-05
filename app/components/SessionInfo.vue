@@ -30,13 +30,18 @@ const showLeaveConfirm = ref(false);
 /**
  * Copies the join code to clipboard
  */
+/** Clipboard error fallback message */
+const clipboardError = ref(false);
+
 async function copyJoinCode(code: string): Promise<void> {
   try {
     await navigator.clipboard.writeText(code);
     copied.value = true;
     setTimeout(() => { copied.value = false; }, 2000);
   } catch {
-    // Clipboard API not available
+    console.warn('[SessionInfo] Clipboard API not available for join code');
+    clipboardError.value = true;
+    setTimeout(() => { clipboardError.value = false; }, 3000);
   }
 }
 
@@ -50,7 +55,9 @@ async function copySessionLink(): Promise<void> {
     copiedLink.value = true;
     setTimeout(() => { copiedLink.value = false; }, 2000);
   } catch {
-    // Clipboard API not available
+    console.warn('[SessionInfo] Clipboard API not available for session link');
+    clipboardError.value = true;
+    setTimeout(() => { clipboardError.value = false; }, 3000);
   }
 }
 
@@ -141,6 +148,17 @@ function confirmLeave(): void {
         {{ copiedLink ? t('ui.shareLinkCopied') : t('ui.shareLink') }}
       </button>
     </div>
+
+    <!-- Clipboard Error Message -->
+    <Transition name="fade">
+      <p
+        v-if="clipboardError"
+        class="text-xs text-error-600 mt-1"
+        role="alert"
+      >
+        {{ t('errors.clipboardFailed') }}
+      </p>
+    </Transition>
 
     <!-- Participant Count -->
     <div class="flex items-center gap-2 text-sm text-secondary-600">

@@ -13,6 +13,9 @@ import type {
   RetroPhase,
 } from '../../app/types/retro';
 import {
+  isValidColumnType,
+  isValidISODate,
+  isValidPhase,
   JOIN_CODE_CHARS,
   JOIN_CODE_LENGTH,
   MAX_ACTION_ITEM_TEXT_LENGTH,
@@ -358,6 +361,7 @@ class SessionStore {
    * Changes the retro phase (validates sequential progression)
    */
   public changePhase(peer: Peer, phase: RetroPhase): IRetroSession | null {
+    if (!isValidPhase(phase)) return null;
     const session = this.getSessionForPeer(peer);
     if (!session) return null;
     if (!this.isHost(peer)) return null;
@@ -373,6 +377,8 @@ class SessionStore {
     column: RetroColumnType,
     content: string
   ): IRetroSession | null {
+    if (!isValidColumnType(column)) return null;
+
     const info = this.peerMap.get(peer);
     if (!info) return null;
 
@@ -665,7 +671,7 @@ class SessionStore {
     const safeText = text.trim().slice(0, MAX_ACTION_ITEM_TEXT_LENGTH);
     if (!safeText) return null;
     const safeAssignee = assignee?.trim().slice(0, MAX_PARTICIPANT_NAME_LENGTH) ?? null;
-    const safeDueDate = dueDate?.trim().slice(0, 10) ?? null; // ISO date max length
+    const safeDueDate = this.sanitizeDueDate(dueDate);
 
     session.addActionItem(safeText, safeAssignee, safeDueDate);
     return session.toJSON();
@@ -689,7 +695,7 @@ class SessionStore {
     const safeText = text.trim().slice(0, MAX_ACTION_ITEM_TEXT_LENGTH);
     if (!safeText) return null;
     const safeAssignee = assignee?.trim().slice(0, MAX_PARTICIPANT_NAME_LENGTH) ?? null;
-    const safeDueDate = dueDate?.trim().slice(0, 10) ?? null;
+    const safeDueDate = this.sanitizeDueDate(dueDate);
 
     const success = session.editActionItem(
       actionId,
@@ -769,6 +775,16 @@ class SessionStore {
     const info = this.peerMap.get(peer);
     if (!info) return null;
     return this.sessions.get(info.sessionId)?.session ?? null;
+  }
+
+  /**
+   * Sanitizes and validates an optional due-date string.
+   * Returns a valid ISO date (YYYY-MM-DD) or null.
+   */
+  private sanitizeDueDate(dueDate?: string): string | null {
+    if (!dueDate) return null;
+    const trimmed = dueDate.trim().slice(0, 10);
+    return isValidISODate(trimmed) ? trimmed : null;
   }
 
   /**

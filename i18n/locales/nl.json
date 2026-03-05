@@ -120,6 +120,9 @@
       "action": "Actie",
       "assignee": "Verantwoordelijke",
       "due": "Deadline",
+      "status": "Status",
+      "vote": "stem",
+      "votePlural": "stemmen",
       "statistics": "Statistieken",
       "totalCards": "Totaal kaarten",
       "totalVotes": "Totaal stemmen",
@@ -142,7 +145,8 @@
     "fillAllFields": "Vul alle velden in.",
     "joinCodeLength": "De toegangscode moet 6 tekens lang zijn.",
     "enterYourName": "Voer je naam in.",
-    "connectionFailed": "Kan geen verbinding maken met de server."
+    "connectionFailed": "Kan geen verbinding maken met de server.",
+    "clipboardFailed": "Kon niet naar klembord kopiëren. Kopieer handmatig."
   },
   "ui": {
     "leaveConfirm": "Weet je zeker dat je deze sessie wilt verlaten?",

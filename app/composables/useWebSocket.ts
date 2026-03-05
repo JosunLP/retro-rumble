@@ -7,9 +7,9 @@
 
 import type { Ref } from 'vue';
 import type {
-  ClientMessage,
-  ServerMessage,
-  ServerMessageType,
+    ClientMessage,
+    ServerMessage,
+    ServerMessageType,
 } from '~/types/websocket';
 
 /**
@@ -68,6 +68,8 @@ interface ClientSingletonState {
   reconnectAttempts: number;
   reconnectTimer: ReturnType<typeof setTimeout> | null;
   pingInterval: ReturnType<typeof setInterval> | null;
+  /** Timer that fires if the server does not respond with pong in time */
+  pongTimeout: ReturnType<typeof setTimeout> | null;
 }
 
 let clientState: ClientSingletonState | null = null;
@@ -84,6 +86,7 @@ function getClientState(): ClientSingletonState {
       reconnectAttempts: 0,
       reconnectTimer: null,
       pingInterval: null,
+      pongTimeout: null,
     };
   }
   return clientState;
@@ -104,6 +107,11 @@ export function useWebSocket(
     reconnectDelay = 2000,
     maxReconnectAttempts = 10,
   } = options;
+
+  /** How long to wait for a pong before considering the connection dead (ms) */
+  const PONG_TIMEOUT_MS = 10_000;
+  /** Interval between pings (ms) */
+  const PING_INTERVAL_MS = 30_000;
 
   // Server-side: return no-op
   if (!import.meta.client) {
@@ -212,22 +220,51 @@ export function useWebSocket(
   }
 
   /**
-   * Starts a ping interval to keep connection alive
+   * Starts a ping interval to keep connection alive.
+   * Arms a pong timeout after each ping — if the server does not
+   * respond within PONG_TIMEOUT_MS the connection is considered dead.
    */
   function startPingInterval(): void {
     stopPingInterval();
+
+    // Register a handler to clear the pong timeout when a pong arrives
+    on('pong', clearPongTimeout);
+
     state.pingInterval = setInterval(() => {
       send('ping', {});
-    }, 30000);
+      armPongTimeout();
+    }, PING_INTERVAL_MS);
   }
 
   /**
-   * Stops the ping interval
+   * Stops the ping interval and clears any pending pong timeout
    */
   function stopPingInterval(): void {
     if (state.pingInterval) {
       clearInterval(state.pingInterval);
       state.pingInterval = null;
+    }
+    clearPongTimeout();
+    off('pong', clearPongTimeout as MessageHandler);
+  }
+
+  /**
+   * Arms a timeout that fires if pong is not received within PONG_TIMEOUT_MS.
+   * Forces the WebSocket closed so the reconnect logic kicks in.
+   */
+  function armPongTimeout(): void {
+    clearPongTimeout();
+    state.pongTimeout = setTimeout(() => {
+      console.warn('[WebSocket] Pong timeout — closing connection');
+      state.ws?.close();
+    }, PONG_TIMEOUT_MS);
+  }
+
+  /** Cancels a pending pong timeout */
+  function clearPongTimeout(): void {
+    if (state.pongTimeout) {
+      clearTimeout(state.pongTimeout);
+      state.pongTimeout = null;
     }
   }
 

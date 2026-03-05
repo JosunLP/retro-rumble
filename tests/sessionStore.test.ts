@@ -250,5 +250,46 @@ describe('SessionStore', () => {
       const result = sessionStore.changePhase(memberPeer, 'gather-data');
       expect(result).toBeNull();
     });
+
+    test('rejects invalid phase value', () => {
+      const peer = makePeer();
+      sessionStore.createSession('Phase Invalid', 'Host', peer);
+      // Cast to bypass TS — simulates malicious client payload
+      const result = sessionStore.changePhase(peer, 'hacking' as never);
+      expect(result).toBeNull();
+    });
+  });
+
+  describe('addCard()', () => {
+    test('rejects invalid column type', () => {
+      const peer = makePeer();
+      sessionStore.createSession('Col Invalid', 'Host', peer);
+      sessionStore.changePhase(peer, 'gather-data');
+      const result = sessionStore.addCard(peer, 'bad-column' as never, 'Hello');
+      expect(result).toBeNull();
+    });
+  });
+
+  describe('addActionItem()', () => {
+    test('strips invalid due dates', () => {
+      const peer = makePeer();
+      sessionStore.createSession('Action Date', 'Host', peer);
+      sessionStore.changePhase(peer, 'decide-action');
+      const result = sessionStore.addActionItem(peer, 'Fix bug', undefined, 'not-a-date');
+      expect(result).not.toBeNull();
+      // The action item should have a null dueDate since the input was invalid
+      const action = result!.actionItems[result!.actionItems.length - 1];
+      expect(action!.dueDate).toBeNull();
+    });
+
+    test('accepts valid due dates', () => {
+      const peer = makePeer();
+      sessionStore.createSession('Action Date OK', 'Host', peer);
+      sessionStore.changePhase(peer, 'decide-action');
+      const result = sessionStore.addActionItem(peer, 'Ship feature', undefined, '2025-06-15');
+      expect(result).not.toBeNull();
+      const action = result!.actionItems[result!.actionItems.length - 1];
+      expect(action!.dueDate).toBe('2025-06-15');
+    });
   });
 });

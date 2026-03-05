@@ -120,6 +120,9 @@
       "action": "Åtgärd",
       "assignee": "Ansvarig",
       "due": "Deadline",
+      "status": "Status",
+      "vote": "röst",
+      "votePlural": "röster",
       "statistics": "Statistik",
       "totalCards": "Totalt kort",
       "totalVotes": "Totalt röster",
@@ -142,7 +145,8 @@
     "fillAllFields": "Fyll i alla fält.",
     "joinCodeLength": "Åtkomstkoden måste vara 6 tecken.",
     "enterYourName": "Ange ditt namn.",
-    "connectionFailed": "Det gick inte att ansluta till servern."
+    "connectionFailed": "Det gick inte att ansluta till servern.",
+    "clipboardFailed": "Kunde inte kopiera till urklipp. Vänligen kopiera manuellt."
   },
   "ui": {
     "leaveConfirm": "Är du säker på att du vill lämna den här sessionen?",

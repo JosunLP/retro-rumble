@@ -82,6 +82,7 @@ const cardClass = computed(() => {
           class="input text-sm resize-none w-full"
           rows="3"
           :maxlength="MAX_CARD_CONTENT_LENGTH"
+          :aria-label="t('card.edit')"
           @keydown.enter.ctrl="saveEdit"
           @keydown.escape="cancelEdit"
         />
@@ -128,6 +129,7 @@ const cardClass = computed(() => {
                   : 'bg-secondary-50 text-secondary-400 cursor-not-allowed'
             "
             :disabled="!hasVoted && !canVote"
+            :aria-label="hasVoted ? t('voting.unvoteCard') : t('voting.voteCard')"
             @click="hasVoted ? emit('unvote', card.id) : emit('vote', card.id)"
           >
             <Icon

@@ -4,10 +4,13 @@
 import { describe, expect, test } from 'bun:test';
 import {
     CHECK_IN_MOODS,
+    countVotesForParticipant,
     formatJoinCode,
     isValidCheckInMood,
     isValidColumnType,
+    isValidISODate,
     isValidJoinCode,
+    isValidPhase,
     JOIN_CODE_CHARS,
     JOIN_CODE_LENGTH,
     MAX_ACTION_ITEM_TEXT_LENGTH,
@@ -179,5 +182,98 @@ describe('isValidCheckInMood()', () => {
     expect(isValidCheckInMood(1)).toBe(false);
     expect(isValidCheckInMood(null)).toBe(false);
     expect(isValidCheckInMood(undefined)).toBe(false);
+  });
+});
+
+// ─── isValidPhase ─────────────────────────────────────────────────────────────
+
+describe('isValidPhase()', () => {
+  test('returns true for each defined phase', () => {
+    for (const phase of RETRO_PHASES) {
+      expect(isValidPhase(phase)).toBe(true);
+    }
+  });
+
+  test('returns false for an unknown string', () => {
+    expect(isValidPhase('brainstorming')).toBe(false);
+    expect(isValidPhase('writing')).toBe(false);
+    expect(isValidPhase('')).toBe(false);
+  });
+
+  test('returns false for non-string types', () => {
+    expect(isValidPhase(42)).toBe(false);
+    expect(isValidPhase(null)).toBe(false);
+    expect(isValidPhase(undefined)).toBe(false);
+    expect(isValidPhase({})).toBe(false);
+  });
+});
+
+// ─── isValidISODate ───────────────────────────────────────────────────────────
+
+describe('isValidISODate()', () => {
+  test('returns true for valid YYYY-MM-DD dates', () => {
+    expect(isValidISODate('2025-01-15')).toBe(true);
+    expect(isValidISODate('2024-02-29')).toBe(true); // leap year
+    expect(isValidISODate('2000-12-31')).toBe(true);
+  });
+
+  test('returns false for non-existent calendar dates', () => {
+    expect(isValidISODate('2025-02-29')).toBe(false); // not a leap year
+    expect(isValidISODate('2025-04-31')).toBe(false); // April has 30 days
+    expect(isValidISODate('2025-13-01')).toBe(false); // month 13
+    expect(isValidISODate('2025-00-01')).toBe(false); // month 00
+  });
+
+  test('returns false for wrong format', () => {
+    expect(isValidISODate('15-01-2025')).toBe(false);
+    expect(isValidISODate('01/15/2025')).toBe(false);
+    expect(isValidISODate('2025-1-5')).toBe(false);
+    expect(isValidISODate('2025/01/15')).toBe(false);
+    expect(isValidISODate('not-a-date')).toBe(false);
+    expect(isValidISODate('')).toBe(false);
+  });
+
+  test('returns false for date with trailing content', () => {
+    expect(isValidISODate('2025-01-15T00:00:00Z')).toBe(false);
+    expect(isValidISODate('2025-01-15 extra')).toBe(false);
+  });
+});
+
+// ─── countVotesForParticipant ────────────────────────────────────────────────
+
+describe('countVotesForParticipant()', () => {
+  const user = 'user-1';
+
+  test('returns 0 when there are no cards or groups', () => {
+    expect(countVotesForParticipant([], [], user)).toBe(0);
+  });
+
+  test('counts votes across cards', () => {
+    const cards = [
+      { voterIds: [user, 'other'] },
+      { voterIds: [user] },
+      { voterIds: ['other'] },
+    ];
+    expect(countVotesForParticipant(cards, [], user)).toBe(2);
+  });
+
+  test('counts votes across groups', () => {
+    const groups = [
+      { voterIds: [user] },
+      { voterIds: [user, user] }, // user voted twice for same group
+    ];
+    expect(countVotesForParticipant([], groups, user)).toBe(3);
+  });
+
+  test('counts combined card and group votes', () => {
+    const cards = [{ voterIds: [user] }];
+    const groups = [{ voterIds: [user] }];
+    expect(countVotesForParticipant(cards, groups, user)).toBe(2);
+  });
+
+  test('returns 0 when participant has no votes', () => {
+    const cards = [{ voterIds: ['other-1', 'other-2'] }];
+    const groups = [{ voterIds: ['other-3'] }];
+    expect(countVotesForParticipant(cards, groups, user)).toBe(0);
   });
 });
