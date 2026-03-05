@@ -6,15 +6,15 @@
  */
 
 import type {
-    IActionItem,
-    ICardGroup,
-    ICheckInResponse,
-    IFeedbackResponse,
-    IRetroCard,
-    IRetroConfig,
-    IRetroSession,
-    RetroColumnType,
-    RetroPhase,
+  IActionItem,
+  ICardGroup,
+  ICheckInResponse,
+  IFeedbackResponse,
+  IRetroCard,
+  IRetroConfig,
+  IRetroSession,
+  RetroColumnType,
+  RetroPhase,
 } from '../types';
 import { countVotesForParticipant, isValidCheckInMood, RETRO_PHASES } from '../types';
 import { Participant } from './Participant';
@@ -166,7 +166,7 @@ export class RetroSession implements IRetroSession {
   }
 
   /**
-   * Edits a card's content (only by author)
+   * Edits a card's content (only by author or host during gather-data; host can edit in any phase)
    */
   public editCard(
     cardId: string,
@@ -175,8 +175,11 @@ export class RetroSession implements IRetroSession {
   ): boolean {
     const card = this.cards.find((c) => c.id === cardId);
     if (!card) return false;
+    const isHost = participantId === this.hostId;
+    // Non-host users can only edit during gather-data phase
+    if (!isHost && this.phase !== 'gather-data') return false;
     // Only the author or host can edit
-    if (card.authorId !== participantId && participantId !== this.hostId)
+    if (card.authorId !== participantId && !isHost)
       return false;
     card.content = content.trim();
     this.touch();
@@ -184,14 +187,17 @@ export class RetroSession implements IRetroSession {
   }
 
   /**
-   * Deletes a card (only by author or host)
+   * Deletes a card (only by author or host during gather-data; host can delete in any phase)
    */
   public deleteCard(cardId: string, participantId: string): boolean {
     const cardIndex = this.cards.findIndex((c) => c.id === cardId);
     if (cardIndex === -1) return false;
     const card = this.cards[cardIndex]!;
+    const isHost = participantId === this.hostId;
+    // Non-host users can only delete during gather-data phase
+    if (!isHost && this.phase !== 'gather-data') return false;
     // Only the author or host can delete
-    if (card.authorId !== participantId && participantId !== this.hostId)
+    if (card.authorId !== participantId && !isHost)
       return false;
 
     // Remove from any group
@@ -234,7 +240,9 @@ export class RetroSession implements IRetroSession {
   }
 
   /**
-   * Votes for a card
+   * Votes for a card.
+   * A participant may place multiple votes on the same card (dot voting),
+   * limited only by the per-user vote budget.
    */
   public voteCard(cardId: string, participantId: string): boolean {
     if (this.phase !== 'voting') return false;
@@ -360,9 +368,10 @@ export class RetroSession implements IRetroSession {
   }
 
   /**
-   * Renames a group
+   * Renames a group (only during generate-insights phase)
    */
   public renameGroup(groupId: string, title: string): boolean {
+    if (this.phase !== 'generate-insights') return false;
     const group = this.groups.find((g) => g.id === groupId);
     if (!group) return false;
     group.title = title.trim();
@@ -383,9 +392,11 @@ export class RetroSession implements IRetroSession {
   }
 
   /**
-   * Deletes a group (cards are kept, just ungrouped)
+   * Deletes a group (cards are kept, just ungrouped).
+   * Only allowed during generate-insights phase.
    */
   public deleteGroup(groupId: string): boolean {
+    if (this.phase !== 'generate-insights') return false;
     const group = this.groups.find((g) => g.id === groupId);
     if (!group) return false;
 
@@ -405,7 +416,9 @@ export class RetroSession implements IRetroSession {
   // ============================================
 
   /**
-   * Votes for a group
+   * Votes for a group.
+   * A participant may place multiple votes on the same group (dot voting),
+   * limited only by the per-user vote budget.
    */
   public voteGroup(groupId: string, participantId: string): boolean {
     if (this.phase !== 'voting') return false;
@@ -480,10 +493,13 @@ export class RetroSession implements IRetroSession {
   }
 
   /**
-   * Sets the timer duration
+   * Sets the timer duration.
+   * Clamped between 0 and 3600 seconds (1 hour).
    */
+  public static readonly MAX_TIMER_DURATION = 3600;
+
   public setTimerDuration(duration: number): void {
-    this.timerDuration = Math.max(0, duration);
+    this.timerDuration = Math.max(0, Math.min(duration, RetroSession.MAX_TIMER_DURATION));
     this.touch();
   }
 

@@ -7,7 +7,7 @@
 
 import type {
     CheckInMood,
-    ISessionState,
+    IExtendedSessionState,
     RetroColumnType,
     RetroPhase,
 } from '~/types';
@@ -23,13 +23,6 @@ import type {
     SessionUpdatedPayload,
     TimerTickPayload,
 } from '~/types/websocket';
-
-/**
- * Extended state with join code and connection status
- */
-interface ExtendedSessionState extends ISessionState {
-  joinCode: string | null;
-}
 
 /**
  * Composable for retro session management with WebSocket
@@ -61,7 +54,7 @@ export function useRetroSession() {
   /**
    * Reactive session state
    */
-  const state = useState<ExtendedSessionState>('retro-session', () => ({
+  const state = useState<IExtendedSessionState>('retro-session', () => ({
     session: null,
     currentParticipant: null,
     isHost: false,

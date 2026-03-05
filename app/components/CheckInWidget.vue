@@ -40,17 +40,22 @@ function selectMood(mood: CheckInMood): void {
   emit('submit', mood);
 }
 
-function getMoodLabel(mood: CheckInMood): string {
-  const moodTranslationKey: Record<CheckInMood, string> = {
-    '😊': 'checkin.moodLabels.happy',
-    '😐': 'checkin.moodLabels.neutral',
-    '😟': 'checkin.moodLabels.worried',
-    '🔥': 'checkin.moodLabels.energized',
-    '💪': 'checkin.moodLabels.confident',
-    '😴': 'checkin.moodLabels.tired',
-  };
+/**
+ * Maps each mood to its i18n translation key.
+ * Uses satisfies Record<CheckInMood, string> so the compiler errors
+ * if CHECK_IN_MOODS gains a new entry without a matching label here.
+ */
+const MOOD_TRANSLATION_KEYS = {
+  '😊': 'checkin.moodLabels.happy',
+  '😐': 'checkin.moodLabels.neutral',
+  '😟': 'checkin.moodLabels.worried',
+  '🔥': 'checkin.moodLabels.energized',
+  '💪': 'checkin.moodLabels.confident',
+  '😴': 'checkin.moodLabels.tired',
+} as const satisfies Record<CheckInMood, string>;
 
-  return t(moodTranslationKey[mood]);
+function getMoodLabel(mood: CheckInMood): string {
+  return t(MOOD_TRANSLATION_KEYS[mood]);
 }
 
 /**

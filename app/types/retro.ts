@@ -311,3 +311,12 @@ export interface ISessionState {
   /** Error message */
   error: string | null;
 }
+
+/**
+ * Extended session state including join code.
+ * Used by the retro session composable for client-side state management.
+ */
+export interface IExtendedSessionState extends ISessionState {
+  /** Join code for the current session */
+  joinCode: string | null;
+}

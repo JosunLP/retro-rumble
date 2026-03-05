@@ -77,8 +77,8 @@ function confirmLeave(): void {
       <button
         type="button"
         class="text-sm text-error-600 hover:text-error-700 transition-colors flex-shrink-0"
-        :aria-label="t('ui.leaveSession', 'Leave session')"
-        :title="t('ui.leaveSession', 'Leave session')"
+        :aria-label="t('ui.leaveSession')"
+        :title="t('ui.leaveSession')"
         @click="showLeaveConfirm = true"
       >
         <Icon name="heroicons:arrow-right-on-rectangle" class="w-5 h-5" />
@@ -99,7 +99,7 @@ function confirmLeave(): void {
             @click="confirmLeave"
           >
             <Icon name="heroicons:arrow-right-on-rectangle" class="w-4 h-4 mr-1" />
-            {{ t('ui.leaveSession', 'Leave') }}
+            {{ t('ui.leaveSession') }}
           </button>
           <button
             type="button"

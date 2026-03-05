@@ -6,10 +6,19 @@
  * Cards are anonymous — no author information is shown.
  */
 
+import DOMPurify from 'dompurify';
 import type { IRetroCard, RetroColumnType, RetroPhase } from '~/types';
 import { MAX_CARD_CONTENT_LENGTH } from '~/types';
 
 const { t } = useI18n();
+
+/**
+ * Sanitizes user-generated content to prevent XSS attacks.
+ * Returns plain text only — all HTML tags are stripped.
+ */
+function sanitize(text: string): string {
+  return DOMPurify.sanitize(text, { ALLOWED_TAGS: [] });
+}
 
 interface Props {
   /** The retro card data */
@@ -110,7 +119,7 @@ const cardClass = computed(() => {
     <!-- Display Mode -->
     <div v-else>
       <p class="text-sm text-secondary-800 whitespace-pre-wrap break-words">
-        {{ card.content }}
+        {{ sanitize(card.content) }}
       </p>
 
       <div

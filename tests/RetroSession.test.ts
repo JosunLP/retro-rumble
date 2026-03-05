@@ -133,6 +133,7 @@ describe('RetroSession', () => {
       session = makeSession();
       addHost(session);
       addMember(session);
+      advanceToPhase(session, 'gather-data');
       hostId = 'host-id';
       memberId = 'member-id';
     });
@@ -733,7 +734,8 @@ describe('RetroSession', () => {
       const c2 = session.addCard('went-well', 'B', 'member-id');
       const c3 = session.addCard('went-well', 'C', 'member-id');
       const group = session.createGroup('G', 'went-well', [c1.id, c2.id, c3.id])!;
-      session.deleteCard(c1.id, 'member-id');
+      // Host can delete cards in any phase (moderation)
+      session.deleteCard(c1.id, 'host-id');
       expect(group.cardIds).not.toContain(c1.id);
       expect(group.cardIds).toHaveLength(2);
     });
@@ -742,8 +744,9 @@ describe('RetroSession', () => {
       const c1 = session.addCard('went-well', 'A', 'member-id');
       const c2 = session.addCard('went-well', 'B', 'member-id');
       session.createGroup('G', 'went-well', [c1.id, c2.id]);
-      session.deleteCard(c1.id, 'member-id');
-      session.deleteCard(c2.id, 'member-id');
+      // Host can delete cards in any phase (moderation)
+      session.deleteCard(c1.id, 'host-id');
+      session.deleteCard(c2.id, 'host-id');
       expect(session.groups).toHaveLength(0);
     });
   });
@@ -812,6 +815,108 @@ describe('RetroSession', () => {
       session.voteCard(card.id, 'alice');
       session.unvoteCard(card.id, 'alice');
       expect(card.votes).toBe(1);
+    });
+  });
+
+  // ─── Phase-Guarded Card Editing ───────────────────────────────────────────
+
+  describe('phase-guarded card editing', () => {
+    let session: RetroSession;
+
+    beforeEach(() => {
+      session = makeSession();
+      addHost(session);
+      addMember(session);
+      advanceToPhase(session, 'gather-data');
+    });
+
+    test('non-host cannot edit card outside gather-data', () => {
+      const card = session.addCard('went-well', 'Orig', 'member-id');
+      advanceToPhase(session, 'generate-insights');
+      expect(session.editCard(card.id, 'Hacked', 'member-id')).toBe(false);
+      expect(card.content).toBe('Orig');
+    });
+
+    test('host can edit card in any phase (moderation)', () => {
+      const card = session.addCard('went-well', 'Orig', 'member-id');
+      advanceToPhase(session, 'generate-insights');
+      expect(session.editCard(card.id, 'Moderated', 'host-id')).toBe(true);
+      expect(card.content).toBe('Moderated');
+    });
+
+    test('non-host cannot delete card outside gather-data', () => {
+      const card = session.addCard('went-well', 'To remove', 'member-id');
+      advanceToPhase(session, 'generate-insights');
+      expect(session.deleteCard(card.id, 'member-id')).toBe(false);
+      expect(session.cards).toHaveLength(1);
+    });
+
+    test('host can delete card in any phase (moderation)', () => {
+      const card = session.addCard('went-well', 'Bad card', 'member-id');
+      advanceToPhase(session, 'voting');
+      expect(session.deleteCard(card.id, 'host-id')).toBe(true);
+      expect(session.cards).toHaveLength(0);
+    });
+  });
+
+  // ─── Timer Duration Clamping ──────────────────────────────────────────────
+
+  describe('timer duration clamping', () => {
+    let session: RetroSession;
+    beforeEach(() => {
+      session = makeSession();
+    });
+
+    test('setTimerDuration clamps to MAX_TIMER_DURATION', () => {
+      session.setTimerDuration(99999);
+      expect(session.timerDuration).toBe(RetroSession.MAX_TIMER_DURATION);
+    });
+
+    test('setTimerDuration accepts value within range', () => {
+      session.setTimerDuration(600);
+      expect(session.timerDuration).toBe(600);
+    });
+
+    test('MAX_TIMER_DURATION is 3600', () => {
+      expect(RetroSession.MAX_TIMER_DURATION).toBe(3600);
+    });
+  });
+
+  // ─── Phase-Guarded Group Operations ───────────────────────────────────────
+
+  describe('phase-guarded group operations', () => {
+    let session: RetroSession;
+    beforeEach(() => {
+      session = makeSession();
+      advanceToPhase(session, 'gather-data');
+      session.addCard('went-well', 'Card A', 'host-id');
+      session.addCard('went-well', 'Card B', 'host-id');
+      advanceToPhase(session, 'generate-insights');
+    });
+
+    test('renameGroup rejects outside generate-insights', () => {
+      const group = session.createGroup('Grp', 'went-well', session.cards.map(c => c.id))!;
+      advanceToPhase(session, 'voting');
+      expect(session.renameGroup(group.id, 'New Title')).toBe(false);
+    });
+
+    test('renameGroup works during generate-insights', () => {
+      const group = session.createGroup('Grp', 'went-well', session.cards.map(c => c.id))!;
+      expect(session.renameGroup(group.id, 'New Title')).toBe(true);
+      expect(session.groups[0]!.title).toBe('New Title');
+    });
+
+    test('deleteGroup rejects outside generate-insights', () => {
+      const group = session.createGroup('Grp', 'went-well', session.cards.map(c => c.id))!;
+      advanceToPhase(session, 'voting');
+      expect(session.deleteGroup(group.id)).toBe(false);
+      expect(session.groups).toHaveLength(1);
+    });
+
+    test('deleteGroup works during generate-insights', () => {
+      const group = session.createGroup('Grp', 'went-well', session.cards.map(c => c.id))!;
+      expect(session.deleteGroup(group.id)).toBe(true);
+      expect(session.groups).toHaveLength(0);
     });
   });
 });

@@ -268,12 +268,39 @@ describe('SessionStore', () => {
       const result = sessionStore.addCard(peer, 'bad-column' as never, 'Hello');
       expect(result).toBeNull();
     });
+
+    test('strips HTML tags from card content', () => {
+      const peer = makePeer();
+      sessionStore.createSession('HTML Card', 'Host', peer);
+      sessionStore.changePhase(peer, 'gather-data');
+      const result = sessionStore.addCard(peer, 'went-well', '<b>bold</b> text <script>alert("xss")</script>');
+      expect(result).not.toBeNull();
+      const card = result!.cards[result!.cards.length - 1];
+      expect(card!.content).toBe('bold text alert("xss")');
+    });
+  });
+
+  describe('createSession() HTML stripping', () => {
+    test('strips HTML from session name', () => {
+      const peer = makePeer();
+      const { session } = sessionStore.createSession('<img>My Retro</img>', 'Host', peer);
+      expect(session.name).toBe('My Retro');
+    });
+
+    test('strips HTML from participant name', () => {
+      const peer = makePeer();
+      const { participant } = sessionStore.createSession('Retro', '<b>Alice</b>', peer);
+      expect(participant.name).toBe('Alice');
+    });
   });
 
   describe('addActionItem()', () => {
     test('strips invalid due dates', () => {
       const peer = makePeer();
       sessionStore.createSession('Action Date', 'Host', peer);
+      sessionStore.changePhase(peer, 'gather-data');
+      sessionStore.changePhase(peer, 'generate-insights');
+      sessionStore.changePhase(peer, 'voting');
       sessionStore.changePhase(peer, 'decide-action');
       const result = sessionStore.addActionItem(peer, 'Fix bug', undefined, 'not-a-date');
       expect(result).not.toBeNull();
@@ -285,11 +312,97 @@ describe('SessionStore', () => {
     test('accepts valid due dates', () => {
       const peer = makePeer();
       sessionStore.createSession('Action Date OK', 'Host', peer);
+      sessionStore.changePhase(peer, 'gather-data');
+      sessionStore.changePhase(peer, 'generate-insights');
+      sessionStore.changePhase(peer, 'voting');
       sessionStore.changePhase(peer, 'decide-action');
       const result = sessionStore.addActionItem(peer, 'Ship feature', undefined, '2025-06-15');
       expect(result).not.toBeNull();
       const action = result!.actionItems[result!.actionItems.length - 1];
       expect(action!.dueDate).toBe('2025-06-15');
+    });
+  });
+
+  describe('disconnectPeer() host fallback', () => {
+    test('transfers host to a connected peer when host disconnects', () => {
+      const hostPeer = makePeer();
+      const { joinCode } = sessionStore.createSession('Fallback1', 'Host', hostPeer);
+      const memberPeer = makePeer();
+      sessionStore.joinSession(joinCode, 'Member', memberPeer);
+
+      const result = sessionStore.disconnectPeer(hostPeer);
+      expect(result).not.toBeNull();
+      expect(result!.session).not.toBeUndefined();
+      // Member should now be host
+      const newHost = result!.session!.participants.find(p => p.isHost);
+      expect(newHost).not.toBeUndefined();
+      expect(newHost!.name).toBe('Member');
+    });
+
+    test('transfers host to disconnected peer when no one is connected', () => {
+      const hostPeer = makePeer();
+      const { joinCode } = sessionStore.createSession('Fallback2', 'Host', hostPeer);
+      const memberPeer = makePeer();
+      sessionStore.joinSession(joinCode, 'Member', memberPeer);
+
+      // Member disconnects first
+      sessionStore.disconnectPeer(memberPeer);
+      // Now host disconnects — Member is still a participant but not connected
+      const result = sessionStore.disconnectPeer(hostPeer);
+      expect(result).not.toBeNull();
+      expect(result!.session).not.toBeUndefined();
+      // Member should be promoted to host even though disconnected
+      const newHost = result!.session!.participants.find(p => p.isHost);
+      expect(newHost).not.toBeUndefined();
+      expect(newHost!.name).toBe('Member');
+    });
+  });
+
+  describe('setTimerDuration()', () => {
+    test('rejects non-finite duration', () => {
+      const peer = makePeer();
+      sessionStore.createSession('Timer NaN', 'Host', peer);
+      expect(sessionStore.setTimerDuration(peer, NaN)).toBeNull();
+      expect(sessionStore.setTimerDuration(peer, Infinity)).toBeNull();
+    });
+
+    test('clamps excessively large durations', () => {
+      const peer = makePeer();
+      sessionStore.createSession('Timer Clamp', 'Host', peer);
+      const result = sessionStore.setTimerDuration(peer, 999999);
+      expect(result).not.toBeNull();
+      expect(result!.timerDuration).toBe(3600);
+    });
+
+    test('only host can set timer', () => {
+      const hostPeer = makePeer();
+      const { joinCode } = sessionStore.createSession('Timer Host', 'Host', hostPeer);
+      const memberPeer = makePeer();
+      sessionStore.joinSession(joinCode, 'Member', memberPeer);
+      expect(sessionStore.setTimerDuration(memberPeer, 120)).toBeNull();
+    });
+  });
+
+  describe('toggleActionItem()', () => {
+    test('host can toggle action item done status', () => {
+      const peer = makePeer();
+      sessionStore.createSession('Toggle Test', 'Host', peer);
+      const addResult = sessionStore.addActionItem(peer, 'Do something');
+      expect(addResult).not.toBeNull();
+      const actionId = addResult!.actionItems[0]!.id;
+      const toggleResult = sessionStore.toggleActionItem(peer, actionId);
+      expect(toggleResult).not.toBeNull();
+      expect(toggleResult!.actionItems[0]!.done).toBe(true);
+    });
+
+    test('non-host cannot toggle action item', () => {
+      const hostPeer = makePeer();
+      const { joinCode } = sessionStore.createSession('Toggle Guard', 'Host', hostPeer);
+      const memberPeer = makePeer();
+      sessionStore.joinSession(joinCode, 'Member', memberPeer);
+      sessionStore.addActionItem(hostPeer, 'Something');
+      // memberPeer tries to toggle — should fail
+      expect(sessionStore.toggleActionItem(memberPeer, 'any-id')).toBeNull();
     });
   });
 });

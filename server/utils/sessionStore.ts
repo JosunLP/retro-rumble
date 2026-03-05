@@ -49,6 +49,15 @@ interface SessionEntry {
 const SESSION_IDLE_TTL_MS = 30 * 60 * 1000; // 30 minutes
 const SESSION_CLEANUP_INTERVAL_MS = 60 * 1000; // 1 minute
 
+/**
+ * Strips HTML tags from a string.
+ * Defense-in-depth: all user-provided text is plain-text only,
+ * so we remove anything that looks like a tag before storing.
+ */
+function stripHtml(text: string): string {
+  return text.replace(/<[^>]*>/g, '');
+}
+
 class SessionStore {
   private sessions: Map<string, SessionEntry> = new Map(); // sessionId -> entry
   private joinCodes: Map<string, string> = new Map(); // joinCode -> sessionId
@@ -115,9 +124,9 @@ class SessionStore {
     peer: Peer,
     config?: { maxVotesPerUser?: number; timerDuration?: number }
   ): { session: IRetroSession; joinCode: string; participant: Participant } {
-    // Validate and sanitize input lengths
-    const safeName = sessionName.trim().slice(0, MAX_SESSION_NAME_LENGTH);
-    const safeParticipantName = participantName.trim().slice(0, MAX_PARTICIPANT_NAME_LENGTH);
+    // Validate and sanitize input lengths (strip HTML as defense-in-depth)
+    const safeName = stripHtml(sessionName).trim().slice(0, MAX_SESSION_NAME_LENGTH);
+    const safeParticipantName = stripHtml(participantName).trim().slice(0, MAX_PARTICIPANT_NAME_LENGTH);
     if (!safeName || !safeParticipantName) {
       throw new Error('SESSION_NAME_EMPTY');
     }
@@ -170,7 +179,7 @@ class SessionStore {
     const entry = this.sessions.get(sessionId);
     if (!entry) return null;
 
-    const safeParticipantName = participantName.trim().slice(0, MAX_PARTICIPANT_NAME_LENGTH);
+    const safeParticipantName = stripHtml(participantName).trim().slice(0, MAX_PARTICIPANT_NAME_LENGTH);
     if (!safeParticipantName) return null;
 
     const participant = new Participant(safeParticipantName, false);
@@ -271,17 +280,20 @@ class SessionStore {
 
     let updatedSession: IRetroSession | undefined;
 
-    // Host fallback: if host disconnects, transfer host to an active participant.
+    // Host fallback: if host disconnects, transfer to an active peer first,
+    // then to any remaining participant (so there's always a host if someone reconnects).
     if (entry.session.hostId === info.participantId) {
-      const fallbackHost = entry.session.participants.find(
+      const connectedFallback = entry.session.participants.find(
         (p) => p.id !== info.participantId && entry.connections.has(p.id)
       );
+      const anyFallback = connectedFallback
+        ?? entry.session.participants.find((p) => p.id !== info.participantId);
 
-      if (fallbackHost) {
-        entry.session.transferHost(fallbackHost.id);
+      if (anyFallback) {
+        entry.session.transferHost(anyFallback.id);
         updatedSession = entry.session.toJSON();
         console.log(
-          `[SessionStore] Host transferred after disconnect: ${fallbackHost.name} (${fallbackHost.id})`
+          `[SessionStore] Host transferred after disconnect: ${anyFallback.name} (${anyFallback.id})`
         );
       }
     }
@@ -394,8 +406,8 @@ class SessionStore {
     ).length;
     if (userCardCount >= MAX_CARDS_PER_USER) return null;
 
-    // Validate content length
-    const safeContent = content.trim().slice(0, MAX_CARD_CONTENT_LENGTH);
+    // Validate and sanitize content
+    const safeContent = stripHtml(content).trim().slice(0, MAX_CARD_CONTENT_LENGTH);
     if (!safeContent) return null;
 
     entry.session.addCard(column, safeContent, info.participantId);
@@ -416,7 +428,7 @@ class SessionStore {
     const entry = this.sessions.get(info.sessionId);
     if (!entry) return null;
 
-    const safeContent = content.trim().slice(0, MAX_CARD_CONTENT_LENGTH);
+    const safeContent = stripHtml(content).trim().slice(0, MAX_CARD_CONTENT_LENGTH);
     if (!safeContent) return null;
 
     const success = entry.session.editCard(cardId, safeContent, info.participantId);
@@ -497,7 +509,7 @@ class SessionStore {
     const session = this.getSessionForPeer(peer);
     if (!session) return null;
 
-    const safeTitle = title.trim().slice(0, MAX_GROUP_TITLE_LENGTH) || 'Group';
+    const safeTitle = stripHtml(title).trim().slice(0, MAX_GROUP_TITLE_LENGTH) || 'Group';
     const group = session.createGroup(safeTitle, column, cardIds);
     return group ? session.toJSON() : null;
   }
@@ -543,7 +555,7 @@ class SessionStore {
     const session = this.getSessionForPeer(peer);
     if (!session) return null;
 
-    const safeTitle = title.trim().slice(0, MAX_GROUP_TITLE_LENGTH);
+    const safeTitle = stripHtml(title).trim().slice(0, MAX_GROUP_TITLE_LENGTH);
     if (!safeTitle) return null;
     const success = session.renameGroup(groupId, safeTitle);
     return success ? session.toJSON() : null;
@@ -640,10 +652,13 @@ class SessionStore {
   }
 
   /**
-   * Sets the timer duration
+   * Sets the timer duration.
+   * Validates the duration is a finite number; the RetroSession class
+   * handles clamping to the allowed range.
    */
   public setTimerDuration(peer: Peer, duration: number): IRetroSession | null {
     if (!this.isHost(peer)) return null;
+    if (!Number.isFinite(duration)) return null;
 
     const session = this.getSessionForPeer(peer);
     if (!session) return null;
@@ -668,9 +683,9 @@ class SessionStore {
     const session = this.getSessionForPeer(peer);
     if (!session) return null;
 
-    const safeText = text.trim().slice(0, MAX_ACTION_ITEM_TEXT_LENGTH);
+    const safeText = stripHtml(text).trim().slice(0, MAX_ACTION_ITEM_TEXT_LENGTH);
     if (!safeText) return null;
-    const safeAssignee = assignee?.trim().slice(0, MAX_PARTICIPANT_NAME_LENGTH) ?? null;
+    const safeAssignee = assignee ? stripHtml(assignee).trim().slice(0, MAX_PARTICIPANT_NAME_LENGTH) || null : null;
     const safeDueDate = this.sanitizeDueDate(dueDate);
 
     session.addActionItem(safeText, safeAssignee, safeDueDate);
@@ -692,9 +707,9 @@ class SessionStore {
     const session = this.getSessionForPeer(peer);
     if (!session) return null;
 
-    const safeText = text.trim().slice(0, MAX_ACTION_ITEM_TEXT_LENGTH);
+    const safeText = stripHtml(text).trim().slice(0, MAX_ACTION_ITEM_TEXT_LENGTH);
     if (!safeText) return null;
-    const safeAssignee = assignee?.trim().slice(0, MAX_PARTICIPANT_NAME_LENGTH) ?? null;
+    const safeAssignee = assignee ? stripHtml(assignee).trim().slice(0, MAX_PARTICIPANT_NAME_LENGTH) || null : null;
     const safeDueDate = this.sanitizeDueDate(dueDate);
 
     const success = session.editActionItem(
