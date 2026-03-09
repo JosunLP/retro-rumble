@@ -385,7 +385,7 @@ function handleVoteCard(peer: Peer, payload: VoteCardPayload): void {
 
   if (!session) {
     sendMessage(peer, 'session:error', {
-      message: 'Could not vote. You may have reached your vote limit.',
+      message: 'Voting is only available for groups.',
       code: 'VOTE_FAILED',
     });
     return;
@@ -570,12 +570,26 @@ function handleUnvoteGroup(peer: Peer, payload: UnvoteGroupPayload): void {
 // ============================================
 
 function handleAddActionItem(peer: Peer, payload: AddActionItemPayload): void {
-  const session = sessionStore.addActionItem(
-    peer,
-    payload.text,
-    payload.assignee,
-    payload.dueDate
-  );
+  let session = null;
+
+  try {
+    session = sessionStore.addActionItem(
+      peer,
+      payload.text,
+      payload.assignee,
+      payload.dueDate
+    );
+  } catch (error) {
+    const code = error instanceof Error ? error.message : 'ACTION_ADD_FAILED';
+    sendMessage(peer, 'session:error', {
+      message:
+        code === 'PAST_DUE_DATE'
+          ? 'Deadline cannot be in the past.'
+          : 'Please enter a valid deadline.',
+      code,
+    });
+    return;
+  }
 
   if (!session) {
     sendMessage(peer, 'session:error', {
@@ -592,13 +606,27 @@ function handleEditActionItem(
   peer: Peer,
   payload: EditActionItemPayload
 ): void {
-  const session = sessionStore.editActionItem(
-    peer,
-    payload.actionId,
-    payload.text,
-    payload.assignee,
-    payload.dueDate
-  );
+  let session = null;
+
+  try {
+    session = sessionStore.editActionItem(
+      peer,
+      payload.actionId,
+      payload.text,
+      payload.assignee,
+      payload.dueDate
+    );
+  } catch (error) {
+    const code = error instanceof Error ? error.message : 'ACTION_EDIT_FAILED';
+    sendMessage(peer, 'session:error', {
+      message:
+        code === 'PAST_DUE_DATE'
+          ? 'Deadline cannot be in the past.'
+          : 'Please enter a valid deadline.',
+      code,
+    });
+    return;
+  }
 
   if (!session) {
     sendMessage(peer, 'session:error', {

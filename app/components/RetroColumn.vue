@@ -8,6 +8,7 @@
 import type { IRetroCard, RetroColumnType, RetroPhase } from '~/types';
 import { MAX_CARD_CONTENT_LENGTH } from '~/types';
 import { COLUMN_META } from '~/utils/columnConfig';
+import { sortByCreatedAt, sortByVotesThenCreatedAt } from '~/utils/retroSorting';
 
 const { t } = useI18n();
 
@@ -49,13 +50,10 @@ const config = computed(() => columnConfig[props.column]);
  * Sort cards: by votes in voting / decide-action phase, by creation time otherwise
  */
 const sortedCards = computed(() => {
-  const cards = [...props.cards];
   if (props.phase === 'decide-action' || props.phase === 'voting') {
-    return cards.sort((a, b) => b.votes - a.votes);
+    return sortByVotesThenCreatedAt(props.cards);
   }
-  return cards.sort(
-    (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-  );
+  return sortByCreatedAt(props.cards);
 });
 
 /**

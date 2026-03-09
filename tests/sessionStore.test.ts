@@ -34,7 +34,7 @@ function makePeer(): Peer {
 
 /**
  * Advances the store session to the target phase step-by-step via the host peer.
- * Phase order: set-the-stage → gather-data → generate-insights → voting → decide-action → close-retro
+ * Phase order: set-the-stage → gather-data → discuss-topics → cluster-cards → name-groups → voting → decide-action → close-retro
  */
 function advanceToPhase(hostPeer: Peer, target: RetroPhase): void {
   const targetIdx = RETRO_PHASES.indexOf(target);
@@ -315,25 +315,32 @@ describe('SessionStore', () => {
   });
 
   describe('addActionItem()', () => {
-    test('strips invalid due dates', () => {
+    test('rejects invalid due dates', () => {
       const peer = makePeer();
       sessionStore.createSession('Action Date', 'Host', peer);
       advanceToPhase(peer, 'decide-action');
-      const result = sessionStore.addActionItem(peer, 'Fix bug', undefined, 'not-a-date');
-      expect(result).not.toBeNull();
-      // The action item should have a null dueDate since the input was invalid
-      const action = result!.actionItems[result!.actionItems.length - 1];
-      expect(action!.dueDate).toBeNull();
+      expect(() =>
+        sessionStore.addActionItem(peer, 'Fix bug', undefined, 'not-a-date')
+      ).toThrow('INVALID_DUE_DATE');
     });
 
     test('accepts valid due dates', () => {
       const peer = makePeer();
       sessionStore.createSession('Action Date OK', 'Host', peer);
       advanceToPhase(peer, 'decide-action');
-      const result = sessionStore.addActionItem(peer, 'Ship feature', undefined, '2025-06-15');
+      const result = sessionStore.addActionItem(peer, 'Ship feature', undefined, '2027-06-15');
       expect(result).not.toBeNull();
       const action = result!.actionItems[result!.actionItems.length - 1];
-      expect(action!.dueDate).toBe('2025-06-15');
+      expect(action!.dueDate).toBe('2027-06-15');
+    });
+
+    test('rejects deadlines in the past', () => {
+      const peer = makePeer();
+      sessionStore.createSession('Action Date Past', 'Host', peer);
+      advanceToPhase(peer, 'decide-action');
+      expect(() =>
+        sessionStore.addActionItem(peer, 'Fix bug', undefined, '2025-01-01')
+      ).toThrow('PAST_DUE_DATE');
     });
   });
 
@@ -440,10 +447,10 @@ describe('SessionStore', () => {
       expect(sessionStore.addActionItem(peer, 'Nope')).toBeNull();
     });
 
-    test('rejects action items during generate-insights phase', () => {
+    test('rejects action items during cluster-cards phase', () => {
       const peer = makePeer();
       sessionStore.createSession('Phase Guard 3', 'Host', peer);
-      advanceToPhase(peer, 'generate-insights');
+      advanceToPhase(peer, 'cluster-cards');
       expect(sessionStore.addActionItem(peer, 'Nope')).toBeNull();
     });
 
@@ -531,7 +538,8 @@ describe('SessionStore', () => {
       const cardId1 = r1!.cards[r1!.cards.length - 1]!.id;
       const r2 = sessionStore.addCard(peer, 'went-well', 'Card B');
       const cardId2 = r2!.cards[r2!.cards.length - 1]!.id;
-      sessionStore.changePhase(peer, 'generate-insights');
+      sessionStore.changePhase(peer, 'discuss-topics');
+      sessionStore.changePhase(peer, 'cluster-cards');
 
       const groupResult = sessionStore.createGroup(peer, 'Group Title', 'went-well', [cardId1, cardId2]);
       expect(groupResult).not.toBeNull();
@@ -576,54 +584,38 @@ describe('SessionStore', () => {
   });
 
   describe('voting operations', () => {
-    test('voteCard adds vote and returns session', () => {
+    test('voteCard rejects new votes because only groups are votable', () => {
       const peer = makePeer();
       sessionStore.createSession('Vote Test', 'Host', peer);
       sessionStore.changePhase(peer, 'gather-data');
       const addResult = sessionStore.addCard(peer, 'went-well', 'Great work');
-      sessionStore.changePhase(peer, 'generate-insights');
+      sessionStore.changePhase(peer, 'discuss-topics');
+      sessionStore.changePhase(peer, 'cluster-cards');
+      sessionStore.changePhase(peer, 'name-groups');
       sessionStore.changePhase(peer, 'voting');
 
       const cardId = addResult!.cards[0]!.id;
       const voteResult = sessionStore.voteCard(peer, cardId);
-      expect(voteResult).not.toBeNull();
-      expect(voteResult!.cards[0]!.votes).toBe(1);
+      expect(voteResult).toBeNull();
     });
 
-    test('unvoteCard removes a vote', () => {
+    test('voteGroup adds vote and returns session', () => {
       const peer = makePeer();
-      sessionStore.createSession('Unvote Test', 'Host', peer);
+      sessionStore.createSession('Vote Group Test', 'Host', peer);
       sessionStore.changePhase(peer, 'gather-data');
-      const addResult = sessionStore.addCard(peer, 'went-well', 'Card');
-      sessionStore.changePhase(peer, 'generate-insights');
+      const r1 = sessionStore.addCard(peer, 'went-well', 'Card A');
+      const r2 = sessionStore.addCard(peer, 'went-well', 'Card B');
+      sessionStore.changePhase(peer, 'discuss-topics');
+      sessionStore.changePhase(peer, 'cluster-cards');
+      const cardId1 = r1!.cards[r1!.cards.length - 1]!.id;
+      const cardId2 = r2!.cards[r2!.cards.length - 1]!.id;
+      const grouped = sessionStore.createGroup(peer, 'Topic', 'went-well', [cardId1, cardId2]);
+      sessionStore.changePhase(peer, 'name-groups');
       sessionStore.changePhase(peer, 'voting');
 
-      const cardId = addResult!.cards[0]!.id;
-      sessionStore.voteCard(peer, cardId);
-      const result = sessionStore.unvoteCard(peer, cardId);
+      const result = sessionStore.voteGroup(peer, grouped!.groups[0]!.id);
       expect(result).not.toBeNull();
-      expect(result!.cards[0]!.votes).toBe(0);
-    });
-
-    test('voteCard rejects when vote budget exhausted', () => {
-      const peer = makePeer();
-      sessionStore.createSession('Budget Test', 'Host', peer);
-      sessionStore.changePhase(peer, 'gather-data');
-      // Add enough cards to exhaust budget
-      const cards: string[] = [];
-      for (let i = 0; i < 10; i++) {
-        const r = sessionStore.addCard(peer, 'went-well', `Card ${i}`);
-        cards.push(r!.cards[r!.cards.length - 1]!.id);
-      }
-      sessionStore.changePhase(peer, 'generate-insights');
-      sessionStore.changePhase(peer, 'voting');
-
-      // Default maxVotesPerUser is 5, use all votes
-      for (let i = 0; i < 5; i++) {
-        expect(sessionStore.voteCard(peer, cards[i]!)).not.toBeNull();
-      }
-      // 6th vote should fail
-      expect(sessionStore.voteCard(peer, cards[5]!)).toBeNull();
+      expect(result!.groups[0]!.votes).toBe(1);
     });
   });
 
@@ -743,10 +735,10 @@ describe('SessionStore', () => {
       expect(sessionStore.editActionItem(peer, 'any-id', 'text')).toBeNull();
     });
 
-    test('deleteActionItem rejects during generate-insights phase', () => {
+    test('deleteActionItem rejects during cluster-cards phase', () => {
       const peer = makePeer();
       sessionStore.createSession('Phase Delete', 'Host', peer);
-      advanceToPhase(peer, 'generate-insights');
+      advanceToPhase(peer, 'cluster-cards');
       expect(sessionStore.deleteActionItem(peer, 'any-id')).toBeNull();
     });
 
@@ -843,7 +835,8 @@ describe('SessionStore', () => {
       // Verify 3 distinct IDs
       expect(new Set([cardId1, cardId2, cardId3]).size).toBe(3);
 
-      sessionStore.changePhase(peer, 'generate-insights');
+      sessionStore.changePhase(peer, 'discuss-topics');
+      sessionStore.changePhase(peer, 'cluster-cards');
 
       // Create group with two cards
       const groupResult = sessionStore.createGroup(peer, 'My Group', 'went-well', [cardId1, cardId2]);
@@ -868,7 +861,8 @@ describe('SessionStore', () => {
       const r2 = sessionStore.addCard(peer, 'went-well', 'B');
       const cardId2 = r2!.cards[r2!.cards.length - 1]!.id;
 
-      sessionStore.changePhase(peer, 'generate-insights');
+      sessionStore.changePhase(peer, 'discuss-topics');
+      sessionStore.changePhase(peer, 'cluster-cards');
 
       const groupResult = sessionStore.createGroup(peer, 'Temp Group', 'went-well', [cardId1, cardId2]);
       const groupId = groupResult!.groups[0]!.id;

@@ -16,7 +16,13 @@ import type {
     RetroColumnType,
     RetroPhase,
 } from '../types';
-import { countVotesForParticipant, isValidCheckInMood, RETRO_PHASES } from '../types';
+import {
+    countGroupVotesForParticipant,
+    isValidCheckInMood,
+    normalizePhase,
+    RETRO_PHASES,
+    sanitizeMaxVotesPerUser,
+} from '../types';
 import { Participant } from './Participant';
 
 const DEFAULT_CONFIG: IRetroConfig = {
@@ -58,7 +64,7 @@ export class RetroSession implements IRetroSession {
     this.checkInResponses = [];
     this.feedbackResponses = [];
     this.config = { ...DEFAULT_CONFIG, ...config };
-    this.maxVotesPerUser = this.config.maxVotesPerUser;
+    this.maxVotesPerUser = sanitizeMaxVotesPerUser(this.config.maxVotesPerUser);
     this.timerDuration = this.config.timerDuration;
     this.timerRemaining = null;
     this.timerRunning = false;
@@ -126,7 +132,8 @@ export class RetroSession implements IRetroSession {
    * Returns true if the phase was changed, false if the transition is invalid.
    */
   public changePhase(phase: RetroPhase): boolean {
-    const currentIndex = RETRO_PHASES.indexOf(this.phase);
+    const currentPhase = normalizePhase(this.phase) ?? this.phase;
+    const currentIndex = RETRO_PHASES.indexOf(currentPhase);
     const targetIndex = RETRO_PHASES.indexOf(phase);
 
     // Only allow moving one step forward or backward
@@ -236,7 +243,7 @@ export class RetroSession implements IRetroSession {
    * Delegates to the shared pure function for DRY compliance.
    */
   public countUserVotes(participantId: string): number {
-    return countVotesForParticipant(this.cards, this.groups, participantId);
+    return countGroupVotesForParticipant(this.groups, participantId);
   }
 
   /**
@@ -245,17 +252,9 @@ export class RetroSession implements IRetroSession {
    * limited only by the per-user vote budget.
    */
   public voteCard(cardId: string, participantId: string): boolean {
-    if (this.phase !== 'voting') return false;
-
-    const card = this.cards.find((c) => c.id === cardId);
-    if (!card) return false;
-
-    if (this.countUserVotes(participantId) >= this.maxVotesPerUser) return false;
-
-    card.voterIds.push(participantId);
-    card.votes = card.voterIds.length;
-    this.touch();
-    return true;
+    void cardId;
+    void participantId;
+    return false;
   }
 
   /**
@@ -295,7 +294,7 @@ export class RetroSession implements IRetroSession {
     column: RetroColumnType,
     cardIds: string[]
   ): ICardGroup | null {
-    if (this.phase !== 'generate-insights') return null;
+    if (this.phase !== 'cluster-cards') return null;
 
     // Verify all cards exist (cross-column grouping allowed)
     const validCards = cardIds.filter((id) => {
@@ -330,7 +329,7 @@ export class RetroSession implements IRetroSession {
    * Adds a card to an existing group
    */
   public addCardToGroup(groupId: string, cardId: string): boolean {
-    if (this.phase !== 'generate-insights') return false;
+    if (this.phase !== 'cluster-cards') return false;
 
     const group = this.groups.find((g) => g.id === groupId);
     if (!group) return false;
@@ -348,7 +347,7 @@ export class RetroSession implements IRetroSession {
    * Removes a card from a group
    */
   public removeCardFromGroup(groupId: string, cardId: string): boolean {
-    if (this.phase !== 'generate-insights') return false;
+    if (this.phase !== 'cluster-cards') return false;
 
     const group = this.groups.find((g) => g.id === groupId);
     if (!group) return false;
@@ -372,7 +371,7 @@ export class RetroSession implements IRetroSession {
    * Renames a group (only during generate-insights phase)
    */
   public renameGroup(groupId: string, title: string): boolean {
-    if (this.phase !== 'generate-insights') return false;
+    if (this.phase !== 'name-groups') return false;
     const group = this.groups.find((g) => g.id === groupId);
     if (!group) return false;
     group.title = title.trim();
@@ -384,7 +383,7 @@ export class RetroSession implements IRetroSession {
    * Moves a group to a different column
    */
   public moveGroup(groupId: string, column: RetroColumnType): boolean {
-    if (this.phase !== 'generate-insights') return false;
+    if (this.phase !== 'cluster-cards') return false;
     const group = this.groups.find((g) => g.id === groupId);
     if (!group) return false;
     group.column = column;
@@ -397,7 +396,7 @@ export class RetroSession implements IRetroSession {
    * Only allowed during generate-insights phase.
    */
   public deleteGroup(groupId: string): boolean {
-    if (this.phase !== 'generate-insights') return false;
+    if (this.phase !== 'cluster-cards') return false;
     const group = this.groups.find((g) => g.id === groupId);
     if (!group) return false;
 
@@ -675,13 +674,13 @@ export class RetroSession implements IRetroSession {
     const session = new RetroSession(data.name, data.hostId);
     Object.assign(session, {
       id: data.id,
-      phase: data.phase,
+      phase: normalizePhase(data.phase) ?? 'set-the-stage',
       cards: data.cards ?? [],
       groups: (data.groups ?? []).map((g) => ({ ...g, createdAt: new Date(g.createdAt) })),
       actionItems: data.actionItems ?? [],
       checkInResponses: data.checkInResponses ?? [],
       feedbackResponses: data.feedbackResponses ?? [],
-      maxVotesPerUser: data.maxVotesPerUser,
+      maxVotesPerUser: sanitizeMaxVotesPerUser(data.maxVotesPerUser),
       timerDuration: data.timerDuration,
       timerRemaining: data.timerRemaining,
       timerRunning: data.timerRunning,

@@ -277,11 +277,26 @@ function handleJoinSession(code: string, participantName: string): void {
               <ExportPanel :session="session" />
             </div>
 
-            <!-- Generate Insights: Cluster canvas with grouping (no voting) -->
-            <ClusterCanvas
-              v-else-if="currentPhase === 'generate-insights'"
+            <!-- Discuss Topics: Read-only board before clustering -->
+            <RetroBoard
+              v-else-if="currentPhase === 'discuss-topics'"
               :session="session"
               :current-user-id="currentParticipant!.id"
+              :is-host="isHost"
+              :remaining-votes="remainingVotes"
+              @add-card="addCard"
+              @edit-card="editCard"
+              @delete-card="deleteCard"
+              @vote-card="voteCard"
+              @unvote-card="unvoteCard"
+            />
+
+            <!-- Clustering: group cards, no renaming here -->
+            <ClusterCanvas
+              v-else-if="currentPhase === 'cluster-cards'"
+              :session="session"
+              :current-user-id="currentParticipant!.id"
+              mode="cluster"
               @create-group="createGroup"
               @add-card-to-group="addCardToGroup"
               @remove-card-from-group="removeCardFromGroup"
@@ -290,7 +305,21 @@ function handleJoinSession(code: string, participantName: string): void {
               @delete-group="deleteGroup"
             />
 
-            <!-- Voting: Dedicated voting phase for cards and groups -->
+            <!-- Naming: rename existing groups without drag interactions -->
+            <ClusterCanvas
+              v-else-if="currentPhase === 'name-groups'"
+              :session="session"
+              :current-user-id="currentParticipant!.id"
+              mode="name"
+              @create-group="createGroup"
+              @add-card-to-group="addCardToGroup"
+              @remove-card-from-group="removeCardFromGroup"
+              @rename-group="renameGroup"
+              @move-group="moveGroup"
+              @delete-group="deleteGroup"
+            />
+
+            <!-- Voting: Dedicated voting phase for groups -->
             <VotingBoard
               v-else-if="currentPhase === 'voting'"
               :session="session"

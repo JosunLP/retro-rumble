@@ -11,12 +11,14 @@ import { CARD_W } from '~/composables/useClusterCanvas';
 import type { IRetroCard, IRetroSession, RetroColumnType } from '~/types';
 import { RETRO_COLUMNS } from '~/types';
 import { COLUMN_META } from '~/utils/columnConfig';
+import { sortByCreatedAt } from '~/utils/retroSorting';
 
 const { t } = useI18n();
 
 const props = defineProps<{
   session: IRetroSession;
   currentUserId: string;
+  mode: 'cluster' | 'name';
 }>();
 
 const emit = defineEmits<{
@@ -37,7 +39,15 @@ const {
   endDrag,
   isCardDropTarget,
   isGroupDropTarget,
+  registerScrollContainer,
 } = useClusterCanvas();
+
+const scrollContainer = ref<HTMLElement | null>(null);
+const editingGroupId = ref<string | null>(null);
+const groupTitleDrafts = reactive<Record<string, string>>({});
+
+const isClusterMode = computed(() => props.mode === 'cluster');
+const isNamingMode = computed(() => props.mode === 'name');
 
 // ---- Maximize State ----
 const isMaximized = ref(false);
@@ -62,17 +72,14 @@ const columnMeta = COLUMN_META;
 
 /** Get ungrouped cards for a column */
 function getUngroupedCards(column: RetroColumnType): IRetroCard[] {
-  return cards.value.filter((c) => c.column === column && !c.groupId);
+  return sortByCreatedAt(
+    cards.value.filter((c) => c.column === column && !c.groupId)
+  );
 }
 
 /** Get groups for a column */
 function getColumnGroups(column: RetroColumnType) {
-  return groups.value.filter((g) => g.column === column);
-}
-
-/** Find a card by ID */
-function getCard(cardId: string): IRetroCard | undefined {
-  return cards.value.find((c) => c.id === cardId);
+  return sortByCreatedAt(groups.value.filter((g) => g.column === column));
 }
 
 /** The card currently being dragged (for ghost rendering) */
@@ -83,11 +90,10 @@ const draggedCard = computed(() => {
 
 // ---- Pointer Event Handlers ----
 function handlePointerDown(card: IRetroCard, ev: PointerEvent) {
-  ev.preventDefault();
+  if (!isClusterMode.value || ev.button !== 0) return;
   startDrag(card.id, ev, card.groupId);
 
   const onMove = (e: PointerEvent) => {
-    e.preventDefault();
     moveDrag(e);
   };
   const onUp = () => {
@@ -143,17 +149,77 @@ function handleDragEnd() {
 }
 
 // ---- Group Actions ----
-function handleRenameGroup(groupId: string, ev: Event) {
-  const input = ev.target as HTMLInputElement;
-  const title = input.value.trim();
-  if (title) {
-    emit('renameGroup', groupId, title);
+function getGroupCards(groupId: string): IRetroCard[] {
+  return sortByCreatedAt(
+    cards.value.filter((card) => card.groupId === groupId)
+  );
+}
+
+function startGroupRename(groupId: string, currentTitle: string): void {
+  if (!isNamingMode.value) return;
+  editingGroupId.value = groupId;
+  groupTitleDrafts[groupId] = currentTitle;
+}
+
+function updateGroupTitleDraft(groupId: string, value: string): void {
+  groupTitleDrafts[groupId] = value;
+}
+
+function getDisplayedGroupTitle(groupId: string, currentTitle: string): string {
+  if (editingGroupId.value === groupId) {
+    return groupTitleDrafts[groupId] ?? currentTitle;
+  }
+  return currentTitle;
+}
+
+function commitGroupRename(groupId: string, currentTitle: string): void {
+  if (!isNamingMode.value) return;
+  const draft = (groupTitleDrafts[groupId] ?? currentTitle).trim();
+  editingGroupId.value = null;
+
+  if (!draft) {
+    groupTitleDrafts[groupId] = currentTitle;
+    return;
+  }
+
+  groupTitleDrafts[groupId] = draft;
+  if (draft !== currentTitle) {
+    emit('renameGroup', groupId, draft);
   }
 }
 
 function handleDeleteGroup(groupId: string) {
+  if (!isClusterMode.value) return;
   emit('deleteGroup', groupId);
 }
+
+watch(
+  () => props.session.groups,
+  (nextGroups) => {
+    const activeGroupIds = new Set(nextGroups.map((group) => group.id));
+
+    for (const group of nextGroups) {
+      if (editingGroupId.value !== group.id) {
+        groupTitleDrafts[group.id] = group.title;
+      }
+    }
+
+    for (const groupId of Object.keys(groupTitleDrafts)) {
+      if (!activeGroupIds.has(groupId)) {
+        groupTitleDrafts[groupId] = '';
+      }
+    }
+  },
+  { immediate: true, deep: true }
+);
+
+watch(
+  scrollContainer,
+  (element) => {
+    registerScrollContainer(element);
+  },
+  { immediate: true }
+);
 </script>
 
 <template>
@@ -175,7 +241,13 @@ function handleDeleteGroup(groupId: string) {
             name="heroicons:information-circle"
             class="w-4 h-4 flex-shrink-0"
           />
-          <span>{{ t('grouping.instructionsHost') }}</span>
+          <span>
+            {{
+              isClusterMode
+                ? t('grouping.instructionsHost')
+                : t('grouping.namingInstructions')
+            }}
+          </span>
         </div>
         <div class="flex items-center gap-2">
           <button
@@ -200,6 +272,7 @@ function handleDeleteGroup(groupId: string) {
 
       <!-- Column Layout -->
       <div
+        ref="scrollContainer"
         class="flex-1 overflow-auto p-4"
         :style="isMaximized ? 'min-height: 0' : 'min-height: 400px; max-height: 75vh'"
       >
@@ -242,18 +315,25 @@ function handleDeleteGroup(groupId: string) {
                   name="heroicons:squares-2x2"
                   class="w-4 h-4 text-primary-500 flex-shrink-0"
                 />
-                <input
-                  :value="group.title"
-                  class="text-sm font-semibold bg-transparent border-none outline-none text-secondary-700 placeholder-secondary-400 min-w-0 flex-1"
-                  :placeholder="t('grouping.clickToRename')"
-                  @blur="handleRenameGroup(group.id, $event)"
-                  @keydown.enter="($event.target as HTMLInputElement).blur()"
-                >
+                <template v-if="isNamingMode">
+                  <input
+                    :value="getDisplayedGroupTitle(group.id, group.title)"
+                    class="text-sm font-semibold bg-transparent border-none outline-none text-secondary-700 placeholder-secondary-400 min-w-0 flex-1"
+                    :placeholder="t('grouping.clickToRename')"
+                    @focus="startGroupRename(group.id, group.title)"
+                    @input="updateGroupTitleDraft(group.id, ($event.target as HTMLInputElement).value)"
+                    @blur="commitGroupRename(group.id, group.title)"
+                    @keydown.enter.prevent="commitGroupRename(group.id, group.title); ($event.target as HTMLInputElement).blur()"
+                  >
+                </template>
+                <span v-else class="text-sm font-semibold text-secondary-700 min-w-0 flex-1">
+                  {{ group.title }}
+                </span>
                 <span class="text-xs tabular-nums text-secondary-400 font-medium">
                   {{ group.cardIds.length }}
                 </span>
                 <!-- Move group buttons -->
-                <div class="flex items-center gap-0.5">
+                <div v-if="isClusterMode" class="flex items-center gap-0.5">
                   <button
                     v-for="targetCol in RETRO_COLUMNS.filter((c) => c !== col)"
                     :key="targetCol"
@@ -265,6 +345,7 @@ function handleDeleteGroup(groupId: string) {
                   </button>
                 </div>
                 <button
+                  v-if="isClusterMode"
                   class="p-0.5 rounded text-secondary-400 hover:text-error-500 hover:bg-error-50 transition-colors"
                   :title="t('grouping.deleteGroup')"
                   @click="handleDeleteGroup(group.id)"
@@ -276,22 +357,24 @@ function handleDeleteGroup(groupId: string) {
               <!-- Grouped Cards -->
               <div class="space-y-2">
                 <div
-                  v-for="cardId in group.cardIds"
-                  :key="cardId"
+                  v-for="card in getGroupCards(group.id)"
+                  :key="card.id"
                   class="p-2.5 rounded-lg border select-none transition-all duration-200"
                   :class="[
-                    columnMeta[getCard(cardId)?.column ?? col].cardClass,
-                    dragging?.cardId === cardId
+                    columnMeta[card.column].cardClass,
+                    dragging?.cardId === card.id
                       ? 'opacity-40 scale-95'
-                      : 'cursor-grab hover:shadow-md active:cursor-grabbing',
+                      : isClusterMode
+                        ? 'cursor-grab hover:shadow-md active:cursor-grabbing'
+                        : '',
                   ]"
-                  :data-drop-card-id="cardId"
+                  :data-drop-card-id="isClusterMode ? card.id : undefined"
                   :data-card-group-id="group.id"
-                  @pointerdown="getCard(cardId) && handlePointerDown(getCard(cardId)!, $event)"
+                  @pointerdown="handlePointerDown(card, $event)"
                 >
                   <p
                     class="text-sm text-secondary-800 line-clamp-3 break-words whitespace-pre-wrap"
-                    v-text="getCard(cardId)?.content"
+                    v-text="card.content"
                   />
                 </div>
               </div>
@@ -306,11 +389,13 @@ function handleDeleteGroup(groupId: string) {
                 columnMeta[col].cardClass,
                 dragging?.cardId === card.id
                   ? 'opacity-40 scale-95'
-                  : isCardDropTarget(card.id)
+                  : isClusterMode && isCardDropTarget(card.id)
                     ? 'ring-2 ring-primary-400 shadow-md scale-[1.02]'
-                    : 'cursor-grab hover:shadow-md active:cursor-grabbing',
+                    : isClusterMode
+                      ? 'cursor-grab hover:shadow-md active:cursor-grabbing'
+                      : '',
               ]"
-              :data-drop-card-id="card.id"
+              :data-drop-card-id="isClusterMode ? card.id : undefined"
               @pointerdown="handlePointerDown(card, $event)"
             >
               <p

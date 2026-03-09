@@ -44,7 +44,9 @@
   "phase": {
     "set-the-stage": "Voorbereiding",
     "gather-data": "Gegevens verzamelen",
-    "generate-insights": "Groeperen",
+    "discuss-topics": "Bespreken",
+    "cluster-cards": "Clusteren",
+    "name-groups": "Groepen benoemen",
     "voting": "Stemmen",
     "decide-action": "Acties",
     "close-retro": "Afsluiting",
@@ -52,17 +54,19 @@
     "next": "Volgende",
     "description": {
       "set-the-stage": "Welkom! Deel hoe je je voelt om de sfeer te zetten.",
-      "gather-data": "Schrijf anoniem kaarten over wat goed ging en wat beter kan.",
-      "generate-insights": "Sleep kaarten in groepen om gemeenschappelijke thema's te vinden.",
-      "voting": "Stem op de onderwerpen die het meest belangrijk zijn voor het team.",
+      "gather-data": "Schrijf anoniem kaarten over wat het team moet starten, stoppen en voortzetten.",
+      "discuss-topics": "Bespreek eerst samen de verzamelde onderwerpen voordat je gaat clusteren.",
+      "cluster-cards": "Sleep verwante kaarten in groepen zonder ze nog een naam te geven.",
+      "name-groups": "Geef de gemaakte groepen een naam en verfijn de titels.",
+      "voting": "Stem op de gegroepeerde onderwerpen die het belangrijkst zijn voor het team.",
       "decide-action": "Definieer concrete acties en wijs verantwoordelijkheden toe.",
       "close-retro": "Bekijk de samenvatting en geef feedback op deze retro."
     }
   },
   "column": {
-    "went-well": "Wat goed ging",
-    "to-improve": "Te verbeteren",
-    "action-items": "Actiepunten",
+    "went-well": "Starten",
+    "to-improve": "Stoppen",
+    "action-items": "Doorgaan",
     "empty": "Nog geen kaarten"
   },
   "card": {
@@ -75,6 +79,7 @@
   "grouping": {
     "instructionsHost": "Sleep kaarten op elkaar om groepen te maken. Sleep een kaart weg van een groep om deze te ontkoppelen.",
     "instructionsParticipant": "Sleep kaarten op elkaar om groepen te maken. Sleep een kaart weg van een groep om deze te ontkoppelen.",
+    "namingInstructions": "Geef de groepen hier een naam. Slepen is in deze stap uitgeschakeld zodat titels stabiel blijven.",
     "newGroupTitle": "Nieuwe groep",
     "clickToRename": "Klik om te hernoemen",
     "deleteGroup": "Groep verwijderen",
@@ -88,10 +93,12 @@
   "voting": {
     "title": "Stemmen",
     "remaining": "Resterende stemmen",
-    "instructions": "Stem op de kaarten en groepen die het meest belangrijk zijn om te bespreken. U kunt uw stemmen vrij verdelen.",
+    "instructions": "Stem op de gegroepeerde onderwerpen die het belangrijkst zijn om te bespreken. Je kunt je stemmen vrij verdelen.",
+    "groupOnlyHint": "Alleen groepen kunnen nieuwe stemmen krijgen. Ongegroepeerde kaarten blijven zichtbaar als context.",
     "groupCardCount": "({count} kaarten)",
     "voteGroup": "Stem op groep",
     "unvoteGroup": "Stem op groep intrekken",
+    "notVotable": "Niet stemgerechtigd",
     "voteCard": "Stem op kaart",
     "unvoteCard": "Stem op kaart intrekken"
   },
@@ -115,7 +122,10 @@
     "dueDate": "Deadline",
     "dueDatePlaceholder": "JJJJ-MM-DD",
     "toggleDone": "Markeer als gedaan",
-    "topVoted": "Meeste stemmen"
+    "topVoted": "Meeste stemmen",
+    "errors": {
+      "pastDueDate": "Deadlines mogen niet in het verleden liggen."
+    }
   },
   "export": {
     "title": "Resultaten exporteren",

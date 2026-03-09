@@ -15,7 +15,7 @@ function makeSession(): RetroSession {
 
 /**
  * Advances the session to the target phase step-by-step.
- * Phase order: set-the-stage → gather-data → generate-insights → voting → decide-action → close-retro
+ * Phase order: set-the-stage → gather-data → discuss-topics → cluster-cards → name-groups → voting → decide-action → close-retro
  */
 function advanceToPhase(session: RetroSession, target: RetroPhase): void {
   const currentIndex = RETRO_PHASES.indexOf(session.phase);
@@ -199,11 +199,10 @@ describe('RetroSession', () => {
       advanceToPhase(session, 'voting');
     });
 
-    test('voteCard increments votes and voterIds', () => {
+    test('voteCard rejects new votes because voting is group-only', () => {
       const card = session.addCard('went-well', 'X', 'member-id');
-      session.voteCard(card.id, 'member-id');
-      expect(card.votes).toBe(1);
-      expect(card.voterIds).toContain('member-id');
+      expect(session.voteCard(card.id, 'member-id')).toBe(false);
+      expect(card.votes).toBe(0);
     });
 
     test('voteCard returns false outside voting phase', () => {
@@ -212,31 +211,50 @@ describe('RetroSession', () => {
       expect(session.voteCard(card.id, 'member-id')).toBe(false);
     });
 
-    test('voteCard enforces max votes per user', () => {
+    test('group votes enforce max votes per user', () => {
+      advanceToPhase(session, 'decide-action');
+      advanceToPhase(session, 'voting');
+      session.phase = 'cluster-cards';
       const cards = [
         session.addCard('went-well', 'A', 'member-id'),
         session.addCard('went-well', 'B', 'member-id'),
         session.addCard('went-well', 'C', 'member-id'),
         session.addCard('went-well', 'D', 'member-id'),
+        session.addCard('went-well', 'E', 'member-id'),
+        session.addCard('went-well', 'F', 'member-id'),
       ];
-      session.voteCard(cards[0]!.id, 'member-id');
-      session.voteCard(cards[1]!.id, 'member-id');
-      session.voteCard(cards[2]!.id, 'member-id');
-      // 4th vote must be rejected
-      expect(session.voteCard(cards[3]!.id, 'member-id')).toBe(false);
+      const groups = [
+        session.createGroup('G1', 'went-well', [cards[0]!.id, cards[1]!.id])!,
+        session.createGroup('G2', 'went-well', [cards[2]!.id, cards[3]!.id])!,
+        session.createGroup('G3', 'went-well', [cards[4]!.id, cards[5]!.id])!,
+      ];
+      advanceToPhase(session, 'name-groups');
+      advanceToPhase(session, 'voting');
+      expect(session.voteGroup(groups[0]!.id, 'member-id')).toBe(true);
+      expect(session.voteGroup(groups[1]!.id, 'member-id')).toBe(true);
+      expect(session.voteGroup(groups[2]!.id, 'member-id')).toBe(true);
+      expect(session.voteGroup(groups[0]!.id, 'member-id')).toBe(false);
     });
 
-    test('unvoteCard removes vote', () => {
+    test('unvoteCard can clean up legacy card votes', () => {
       const card = session.addCard('went-well', 'X', 'member-id');
-      session.voteCard(card.id, 'member-id');
+      card.voterIds.push('member-id');
+      card.votes = 1;
       expect(session.unvoteCard(card.id, 'member-id')).toBe(true);
       expect(card.votes).toBe(0);
     });
 
-    test('getRemainingVotes counts correctly', () => {
-      const card = session.addCard('went-well', 'X', 'member-id');
+    test('getRemainingVotes counts only group votes', () => {
+      session.phase = 'cluster-cards';
+      const c1 = session.addCard('went-well', 'X', 'member-id');
+      const c2 = session.addCard('went-well', 'Y', 'member-id');
+      const group = session.createGroup('G', 'went-well', [c1.id, c2.id])!;
+      c1.voterIds.push('member-id');
+      c1.votes = 1;
+      advanceToPhase(session, 'name-groups');
+      advanceToPhase(session, 'voting');
       expect(session.getRemainingVotes('member-id')).toBe(3);
-      session.voteCard(card.id, 'member-id');
+      session.voteGroup(group.id, 'member-id');
       expect(session.getRemainingVotes('member-id')).toBe(2);
     });
   });
@@ -250,7 +268,7 @@ describe('RetroSession', () => {
       session = makeSession();
       addHost(session);
       addMember(session);
-      advanceToPhase(session, 'generate-insights');
+      advanceToPhase(session, 'cluster-cards');
     });
 
     test('createGroup requires at least 2 cards', () => {
@@ -469,13 +487,13 @@ describe('RetroSession', () => {
     });
 
     test('changePhase allows backward by one step', () => {
-      advanceToPhase(session, 'generate-insights');
-      expect(session.changePhase('gather-data')).toBe(true);
-      expect(session.phase).toBe('gather-data');
+      advanceToPhase(session, 'cluster-cards');
+      expect(session.changePhase('discuss-topics')).toBe(true);
+      expect(session.phase).toBe('discuss-topics');
     });
 
     test('changePhase rejects skipping phases forward', () => {
-      expect(session.changePhase('generate-insights')).toBe(false);
+      expect(session.changePhase('cluster-cards')).toBe(false);
       expect(session.phase).toBe('set-the-stage');
     });
 
@@ -493,7 +511,7 @@ describe('RetroSession', () => {
       advanceToPhase(session, 'gather-data');
       session.startTimer();
       expect(session.timerRunning).toBe(true);
-      session.changePhase('generate-insights');
+      session.changePhase('discuss-topics');
       expect(session.timerRunning).toBe(false);
     });
   });
@@ -527,7 +545,7 @@ describe('RetroSession', () => {
       session = makeSession();
       addHost(session);
       addMember(session);
-      advanceToPhase(session, 'generate-insights');
+      advanceToPhase(session, 'cluster-cards');
     });
 
     test('addCardToGroup adds card and sets groupId', () => {
@@ -549,7 +567,7 @@ describe('RetroSession', () => {
       expect(session.addCardToGroup(group.id, c1.id)).toBe(false);
     });
 
-    test('addCardToGroup rejects outside generate-insights phase', () => {
+    test('addCardToGroup rejects outside cluster-cards phase', () => {
       const c1 = session.addCard('went-well', 'A', 'member-id');
       const c2 = session.addCard('went-well', 'B', 'member-id');
       const c3 = session.addCard('went-well', 'C', 'member-id');
@@ -589,6 +607,7 @@ describe('RetroSession', () => {
       const c1 = session.addCard('went-well', 'A', 'member-id');
       const c2 = session.addCard('went-well', 'B', 'member-id');
       const group = session.createGroup('Old', 'went-well', [c1.id, c2.id])!;
+      advanceToPhase(session, 'name-groups');
       expect(session.renameGroup(group.id, '  New Title  ')).toBe(true);
       expect(group.title).toBe('New Title');
     });
@@ -605,7 +624,7 @@ describe('RetroSession', () => {
       expect(group.column).toBe('to-improve');
     });
 
-    test('moveGroup rejects outside generate-insights phase', () => {
+    test('moveGroup rejects outside cluster-cards phase', () => {
       const c1 = session.addCard('went-well', 'A', 'member-id');
       const c2 = session.addCard('went-well', 'B', 'member-id');
       const group = session.createGroup('G', 'went-well', [c1.id, c2.id])!;
@@ -639,13 +658,14 @@ describe('RetroSession', () => {
       session = makeSession(); // maxVotesPerUser = 3
       addHost(session);
       addMember(session);
-      advanceToPhase(session, 'generate-insights');
+      advanceToPhase(session, 'cluster-cards');
     });
 
     test('voteGroup increments votes and voterIds', () => {
       const c1 = session.addCard('went-well', 'A', 'member-id');
       const c2 = session.addCard('went-well', 'B', 'member-id');
       const group = session.createGroup('G', 'went-well', [c1.id, c2.id])!;
+      advanceToPhase(session, 'name-groups');
       advanceToPhase(session, 'voting');
       expect(session.voteGroup(group.id, 'member-id')).toBe(true);
       expect(group.votes).toBe(1);
@@ -656,7 +676,7 @@ describe('RetroSession', () => {
       const c1 = session.addCard('went-well', 'A', 'member-id');
       const c2 = session.addCard('went-well', 'B', 'member-id');
       const group = session.createGroup('G', 'went-well', [c1.id, c2.id])!;
-      // Still in generate-insights phase
+      // Still in cluster-cards phase
       expect(session.voteGroup(group.id, 'member-id')).toBe(false);
     });
 
@@ -669,6 +689,7 @@ describe('RetroSession', () => {
       const c1 = session.addCard('went-well', 'A', 'member-id');
       const c2 = session.addCard('went-well', 'B', 'member-id');
       const group = session.createGroup('G', 'went-well', [c1.id, c2.id])!;
+      advanceToPhase(session, 'name-groups');
       advanceToPhase(session, 'voting');
       session.voteGroup(group.id, 'member-id');
       expect(session.unvoteGroup(group.id, 'member-id')).toBe(true);
@@ -679,24 +700,22 @@ describe('RetroSession', () => {
       const c1 = session.addCard('went-well', 'A', 'member-id');
       const c2 = session.addCard('went-well', 'B', 'member-id');
       const group = session.createGroup('G', 'went-well', [c1.id, c2.id])!;
+      advanceToPhase(session, 'name-groups');
       advanceToPhase(session, 'voting');
       expect(session.unvoteGroup(group.id, 'member-id')).toBe(false);
     });
 
-    test('mixed card and group votes share the same vote budget', () => {
+    test('legacy card votes do not consume the group vote budget', () => {
       const c1 = session.addCard('went-well', 'A', 'member-id');
       const c2 = session.addCard('went-well', 'B', 'member-id');
       const c3 = session.addCard('went-well', 'C', 'member-id');
       const group = session.createGroup('G', 'went-well', [c1.id, c2.id])!;
+      c3.voterIds.push('member-id', 'member-id');
+      c3.votes = 2;
+      advanceToPhase(session, 'name-groups');
       advanceToPhase(session, 'voting');
-      // Use 2 votes on the card, 1 on the group = 3 total (max)
-      session.voteCard(c3.id, 'member-id');
-      session.voteCard(c3.id, 'member-id');
       session.voteGroup(group.id, 'member-id');
-      expect(session.getRemainingVotes('member-id')).toBe(0);
-      // Next vote should be rejected
-      expect(session.voteCard(c3.id, 'member-id')).toBe(false);
-      expect(session.voteGroup(group.id, 'member-id')).toBe(false);
+      expect(session.getRemainingVotes('member-id')).toBe(2);
     });
   });
 
@@ -756,7 +775,7 @@ describe('RetroSession', () => {
       session = makeSession();
       addHost(session);
       addMember(session);
-      advanceToPhase(session, 'generate-insights');
+      advanceToPhase(session, 'cluster-cards');
     });
 
     test('deleting a grouped card removes it from group', () => {
@@ -795,7 +814,8 @@ describe('RetroSession', () => {
     test('returns cards sorted by votes descending', () => {
       const c1 = session.addCard('went-well', 'A', 'host-id');
       const c2 = session.addCard('went-well', 'B', 'host-id');
-      session.voteCard(c2.id, 'host-id');
+      c2.voterIds.push('host-id');
+      c2.votes = 1;
       const sorted = session.getCardsSortedByVotes();
       expect(sorted[0]!.id).toBe(c2.id);
       expect(sorted[1]!.id).toBe(c1.id);
@@ -822,29 +842,44 @@ describe('RetroSession', () => {
       advanceToPhase(session, 'voting');
     });
 
-    test('multiple users can vote on the same card', () => {
-      const card = session.addCard('went-well', 'X', 'host-id');
-      session.voteCard(card.id, 'alice');
-      session.voteCard(card.id, 'bob');
-      expect(card.votes).toBe(2);
+    test('multiple users can vote on the same group', () => {
+      session.phase = 'cluster-cards';
+      const c1 = session.addCard('went-well', 'X', 'host-id');
+      const c2 = session.addCard('went-well', 'Y', 'host-id');
+      const group = session.createGroup('G', 'went-well', [c1.id, c2.id])!;
+      advanceToPhase(session, 'name-groups');
+      advanceToPhase(session, 'voting');
+      session.voteGroup(group.id, 'alice');
+      session.voteGroup(group.id, 'bob');
+      expect(group.votes).toBe(2);
     });
 
-    test('one user can vote the same card multiple times up to budget', () => {
-      const card = session.addCard('went-well', 'X', 'host-id');
-      session.voteCard(card.id, 'alice');
-      session.voteCard(card.id, 'alice');
-      session.voteCard(card.id, 'alice');
-      expect(card.votes).toBe(3);
+    test('one user can vote the same group multiple times up to budget', () => {
+      session.phase = 'cluster-cards';
+      const c1 = session.addCard('went-well', 'X', 'host-id');
+      const c2 = session.addCard('went-well', 'Y', 'host-id');
+      const group = session.createGroup('G', 'went-well', [c1.id, c2.id])!;
+      advanceToPhase(session, 'name-groups');
+      advanceToPhase(session, 'voting');
+      session.voteGroup(group.id, 'alice');
+      session.voteGroup(group.id, 'alice');
+      session.voteGroup(group.id, 'alice');
+      expect(group.votes).toBe(3);
       // 4th vote exceeds budget
-      expect(session.voteCard(card.id, 'alice')).toBe(false);
+      expect(session.voteGroup(group.id, 'alice')).toBe(false);
     });
 
-    test('unvoteCard only removes one vote instance', () => {
-      const card = session.addCard('went-well', 'X', 'host-id');
-      session.voteCard(card.id, 'alice');
-      session.voteCard(card.id, 'alice');
-      session.unvoteCard(card.id, 'alice');
-      expect(card.votes).toBe(1);
+    test('unvoteGroup only removes one vote instance', () => {
+      session.phase = 'cluster-cards';
+      const c1 = session.addCard('went-well', 'X', 'host-id');
+      const c2 = session.addCard('went-well', 'Y', 'host-id');
+      const group = session.createGroup('G', 'went-well', [c1.id, c2.id])!;
+      advanceToPhase(session, 'name-groups');
+      advanceToPhase(session, 'voting');
+      session.voteGroup(group.id, 'alice');
+      session.voteGroup(group.id, 'alice');
+      session.unvoteGroup(group.id, 'alice');
+      expect(group.votes).toBe(1);
     });
   });
 
@@ -862,21 +897,21 @@ describe('RetroSession', () => {
 
     test('non-host cannot edit card outside gather-data', () => {
       const card = session.addCard('went-well', 'Orig', 'member-id');
-      advanceToPhase(session, 'generate-insights');
+      advanceToPhase(session, 'cluster-cards');
       expect(session.editCard(card.id, 'Hacked', 'member-id')).toBe(false);
       expect(card.content).toBe('Orig');
     });
 
     test('host can edit card in any phase (moderation)', () => {
       const card = session.addCard('went-well', 'Orig', 'member-id');
-      advanceToPhase(session, 'generate-insights');
+      advanceToPhase(session, 'cluster-cards');
       expect(session.editCard(card.id, 'Moderated', 'host-id')).toBe(true);
       expect(card.content).toBe('Moderated');
     });
 
     test('non-host cannot delete card outside gather-data', () => {
       const card = session.addCard('went-well', 'To remove', 'member-id');
-      advanceToPhase(session, 'generate-insights');
+      advanceToPhase(session, 'cluster-cards');
       expect(session.deleteCard(card.id, 'member-id')).toBe(false);
       expect(session.cards).toHaveLength(1);
     });
@@ -921,29 +956,32 @@ describe('RetroSession', () => {
       advanceToPhase(session, 'gather-data');
       session.addCard('went-well', 'Card A', 'host-id');
       session.addCard('went-well', 'Card B', 'host-id');
-      advanceToPhase(session, 'generate-insights');
+      advanceToPhase(session, 'cluster-cards');
     });
 
-    test('renameGroup rejects outside generate-insights', () => {
+    test('renameGroup rejects outside name-groups', () => {
       const group = session.createGroup('Grp', 'went-well', session.cards.map(c => c.id))!;
+      expect(session.renameGroup(group.id, 'New Title')).toBe(false);
+      advanceToPhase(session, 'name-groups');
       advanceToPhase(session, 'voting');
       expect(session.renameGroup(group.id, 'New Title')).toBe(false);
     });
 
-    test('renameGroup works during generate-insights', () => {
+    test('renameGroup works during name-groups', () => {
       const group = session.createGroup('Grp', 'went-well', session.cards.map(c => c.id))!;
+      advanceToPhase(session, 'name-groups');
       expect(session.renameGroup(group.id, 'New Title')).toBe(true);
       expect(session.groups[0]!.title).toBe('New Title');
     });
 
-    test('deleteGroup rejects outside generate-insights', () => {
+    test('deleteGroup rejects outside cluster-cards', () => {
       const group = session.createGroup('Grp', 'went-well', session.cards.map(c => c.id))!;
-      advanceToPhase(session, 'voting');
+      advanceToPhase(session, 'name-groups');
       expect(session.deleteGroup(group.id)).toBe(false);
       expect(session.groups).toHaveLength(1);
     });
 
-    test('deleteGroup works during generate-insights', () => {
+    test('deleteGroup works during cluster-cards', () => {
       const group = session.createGroup('Grp', 'went-well', session.cards.map(c => c.id))!;
       expect(session.deleteGroup(group.id)).toBe(true);
       expect(session.groups).toHaveLength(0);

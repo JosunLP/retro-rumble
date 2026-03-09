@@ -44,7 +44,9 @@
   "phase": {
     "set-the-stage": "Förberedelse",
     "gather-data": "Datainsamling",
-    "generate-insights": "Gruppering",
+    "discuss-topics": "Diskussion",
+    "cluster-cards": "Klustring",
+    "name-groups": "Namnge grupper",
     "voting": "Röstning",
     "decide-action": "Åtgärder",
     "close-retro": "Avslutning",
@@ -52,17 +54,19 @@
     "next": "Nästa",
     "description": {
       "set-the-stage": "Välkommen! Dela med dig av hur du mår för att sätta stämningen.",
-      "gather-data": "Skriv anonyma kort om vad som gick bra och vad som kan förbättras.",
-      "generate-insights": "Dra kort till grupper för att hitta gemensamma teman.",
-      "voting": "Rösta på de ämnen som är viktigast för teamet.",
+      "gather-data": "Skriv anonyma kort om vad teamet ska börja med, sluta med och fortsätta med.",
+      "discuss-topics": "Gå först igenom de insamlade ämnena tillsammans innan ni börjar klustra.",
+      "cluster-cards": "Dra relaterade kort till grupper utan att namnge dem ännu.",
+      "name-groups": "Namnge grupperna ni skapade och förfina deras titlar.",
+      "voting": "Rösta på de grupperade ämnen som är viktigast för teamet.",
       "decide-action": "Definiera konkreta åtgärder och tilldela ansvar.",
       "close-retro": "Granska sammanfattningen och ge feedback på denna retro."
     }
   },
   "column": {
-    "went-well": "Vad gick bra",
-    "to-improve": "Vad kan förbättras",
-    "action-items": "Åtgärder",
+    "went-well": "Börja",
+    "to-improve": "Sluta",
+    "action-items": "Fortsätta",
     "empty": "Inga kort än"
   },
   "card": {
@@ -75,6 +79,7 @@
   "grouping": {
     "instructionsHost": "Dra kort på varandra för att skapa grupper. Dra ett kort från en grupp för att avgruppera.",
     "instructionsParticipant": "Dra kort på varandra för att skapa grupper. Dra ett kort från en grupp för att avgruppera.",
+    "namingInstructions": "Namnge grupperna här. Dragning är avstängd i detta steg så att titlarna förblir stabila.",
     "newGroupTitle": "Ny grupp",
     "clickToRename": "Klicka för att byta namn",
     "deleteGroup": "Ta bort grupp",
@@ -88,10 +93,12 @@
   "voting": {
     "title": "Röstning",
     "remaining": "Återstående röster",
-    "instructions": "Rösta på de viktigaste korten och grupperna att diskutera. Du kan fördela dina röster fritt.",
+    "instructions": "Rösta på de viktigaste grupperade ämnena att diskutera. Du kan fördela dina röster fritt.",
+    "groupOnlyHint": "Nya röster kan bara läggas på grupper. Ogrupperade kort förblir synliga som kontext.",
     "groupCardCount": "({count} kort)",
     "voteGroup": "Rösta på grupp",
     "unvoteGroup": "Ta bort röst från grupp",
+    "notVotable": "Inte röstbar",
     "voteCard": "Rösta på kort",
     "unvoteCard": "Ta bort röst från kort"
   },
@@ -115,7 +122,10 @@
     "dueDate": "Deadline",
     "dueDatePlaceholder": "ÅÅÅÅ-MM-DD",
     "toggleDone": "Markera som klar",
-    "topVoted": "Flest röster"
+    "topVoted": "Flest röster",
+    "errors": {
+      "pastDueDate": "Deadlines kan inte sättas i det förflutna."
+    }
   },
   "export": {
     "title": "Exportera resultat",

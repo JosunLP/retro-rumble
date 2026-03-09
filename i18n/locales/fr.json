@@ -44,7 +44,9 @@
   "phase": {
     "set-the-stage": "Mise en scène",
     "gather-data": "Collecte de données",
-    "generate-insights": "Regroupement",
+    "discuss-topics": "Discussion",
+    "cluster-cards": "Regroupement",
+    "name-groups": "Nommer les groupes",
     "voting": "Vote",
     "decide-action": "Actions",
     "close-retro": "Clôture",
@@ -52,17 +54,19 @@
     "next": "Suivant",
     "description": {
       "set-the-stage": "Bienvenue ! Partagez votre humeur pour donner le ton.",
-      "gather-data": "Écrivez des cartes anonymes sur ce qui a bien fonctionné et ce qui peut être amélioré.",
-      "generate-insights": "Glissez les cartes en groupes pour trouver des thèmes communs.",
-      "voting": "Votez sur les sujets les plus importants pour l'équipe.",
+      "gather-data": "Écrivez des cartes anonymes sur ce que l'équipe devrait commencer, arrêter et continuer.",
+      "discuss-topics": "Passez d'abord en revue les sujets recueillis ensemble avant de commencer à regrouper.",
+      "cluster-cards": "Faites glisser les cartes liées dans des groupes sans les nommer pour l'instant.",
+      "name-groups": "Donnez un nom aux groupes créés et affinez leurs intitulés.",
+      "voting": "Votez sur les sujets regroupés les plus importants pour l'équipe.",
       "decide-action": "Définissez des actions concrètes et attribuez des responsabilités.",
       "close-retro": "Vérifiez le résumé et donnez votre avis sur cette rétro."
     }
   },
   "column": {
-    "went-well": "Ce qui a bien fonctionné",
-    "to-improve": "Ce qui peut s'améliorer",
-    "action-items": "Actions",
+    "went-well": "Commencer",
+    "to-improve": "Arrêter",
+    "action-items": "Continuer",
     "empty": "Aucune carte pour l'instant"
   },
   "card": {
@@ -75,6 +79,7 @@
   "grouping": {
     "instructionsHost": "Faites glisser les cartes les unes sur les autres pour créer des groupes. Éloignez une carte d'un groupe pour la dissocier.",
     "instructionsParticipant": "Faites glisser les cartes les unes sur les autres pour créer des groupes. Éloignez une carte d'un groupe pour la dissocier.",
+    "namingInstructions": "Nommez ici les groupes. Le glisser-déposer est désactivé à cette étape pour garder les titres stables.",
     "newGroupTitle": "Nouveau groupe",
     "clickToRename": "Cliquer pour renommer",
     "deleteGroup": "Supprimer le groupe",
@@ -88,10 +93,12 @@
   "voting": {
     "title": "Vote",
     "remaining": "Votes restants",
-    "instructions": "Votez pour les cartes et groupes les plus importants à discuter. Vous pouvez distribuer vos votes librement.",
+    "instructions": "Votez pour les sujets regroupés les plus importants à discuter. Vous pouvez répartir vos votes librement.",
+    "groupOnlyHint": "Seuls les groupes peuvent recevoir de nouveaux votes. Les cartes non regroupées restent visibles pour le contexte.",
     "groupCardCount": "({count} cartes)",
     "voteGroup": "Voter pour le groupe",
     "unvoteGroup": "Retirer le vote du groupe",
+    "notVotable": "Non votable",
     "voteCard": "Voter pour la carte",
     "unvoteCard": "Retirer le vote de la carte"
   },
@@ -115,7 +122,10 @@
     "dueDate": "Date d'échéance",
     "dueDatePlaceholder": "AAAA-MM-JJ",
     "toggleDone": "Marquer comme fait",
-    "topVoted": "Les plus votés"
+    "topVoted": "Les plus votés",
+    "errors": {
+      "pastDueDate": "Les échéances ne peuvent pas être dans le passé."
+    }
   },
   "export": {
     "title": "Exporter les résultats",

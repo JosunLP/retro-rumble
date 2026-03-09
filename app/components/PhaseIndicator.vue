@@ -28,7 +28,9 @@ const phaseIndex = computed(() => RETRO_PHASES.indexOf(props.currentPhase));
 const phaseIcons: Record<RetroPhase, string> = {
   'set-the-stage': 'heroicons:hand-raised',
   'gather-data': 'heroicons:pencil-square',
-  'generate-insights': 'heroicons:light-bulb',
+  'discuss-topics': 'heroicons:chat-bubble-left-right',
+  'cluster-cards': 'heroicons:squares-2x2',
+  'name-groups': 'heroicons:tag',
   'voting': 'heroicons:hand-thumb-up',
   'decide-action': 'heroicons:rocket-launch',
   'close-retro': 'heroicons:clipboard-document-check',
@@ -52,28 +54,30 @@ function prevPhase(): void {
 <template>
   <div class="card-container">
     <!-- Phase Steps -->
-    <div class="flex items-center justify-between mb-2">
-      <div
-        v-for="(phase, idx) in RETRO_PHASES"
-        :key="phase"
-        class="flex items-center"
-      >
+    <div class="mb-2 overflow-x-auto overscroll-x-contain pb-1 scrollbar-thin">
+      <div class="flex min-w-max items-center">
         <div
-          class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all"
-          :class="{
-            'bg-primary-600 text-white shadow-sm': idx === phaseIndex,
-            'bg-primary-100 text-primary-700': idx < phaseIndex,
-            'bg-secondary-100 text-secondary-500': idx > phaseIndex,
-          }"
+          v-for="(phase, idx) in RETRO_PHASES"
+          :key="phase"
+          class="flex items-center shrink-0"
         >
-          <Icon :name="phaseIcons[phase]" class="w-4 h-4" />
-          <span class="hidden sm:inline">{{ t(`phase.${phase}`) }}</span>
+          <div
+            class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all whitespace-nowrap shrink-0"
+            :class="{
+              'bg-primary-600 text-white shadow-sm': idx === phaseIndex,
+              'bg-primary-100 text-primary-700': idx < phaseIndex,
+              'bg-secondary-100 text-secondary-500': idx > phaseIndex,
+            }"
+          >
+            <Icon :name="phaseIcons[phase]" class="w-4 h-4 shrink-0" />
+            <span class="hidden sm:inline">{{ t(`phase.${phase}`) }}</span>
+          </div>
+          <div
+            v-if="idx < RETRO_PHASES.length - 1"
+            class="w-6 h-0.5 mx-1 shrink-0"
+            :class="idx < phaseIndex ? 'bg-primary-400' : 'bg-secondary-200'"
+          />
         </div>
-        <div
-          v-if="idx < RETRO_PHASES.length - 1"
-          class="w-6 h-0.5 mx-1"
-          :class="idx < phaseIndex ? 'bg-primary-400' : 'bg-secondary-200'"
-        />
       </div>
     </div>
 

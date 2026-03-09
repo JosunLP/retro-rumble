@@ -7,24 +7,26 @@
 
 import type { Peer } from 'crossws';
 import type {
-  IParticipant,
-  IRetroSession,
-  RetroColumnType,
-  RetroPhase,
+    IParticipant,
+    IRetroSession,
+    RetroColumnType,
+    RetroPhase,
 } from '../../app/types/retro';
 import {
-  isValidColumnType,
-  isValidISODate,
-  isValidPhase,
-  JOIN_CODE_CHARS,
-  JOIN_CODE_LENGTH,
-  MAX_ACTION_ITEM_TEXT_LENGTH,
-  MAX_ACTION_ITEMS_PER_SESSION,
-  MAX_CARD_CONTENT_LENGTH,
-  MAX_CARDS_PER_USER,
-  MAX_GROUP_TITLE_LENGTH,
-  MAX_PARTICIPANT_NAME_LENGTH,
-  MAX_SESSION_NAME_LENGTH,
+    isPastISODate,
+    isValidColumnType,
+    isValidISODate,
+    isValidPhase,
+    JOIN_CODE_CHARS,
+    JOIN_CODE_LENGTH,
+    MAX_ACTION_ITEM_TEXT_LENGTH,
+    MAX_ACTION_ITEMS_PER_SESSION,
+    MAX_CARD_CONTENT_LENGTH,
+    MAX_CARDS_PER_USER,
+    MAX_GROUP_TITLE_LENGTH,
+    MAX_PARTICIPANT_NAME_LENGTH,
+    MAX_SESSION_NAME_LENGTH,
+    sanitizeMaxVotesPerUser,
 } from '../../app/types/retro';
 import { Participant } from '../../app/utils/Participant';
 import { RetroSession } from '../../app/utils/RetroSession';
@@ -143,7 +145,7 @@ class SessionStore {
     }
     const participant = new Participant(safeParticipantName, true);
     const session = new RetroSession(safeName, participant.id, {
-      maxVotesPerUser: config?.maxVotesPerUser ?? 5,
+      maxVotesPerUser: sanitizeMaxVotesPerUser(config?.maxVotesPerUser),
       timerDuration: config?.timerDuration ?? 300,
       anonymousCards: true,
     });
@@ -826,7 +828,13 @@ class SessionStore {
   private sanitizeDueDate(dueDate?: string): string | null {
     if (!dueDate) return null;
     const trimmed = dueDate.trim().slice(0, 10);
-    return isValidISODate(trimmed) ? trimmed : null;
+    if (!isValidISODate(trimmed)) {
+      throw new Error('INVALID_DUE_DATE');
+    }
+    if (isPastISODate(trimmed)) {
+      throw new Error('PAST_DUE_DATE');
+    }
+    return trimmed;
   }
 
   /**

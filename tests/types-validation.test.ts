@@ -4,8 +4,11 @@
 import { describe, expect, test } from 'bun:test';
 import {
     CHECK_IN_MOODS,
+    countGroupVotesForParticipant,
     countVotesForParticipant,
     formatJoinCode,
+    getTodayISODate,
+    isPastISODate,
     isValidCheckInMood,
     isValidColumnType,
     isValidISODate,
@@ -70,7 +73,9 @@ describe('constants', () => {
     const expected = [
       'set-the-stage',
       'gather-data',
-      'generate-insights',
+      'discuss-topics',
+      'cluster-cards',
+      'name-groups',
       'voting',
       'decide-action',
       'close-retro',
@@ -208,6 +213,17 @@ describe('isValidPhase()', () => {
   });
 });
 
+describe('date helpers', () => {
+  test('getTodayISODate returns local YYYY-MM-DD', () => {
+    expect(getTodayISODate(new Date('2026-03-09T12:34:56'))).toBe('2026-03-09');
+  });
+
+  test('isPastISODate detects dates before today', () => {
+    expect(isPastISODate('2026-03-08', '2026-03-09')).toBe(true);
+    expect(isPastISODate('2026-03-09', '2026-03-09')).toBe(false);
+  });
+});
+
 // ─── isValidISODate ───────────────────────────────────────────────────────────
 
 describe('isValidISODate()', () => {
@@ -275,5 +291,16 @@ describe('countVotesForParticipant()', () => {
     const cards = [{ voterIds: ['other-1', 'other-2'] }];
     const groups = [{ voterIds: ['other-3'] }];
     expect(countVotesForParticipant(cards, groups, user)).toBe(0);
+  });
+});
+
+describe('countGroupVotesForParticipant()', () => {
+  test('counts only group votes for voting budget usage', () => {
+    const user = 'user-1';
+    const groups = [
+      { voterIds: [user] },
+      { voterIds: [user, user] },
+    ];
+    expect(countGroupVotesForParticipant(groups, user)).toBe(3);
   });
 });

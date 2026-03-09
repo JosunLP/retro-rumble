@@ -44,7 +44,9 @@
   "phase": {
     "set-the-stage": "Przygotowanie",
     "gather-data": "Zbieranie danych",
-    "generate-insights": "Grupowanie",
+    "discuss-topics": "Dyskusja",
+    "cluster-cards": "Grupowanie",
+    "name-groups": "Nazwij grupy",
     "voting": "Głosowanie",
     "decide-action": "Działania",
     "close-retro": "Zamknięcie",
@@ -52,17 +54,19 @@
     "next": "Następna",
     "description": {
       "set-the-stage": "Witaj! Podziel się swoim nastrojem, aby ustawić atmosferę.",
-      "gather-data": "Pisz anonimowe karty o tym, co poszło dobrze i co można poprawić.",
-      "generate-insights": "Przeciągaj karty do grup, aby znaleźć wspólne tematy.",
-      "voting": "Głosuj na tematy najważniejsze dla zespołu.",
+      "gather-data": "Pisz anonimowe karty o tym, co zespół powinien zacząć robić, przestać robić i kontynuować.",
+      "discuss-topics": "Najpierw omówcie razem zebrane tematy, zanim zaczniecie grupować.",
+      "cluster-cards": "Przeciągaj powiązane karty do grup, ale jeszcze ich nie nazywaj.",
+      "name-groups": "Nazwij utworzone grupy i dopracuj ich tytuły.",
+      "voting": "Głosuj na zgrupowane tematy najważniejsze dla zespołu.",
       "decide-action": "Zdefiniuj konkretne działania i przypisz odpowiedzialności.",
       "close-retro": "Przejrzyj podsumowanie i oceń tę retrospektywę."
     }
   },
   "column": {
-    "went-well": "Co poszło dobrze",
-    "to-improve": "Do poprawy",
-    "action-items": "Działania",
+    "went-well": "Zacząć",
+    "to-improve": "Przestać",
+    "action-items": "Kontynuować",
     "empty": "Brak kart"
   },
   "card": {
@@ -75,6 +79,7 @@
   "grouping": {
     "instructionsHost": "Przeciągaj karty na siebie, aby tworzyć grupy. Odsuń kartę od grupy, aby ją rozgrupować.",
     "instructionsParticipant": "Przeciągaj karty na siebie, aby tworzyć grupy. Odsuń kartę od grupy, aby ją rozgrupować.",
+    "namingInstructions": "Tutaj nazwij grupy. Przeciąganie jest wyłączone w tym kroku, aby tytuły pozostały stabilne.",
     "newGroupTitle": "Nowa grupa",
     "clickToRename": "Kliknij, aby zmienić nazwę",
     "deleteGroup": "Usuń grupę",
@@ -88,10 +93,12 @@
   "voting": {
     "title": "Głosowanie",
     "remaining": "Pozostałe głosy",
-    "instructions": "Głosuj na najważniejsze karty i grupy do omówienia. Możesz swobodnie rozdzielać głosy.",
+    "instructions": "Głosuj na najważniejsze zgrupowane tematy do omówienia. Możesz swobodnie rozdzielać głosy.",
+    "groupOnlyHint": "Nowe głosy można oddawać tylko na grupy. Niezgrupowane karty pozostają widoczne jako kontekst.",
     "groupCardCount": "({count} kart)",
     "voteGroup": "Zagłosuj na grupę",
     "unvoteGroup": "Wycofaj głos z grupy",
+    "notVotable": "Nie można głosować",
     "voteCard": "Zagłosuj na kartę",
     "unvoteCard": "Wycofaj głos z karty"
   },
@@ -115,7 +122,10 @@
     "dueDate": "Termin",
     "dueDatePlaceholder": "RRRR-MM-DD",
     "toggleDone": "Oznacz jako ukończone",
-    "topVoted": "Najczęściej wybierane"
+    "topVoted": "Najczęściej wybierane",
+    "errors": {
+      "pastDueDate": "Terminy nie mogą być ustawione w przeszłości."
+    }
   },
   "export": {
     "title": "Eksportuj wyniki",

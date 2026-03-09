@@ -44,7 +44,9 @@
   "phase": {
     "set-the-stage": "Preparação",
     "gather-data": "Coleta de dados",
-    "generate-insights": "Agrupamento",
+    "discuss-topics": "Discussão",
+    "cluster-cards": "Agrupar",
+    "name-groups": "Nomear grupos",
     "voting": "Votação",
     "decide-action": "Ações",
     "close-retro": "Encerramento",
@@ -52,17 +54,19 @@
     "next": "Próximo",
     "description": {
       "set-the-stage": "Bem-vindo! Compartilhe como você está se sentindo para aquecer.",
-      "gather-data": "Escreva cartões anônimos sobre o que foi bem e o que pode melhorar.",
-      "generate-insights": "Arraste cartões para grupos para encontrar temas em comum.",
-      "voting": "Vote nos tópicos mais importantes para a equipe.",
+      "gather-data": "Escreva cartões anônimos sobre o que a equipe deve começar, parar e continuar fazendo.",
+      "discuss-topics": "Revisem juntos os temas coletados antes de começar a agrupar.",
+      "cluster-cards": "Arraste cartões relacionados para grupos sem nomeá-los ainda.",
+      "name-groups": "Dê nome aos grupos criados e refine seus títulos.",
+      "voting": "Vote nos temas agrupados mais importantes para a equipe.",
       "decide-action": "Defina ações concretas e atribua responsabilidades.",
       "close-retro": "Revise o resumo e dê seu feedback sobre esta retro."
     }
   },
   "column": {
-    "went-well": "O que foi bem",
-    "to-improve": "O que melhorar",
-    "action-items": "Ações",
+    "went-well": "Começar",
+    "to-improve": "Parar",
+    "action-items": "Continuar",
     "empty": "Nenhum cartão ainda"
   },
   "card": {
@@ -75,6 +79,7 @@
   "grouping": {
     "instructionsHost": "Arraste os cartões uns sobre os outros para criar grupos. Afaste um cartão de um grupo para desagrupá-lo.",
     "instructionsParticipant": "Arraste os cartões uns sobre os outros para criar grupos. Afaste um cartão de um grupo para desagrupá-lo.",
+    "namingInstructions": "Dê nome aos grupos aqui. O arrastar está desativado nesta etapa para manter os títulos estáveis.",
     "newGroupTitle": "Novo grupo",
     "clickToRename": "Clique para renomear",
     "deleteGroup": "Excluir grupo",
@@ -88,10 +93,12 @@
   "voting": {
     "title": "Votação",
     "remaining": "Votos restantes",
-    "instructions": "Vote nos cartões e grupos mais importantes para discutir. Você pode distribuir seus votos livremente.",
+    "instructions": "Vote nos temas agrupados mais importantes para discutir. Você pode distribuir seus votos livremente.",
+    "groupOnlyHint": "Novos votos só podem ser dados a grupos. Cartões não agrupados continuam visíveis como contexto.",
     "groupCardCount": "({count} cartões)",
     "voteGroup": "Votar no grupo",
     "unvoteGroup": "Remover voto do grupo",
+    "notVotable": "Não votável",
     "voteCard": "Votar no cartão",
     "unvoteCard": "Remover voto do cartão"
   },
@@ -115,7 +122,10 @@
     "dueDate": "Prazo",
     "dueDatePlaceholder": "AAAA-MM-DD",
     "toggleDone": "Marcar como concluído",
-    "topVoted": "Mais votado"
+    "topVoted": "Mais votado",
+    "errors": {
+      "pastDueDate": "Prazos não podem estar no passado."
+    }
   },
   "export": {
     "title": "Exportar resultados",
