@@ -13,6 +13,7 @@ import type {
     RetroPhase,
 } from '../../app/types/retro';
 import {
+    getTodayISODateUTC,
     isPastISODate,
     isValidColumnType,
     isValidISODate,
@@ -831,7 +832,7 @@ class SessionStore {
     if (!isValidISODate(trimmed)) {
       throw new Error('INVALID_DUE_DATE');
     }
-    if (isPastISODate(trimmed)) {
+    if (isPastISODate(trimmed, getTodayISODateUTC())) {
       throw new Error('PAST_DUE_DATE');
     }
     return trimmed;

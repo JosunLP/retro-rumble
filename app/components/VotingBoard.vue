@@ -50,22 +50,33 @@ function userGroupVotes(group: ICardGroup): number {
   return group.voterIds.filter((id) => id === props.currentUserId).length;
 }
 
-function groupVoteBreakdown(group: ICardGroup) {
-  const voteCounts = new Map<string, number>();
+const groupVoteBreakdowns = computed(() => {
+  return new Map(
+    props.session.groups.map((group) => {
+      const voteCounts = new Map<string, number>();
 
-  for (const voterId of group.voterIds) {
-    voteCounts.set(voterId, (voteCounts.get(voterId) ?? 0) + 1);
-  }
+      for (const voterId of group.voterIds) {
+        voteCounts.set(voterId, (voteCounts.get(voterId) ?? 0) + 1);
+      }
 
-  return props.session.participants
-    .map((participant) => ({
-      participantId: participant.id,
-      name: participant.name,
-      count: voteCounts.get(participant.id) ?? 0,
-      isCurrentUser: participant.id === props.currentUserId,
-    }))
-    .filter((entry) => entry.count > 0)
-    .sort((left, right) => right.count - left.count || left.name.localeCompare(right.name));
+      return [
+        group.id,
+        props.session.participants
+          .map((participant) => ({
+            participantId: participant.id,
+            name: participant.name,
+            count: voteCounts.get(participant.id) ?? 0,
+            isCurrentUser: participant.id === props.currentUserId,
+          }))
+          .filter((entry) => entry.count > 0)
+          .sort((left, right) => right.count - left.count || left.name.localeCompare(right.name)),
+      ];
+    })
+  );
+});
+
+function getGroupVoteBreakdown(groupId: string) {
+  return groupVoteBreakdowns.value.get(groupId) ?? [];
 }
 
 /** Whether the user can still cast a vote */
@@ -199,11 +210,11 @@ function hasContent(column: RetroColumnType): boolean {
           <!-- Group Cards -->
           <div class="p-3 space-y-2">
             <div
-              v-if="groupVoteBreakdown(group).length > 0"
+              v-if="getGroupVoteBreakdown(group.id).length > 0"
               class="flex flex-wrap gap-1.5 pb-1"
             >
               <span
-                v-for="vote in groupVoteBreakdown(group)"
+                v-for="vote in getGroupVoteBreakdown(group.id)"
                 :key="vote.participantId"
                 class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium"
                 :class="vote.isCurrentUser ? 'bg-primary-100 text-primary-700' : 'bg-secondary-100 text-secondary-600'"

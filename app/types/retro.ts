@@ -140,7 +140,7 @@ export function isValidPhase(value: unknown): value is RetroPhase {
     typeof value === 'string' &&
     (
       (RETRO_PHASES as readonly string[]).includes(value) ||
-      value in LEGACY_RETRO_PHASE_ALIASES
+      Object.hasOwn(LEGACY_RETRO_PHASE_ALIASES, value)
     )
   );
 }
@@ -176,6 +176,13 @@ export function getTodayISODate(now: Date = new Date()): string {
   const month = String(now.getMonth() + 1).padStart(2, '0');
   const day = String(now.getDate()).padStart(2, '0');
   return `${year}-${month}-${day}`;
+}
+
+/**
+ * Returns today's date in UTC as YYYY-MM-DD.
+ */
+export function getTodayISODateUTC(now: Date = new Date()): string {
+  return now.toISOString().slice(0, 10);
 }
 
 /**

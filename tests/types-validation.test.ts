@@ -8,6 +8,7 @@ import {
     countVotesForParticipant,
     formatJoinCode,
     getTodayISODate,
+    getTodayISODateUTC,
     isPastISODate,
     isValidCheckInMood,
     isValidColumnType,
@@ -199,9 +200,11 @@ describe('isValidPhase()', () => {
     }
   });
 
-  test('returns false for an unknown string', () => {
+  test('returns false for unknown strings and inherited object keys', () => {
     expect(isValidPhase('brainstorming')).toBe(false);
     expect(isValidPhase('writing')).toBe(false);
+    expect(isValidPhase('toString')).toBe(false);
+    expect(isValidPhase('constructor')).toBe(false);
     expect(isValidPhase('')).toBe(false);
   });
 
@@ -216,6 +219,10 @@ describe('isValidPhase()', () => {
 describe('date helpers', () => {
   test('getTodayISODate returns local YYYY-MM-DD', () => {
     expect(getTodayISODate(new Date('2026-03-09T12:34:56'))).toBe('2026-03-09');
+  });
+
+  test('getTodayISODateUTC returns UTC YYYY-MM-DD', () => {
+    expect(getTodayISODateUTC(new Date('2026-03-09T23:30:00-05:00'))).toBe('2026-03-10');
   });
 
   test('isPastISODate detects dates before today', () => {
