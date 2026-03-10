@@ -35,6 +35,7 @@ import type {
     VoteCardPayload,
     VoteGroupPayload,
 } from '../../app/types/websocket';
+import { normalizePhase } from '../../app/types/retro';
 import { sessionStore } from '../utils/sessionStore';
 
 /**
@@ -356,7 +357,15 @@ function handleLeaveSession(peer: Peer): void {
 // ============================================
 
 function handlePhaseChange(peer: Peer, payload: PhaseChangePayload): void {
-  const session = sessionStore.changePhase(peer, payload.phase);
+  const phase = normalizePhase(payload.phase);
+  if (!phase) {
+    sendMessage(peer, 'session:error', {
+      message: `Invalid phase: "${String(payload.phase)}". Use a recognized phase name.`,
+      code: 'INVALID_PHASE',
+    });
+    return;
+  }
+  const session = sessionStore.changePhase(peer, phase);
 
   if (!session) {
     sendMessage(peer, 'session:error', {

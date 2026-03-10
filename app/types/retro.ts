@@ -133,15 +133,15 @@ export function isValidCheckInMood(value: unknown): value is CheckInMood {
 }
 
 /**
- * Validates a retro phase value
+ * Validates a retro phase value (canonical phases only).
+ * Does not accept legacy phase aliases — use normalizePhase() at input
+ * boundaries (WebSocket payloads, localStorage, etc.) where legacy values
+ * may appear.
  */
 export function isValidPhase(value: unknown): value is RetroPhase {
   return (
     typeof value === 'string' &&
-    (
-      (RETRO_PHASES as readonly string[]).includes(value) ||
-      Object.hasOwn(LEGACY_RETRO_PHASE_ALIASES, value)
-    )
+    (RETRO_PHASES as readonly string[]).includes(value)
   );
 }
 

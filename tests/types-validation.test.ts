@@ -22,6 +22,7 @@ import {
     MAX_GROUP_TITLE_LENGTH,
     MAX_PARTICIPANT_NAME_LENGTH,
     MAX_SESSION_NAME_LENGTH,
+    normalizePhase,
     RETRO_COLUMNS,
     RETRO_PHASES,
 } from '../app/types/retro';
@@ -203,6 +204,7 @@ describe('isValidPhase()', () => {
   test('returns false for unknown strings and inherited object keys', () => {
     expect(isValidPhase('brainstorming')).toBe(false);
     expect(isValidPhase('writing')).toBe(false);
+    expect(isValidPhase('generate-insights')).toBe(false);
     expect(isValidPhase('toString')).toBe(false);
     expect(isValidPhase('constructor')).toBe(false);
     expect(isValidPhase('')).toBe(false);
@@ -213,6 +215,33 @@ describe('isValidPhase()', () => {
     expect(isValidPhase(null)).toBe(false);
     expect(isValidPhase(undefined)).toBe(false);
     expect(isValidPhase({})).toBe(false);
+  });
+});
+
+// ─── normalizePhase ────────────────────────────────────────────────────────────
+
+describe('normalizePhase()', () => {
+  test('returns the canonical phase for each defined phase', () => {
+    for (const phase of RETRO_PHASES) {
+      expect(normalizePhase(phase)).toBe(phase);
+    }
+  });
+
+  test('maps legacy generate-insights to cluster-cards', () => {
+    expect(normalizePhase('generate-insights')).toBe('cluster-cards');
+  });
+
+  test('returns null for unknown strings', () => {
+    expect(normalizePhase('brainstorming')).toBeNull();
+    expect(normalizePhase('writing')).toBeNull();
+    expect(normalizePhase('')).toBeNull();
+  });
+
+  test('returns null for non-string types', () => {
+    expect(normalizePhase(42)).toBeNull();
+    expect(normalizePhase(null)).toBeNull();
+    expect(normalizePhase(undefined)).toBeNull();
+    expect(normalizePhase({})).toBeNull();
   });
 });
 
