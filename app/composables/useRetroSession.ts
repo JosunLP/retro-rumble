@@ -254,15 +254,13 @@ export function useRetroSession() {
         specificMessage = candidate === specificKey ? null : candidate;
       }
 
-      // Generic fallback: try i18n first, then server message, then a hardcoded string
+      // Generic fallback: try i18n first, then server message
       const genericKey = 'errors.genericError';
       const genericCandidate = t(genericKey);
       const genericMessage =
-        genericCandidate === genericKey
-          ? (payload.message ?? 'An unexpected error occurred. Please try again.')
-          : genericCandidate;
+        genericCandidate === genericKey ? (payload.message ?? genericKey) : genericCandidate;
 
-      const message = specificMessage ?? payload.message ?? genericMessage;
+      const message = specificMessage ?? genericMessage;
       state.value = {
         ...state.value,
         error: message,
