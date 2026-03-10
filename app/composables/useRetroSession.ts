@@ -238,9 +238,19 @@ export function useRetroSession() {
 
     // Error
     on<SessionErrorPayload>('session:error', (payload) => {
+      const errorMessageMap: Record<string, string> = {
+        PAST_DUE_DATE: t('errors.pastDueDate'),
+        INVALID_DUE_DATE: t('errors.invalidDueDate'),
+        ACTION_ADD_FAILED: t('errors.actionAddFailed'),
+        ACTION_EDIT_FAILED: t('errors.actionEditFailed'),
+      };
+      const message =
+        errorMessageMap[payload.code] ??
+        payload.message ??
+        t('errors.genericError');
       state.value = {
         ...state.value,
-        error: payload.message,
+        error: message,
       };
     });
 

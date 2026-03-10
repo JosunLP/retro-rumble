@@ -82,34 +82,17 @@ type ActionItemErrorCode =
   | 'ACTION_ADD_FAILED'
   | 'ACTION_EDIT_FAILED';
 
-function getActionItemErrorResponse(
+function getActionItemErrorCode(
   error: unknown,
   fallbackCode: 'ACTION_ADD_FAILED' | 'ACTION_EDIT_FAILED'
-): { code: ActionItemErrorCode; message: string } {
+): ActionItemErrorCode {
   if (error instanceof Error) {
-    if (error.message === 'PAST_DUE_DATE') {
-      return {
-        code: 'PAST_DUE_DATE',
-        message: 'Deadline cannot be in the past.',
-      };
-    }
-
-    if (error.message === 'INVALID_DUE_DATE') {
-      return {
-        code: 'INVALID_DUE_DATE',
-        message: 'Please enter a valid deadline.',
-      };
-    }
+    if (error.message === 'PAST_DUE_DATE') return 'PAST_DUE_DATE';
+    if (error.message === 'INVALID_DUE_DATE') return 'INVALID_DUE_DATE';
   }
 
   console.error(`[WebSocket] Unexpected ${fallbackCode}:`, error);
-  return {
-    code: fallbackCode,
-    message:
-      fallbackCode === 'ACTION_ADD_FAILED'
-        ? 'Could not add action item.'
-        : 'Could not edit action item.',
-  };
+  return fallbackCode;
 }
 
 /**
@@ -625,17 +608,14 @@ function handleAddActionItem(peer: Peer, payload: AddActionItemPayload): void {
       payload.dueDate
     );
   } catch (error) {
-    const { code, message } = getActionItemErrorResponse(error, 'ACTION_ADD_FAILED');
     sendMessage(peer, 'session:error', {
-      message,
-      code,
+      code: getActionItemErrorCode(error, 'ACTION_ADD_FAILED'),
     });
     return;
   }
 
   if (!session) {
     sendMessage(peer, 'session:error', {
-      message: 'Could not add action item.',
       code: 'ACTION_ADD_FAILED',
     });
     return;
@@ -659,17 +639,14 @@ function handleEditActionItem(
       payload.dueDate
     );
   } catch (error) {
-    const { code, message } = getActionItemErrorResponse(error, 'ACTION_EDIT_FAILED');
     sendMessage(peer, 'session:error', {
-      message,
-      code,
+      code: getActionItemErrorCode(error, 'ACTION_EDIT_FAILED'),
     });
     return;
   }
 
   if (!session) {
     sendMessage(peer, 'session:error', {
-      message: 'Could not edit action item.',
       code: 'ACTION_EDIT_FAILED',
     });
     return;

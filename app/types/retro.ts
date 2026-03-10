@@ -153,9 +153,10 @@ export function normalizePhase(value: unknown): RetroPhase | null {
   if ((RETRO_PHASES as readonly string[]).includes(value)) {
     return value as RetroPhase;
   }
-  return LEGACY_RETRO_PHASE_ALIASES[
-    value as LegacyRetroPhase
-  ] ?? null;
+  if (Object.hasOwn(LEGACY_RETRO_PHASE_ALIASES, value)) {
+    return LEGACY_RETRO_PHASE_ALIASES[value as LegacyRetroPhase];
+  }
+  return null;
 }
 
 /**

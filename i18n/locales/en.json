@@ -170,7 +170,12 @@
     "connectionFailed": "Could not connect to the server.",
     "clipboardFailed": "Could not copy to clipboard. Please copy manually.",
     "actionLimitReached": "Action item limit reached.",
-    "actionWrongPhase": "Action items can only be added during the Actions or Close phase."
+    "actionWrongPhase": "Action items can only be added during the Actions or Close phase.",
+    "pastDueDate": "Deadline cannot be in the past.",
+    "invalidDueDate": "Please enter a valid deadline.",
+    "actionAddFailed": "Could not add action item.",
+    "actionEditFailed": "Could not edit action item.",
+    "genericError": "An unexpected error occurred. Please try again."
   },
   "ui": {
     "leaveConfirm": "Are you sure you want to leave this session?",
