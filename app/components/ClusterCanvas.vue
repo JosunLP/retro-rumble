@@ -324,7 +324,7 @@ watch(
                   <input
                     :value="getDisplayedGroupTitle(group.id, group.title)"
                     class="text-sm font-semibold bg-transparent border-none outline-none text-secondary-700 placeholder-secondary-400 min-w-0 flex-1"
-                    :aria-label="`${t('grouping.clickToRename')}: ${group.title}`"
+                    :aria-label="`${t('grouping.clickToRename')}: ${group.title || t('grouping.newGroupTitle')}`"
                     :placeholder="t('grouping.clickToRename')"
                     @focus="startGroupRename(group.id, group.title)"
                     @input="updateGroupTitleDraft(group.id, ($event.target as HTMLInputElement).value)"
