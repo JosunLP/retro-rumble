@@ -368,7 +368,7 @@ export class RetroSession implements IRetroSession {
   }
 
   /**
-   * Renames a group (only during generate-insights phase)
+   * Renames a group (only during name-groups phase)
    */
   public renameGroup(groupId: string, title: string): boolean {
     if (this.phase !== 'name-groups') return false;
@@ -393,7 +393,7 @@ export class RetroSession implements IRetroSession {
 
   /**
    * Deletes a group (cards are kept, just ungrouped).
-   * Only allowed during generate-insights phase.
+   * Only allowed during cluster-cards phase.
    */
   public deleteGroup(groupId: string): boolean {
     if (this.phase !== 'cluster-cards') return false;

@@ -2,7 +2,8 @@
 /**
  * ClusterCanvas Component
  *
- * Column-based card clustering for the generate-insights phase.
+ * Column-based card clustering and naming for the cluster-cards and
+ * name-groups phases.
  * Cards are organized in three columns with groups rendered as
  * bordered containers. Pointer-based drag & drop for grouping.
  */
@@ -206,7 +207,10 @@ watch(
 
     for (const groupId of Object.keys(groupTitleDrafts)) {
       if (!activeGroupIds.has(groupId)) {
-        groupTitleDrafts[groupId] = '';
+        if (editingGroupId.value === groupId) {
+          editingGroupId.value = null;
+        }
+        Reflect.deleteProperty(groupTitleDrafts, groupId);
       }
     }
   },

@@ -75,6 +75,42 @@ function broadcastToSession(
   }
 }
 
+type ActionItemErrorCode =
+  | 'INVALID_DUE_DATE'
+  | 'PAST_DUE_DATE'
+  | 'ACTION_ADD_FAILED'
+  | 'ACTION_EDIT_FAILED';
+
+function getActionItemErrorResponse(
+  error: unknown,
+  fallbackCode: 'ACTION_ADD_FAILED' | 'ACTION_EDIT_FAILED'
+): { code: ActionItemErrorCode; message: string } {
+  if (error instanceof Error) {
+    if (error.message === 'PAST_DUE_DATE') {
+      return {
+        code: 'PAST_DUE_DATE',
+        message: 'Deadline cannot be in the past.',
+      };
+    }
+
+    if (error.message === 'INVALID_DUE_DATE') {
+      return {
+        code: 'INVALID_DUE_DATE',
+        message: 'Please enter a valid deadline.',
+      };
+    }
+  }
+
+  console.error(`[WebSocket] Unexpected ${fallbackCode}:`, error);
+  return {
+    code: fallbackCode,
+    message:
+      fallbackCode === 'ACTION_ADD_FAILED'
+        ? 'Could not add action item.'
+        : 'Could not edit action item.',
+  };
+}
+
 /**
  * Safely dispatches a handler, catching any uncaught exceptions so that
  * one bad message never tears down the entire WebSocket connection.
@@ -580,12 +616,9 @@ function handleAddActionItem(peer: Peer, payload: AddActionItemPayload): void {
       payload.dueDate
     );
   } catch (error) {
-    const code = error instanceof Error ? error.message : 'ACTION_ADD_FAILED';
+    const { code, message } = getActionItemErrorResponse(error, 'ACTION_ADD_FAILED');
     sendMessage(peer, 'session:error', {
-      message:
-        code === 'PAST_DUE_DATE'
-          ? 'Deadline cannot be in the past.'
-          : 'Please enter a valid deadline.',
+      message,
       code,
     });
     return;
@@ -617,12 +650,9 @@ function handleEditActionItem(
       payload.dueDate
     );
   } catch (error) {
-    const code = error instanceof Error ? error.message : 'ACTION_EDIT_FAILED';
+    const { code, message } = getActionItemErrorResponse(error, 'ACTION_EDIT_FAILED');
     sendMessage(peer, 'session:error', {
-      message:
-        code === 'PAST_DUE_DATE'
-          ? 'Deadline cannot be in the past.'
-          : 'Please enter a valid deadline.',
+      message,
       code,
     });
     return;
