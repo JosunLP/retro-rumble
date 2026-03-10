@@ -33,6 +33,16 @@ function makePeer(): Peer {
 }
 
 /**
+ * Returns an ISO date string (YYYY-MM-DD) offset by `days` from today (UTC).
+ * Positive values are future dates, negative values are past dates.
+ */
+function isoDateOffsetUTC(days: number): string {
+  const d = new Date();
+  d.setUTCDate(d.getUTCDate() + days);
+  return d.toISOString().slice(0, 10);
+}
+
+/**
  * Advances the store session to the target phase step-by-step via the host peer.
  * Phase order: set-the-stage → gather-data → discuss-topics → cluster-cards → name-groups → voting → decide-action → close-retro
  */
@@ -328,18 +338,20 @@ describe('SessionStore', () => {
       const peer = makePeer();
       sessionStore.createSession('Action Date OK', 'Host', peer);
       advanceToPhase(peer, 'decide-action');
-      const result = sessionStore.addActionItem(peer, 'Ship feature', undefined, '2027-06-15');
+      const futureDate = isoDateOffsetUTC(1);
+      const result = sessionStore.addActionItem(peer, 'Ship feature', undefined, futureDate);
       expect(result).not.toBeNull();
       const action = result!.actionItems[result!.actionItems.length - 1];
-      expect(action!.dueDate).toBe('2027-06-15');
+      expect(action!.dueDate).toBe(futureDate);
     });
 
     test('rejects deadlines in the past', () => {
       const peer = makePeer();
       sessionStore.createSession('Action Date Past', 'Host', peer);
       advanceToPhase(peer, 'decide-action');
+      const pastDate = isoDateOffsetUTC(-1);
       expect(() =>
-        sessionStore.addActionItem(peer, 'Fix bug', undefined, '2025-01-01')
+        sessionStore.addActionItem(peer, 'Fix bug', undefined, pastDate)
       ).toThrow('PAST_DUE_DATE');
     });
   });
