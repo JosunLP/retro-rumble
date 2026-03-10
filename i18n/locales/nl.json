@@ -170,7 +170,12 @@
     "connectionFailed": "Kan geen verbinding maken met de server.",
     "clipboardFailed": "Kon niet naar klembord kopiëren. Kopieer handmatig.",
     "actionLimitReached": "Actielimiet bereikt.",
-    "actionWrongPhase": "Acties kunnen alleen worden toegevoegd tijdens de Acties of Afsluitingsfase."
+    "actionWrongPhase": "Acties kunnen alleen worden toegevoegd tijdens de Acties of Afsluitingsfase.",
+    "pastDueDate": "De deadline kan niet in het verleden liggen.",
+    "invalidDueDate": "Voer een geldige deadline in.",
+    "actionAddFailed": "Actie-item kon niet worden toegevoegd.",
+    "actionEditFailed": "Actie-item kon niet worden bewerkt.",
+    "genericError": "Er is een onverwachte fout opgetreden. Probeer het opnieuw."
   },
   "ui": {
     "leaveConfirm": "Weet je zeker dat je deze sessie wilt verlaten?",

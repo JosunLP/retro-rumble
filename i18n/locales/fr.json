@@ -170,7 +170,12 @@
     "connectionFailed": "Impossible de se connecter au serveur.",
     "clipboardFailed": "Impossible de copier dans le presse-papiers. Veuillez copier manuellement.",
     "actionLimitReached": "Limite d'actions atteinte.",
-    "actionWrongPhase": "Les actions ne peuvent être ajoutées que pendant la phase Actions ou Clôture."
+    "actionWrongPhase": "Les actions ne peuvent être ajoutées que pendant la phase Actions ou Clôture.",
+    "pastDueDate": "La date limite ne peut pas être dans le passé.",
+    "invalidDueDate": "Veuillez saisir une date limite valide.",
+    "actionAddFailed": "Impossible d'ajouter l'élément d'action.",
+    "actionEditFailed": "Impossible de modifier l'élément d'action.",
+    "genericError": "Une erreur inattendue s'est produite. Veuillez réessayer."
   },
   "ui": {
     "leaveConfirm": "Êtes-vous sûr de vouloir quitter cette session ?",

@@ -170,7 +170,12 @@
     "connectionFailed": "No se pudo conectar al servidor.",
     "clipboardFailed": "No se pudo copiar al portapapeles. Por favor, cópielo manualmente.",
     "actionLimitReached": "Se alcanzó el límite de acciones.",
-    "actionWrongPhase": "Las acciones solo se pueden agregar durante la fase de Acciones o Cierre."
+    "actionWrongPhase": "Las acciones solo se pueden agregar durante la fase de Acciones o Cierre.",
+    "pastDueDate": "La fecha límite no puede estar en el pasado.",
+    "invalidDueDate": "Por favor, ingrese una fecha límite válida.",
+    "actionAddFailed": "No se pudo agregar el elemento de acción.",
+    "actionEditFailed": "No se pudo editar el elemento de acción.",
+    "genericError": "Ocurrió un error inesperado. Por favor, inténtelo de nuevo."
   },
   "ui": {
     "leaveConfirm": "¿Seguro que quieres salir de esta sesión?",
