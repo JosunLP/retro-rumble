@@ -170,7 +170,12 @@
     "connectionFailed": "サーバーに接続できませんでした。",
     "clipboardFailed": "クリップボードにコピーできませんでした。手動でコピーしてください。",
     "actionLimitReached": "アクションの上限に達しました。",
-    "actionWrongPhase": "アクションはアクションフェーズまたはクローズフェーズでのみ追加できます。"
+    "actionWrongPhase": "アクションはアクションフェーズまたはクローズフェーズでのみ追加できます。",
+    "pastDueDate": "期限を過去の日付に設定することはできません。",
+    "invalidDueDate": "有効な期限を入力してください。",
+    "actionAddFailed": "アクションアイテムを追加できませんでした。",
+    "actionEditFailed": "アクションアイテムを編集できませんでした。",
+    "genericError": "予期しないエラーが発生しました。もう一度お試しください。"
   },
   "ui": {
     "leaveConfirm": "本当にこのセッションを離れますか？",

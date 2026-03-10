@@ -170,7 +170,12 @@
     "connectionFailed": "Impossibile connettersi al server.",
     "clipboardFailed": "Impossibile copiare negli appunti. Si prega di copiare manualmente.",
     "actionLimitReached": "Limite di azioni raggiunto.",
-    "actionWrongPhase": "Le azioni possono essere aggiunte solo durante la fase Azioni o Chiusura."
+    "actionWrongPhase": "Le azioni possono essere aggiunte solo durante la fase Azioni o Chiusura.",
+    "pastDueDate": "La scadenza non può essere nel passato.",
+    "invalidDueDate": "Si prega di inserire una scadenza valida.",
+    "actionAddFailed": "Impossibile aggiungere l'elemento di azione.",
+    "actionEditFailed": "Impossibile modificare l'elemento di azione.",
+    "genericError": "Si è verificato un errore imprevisto. Per favore riprova."
   },
   "ui": {
     "leaveConfirm": "Sei sicuro di voler abbandonare questa sessione?",

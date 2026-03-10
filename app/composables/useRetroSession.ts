@@ -238,16 +238,29 @@ export function useRetroSession() {
 
     // Error
     on<SessionErrorPayload>('session:error', (payload) => {
-      const errorMessageMap: Record<string, string> = {
-        PAST_DUE_DATE: t('errors.pastDueDate'),
-        INVALID_DUE_DATE: t('errors.invalidDueDate'),
-        ACTION_ADD_FAILED: t('errors.actionAddFailed'),
-        ACTION_EDIT_FAILED: t('errors.actionEditFailed'),
+      // Map backend error codes to i18n keys (do not resolve them eagerly)
+      const errorKeyMap: Record<string, string> = {
+        PAST_DUE_DATE: 'errors.pastDueDate',
+        INVALID_DUE_DATE: 'errors.invalidDueDate',
+        ACTION_ADD_FAILED: 'errors.actionAddFailed',
+        ACTION_EDIT_FAILED: 'errors.actionEditFailed',
       };
-      const message =
-        errorMessageMap[payload.code] ??
-        payload.message ??
-        t('errors.genericError');
+
+      const specificKey = errorKeyMap[payload.code];
+      let specificMessage: string | null = null;
+      if (specificKey) {
+        const candidate = t(specificKey);
+        // If the translation key is missing, most i18n setups return the key itself
+        specificMessage = candidate === specificKey ? null : candidate;
+      }
+
+      // Generic fallback: try i18n first, then server message
+      const genericKey = 'errors.genericError';
+      const genericCandidate = t(genericKey);
+      const genericMessage =
+        genericCandidate === genericKey ? (payload.message ?? genericKey) : genericCandidate;
+
+      const message = specificMessage ?? genericMessage;
       state.value = {
         ...state.value,
         error: message,

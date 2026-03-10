@@ -170,7 +170,12 @@
     "connectionFailed": "Det gick inte att ansluta till servern.",
     "clipboardFailed": "Kunde inte kopiera till urklipp. Vänligen kopiera manuellt.",
     "actionLimitReached": "Åtgärdsgränsen har nåtts.",
-    "actionWrongPhase": "Åtgärder kan bara läggas till under Åtgärds- eller Avslutningsfasen."
+    "actionWrongPhase": "Åtgärder kan bara läggas till under Åtgärds- eller Avslutningsfasen.",
+    "pastDueDate": "Deadline kan inte ställas in i det förflutna.",
+    "invalidDueDate": "Ange ett giltigt datum för deadline.",
+    "actionAddFailed": "Det gick inte att lägga till åtgärdspunkten.",
+    "actionEditFailed": "Det gick inte att redigera åtgärdspunkten.",
+    "genericError": "Ett oväntat fel inträffade. Försök igen."
   },
   "ui": {
     "leaveConfirm": "Är du säker på att du vill lämna den här sessionen?",
