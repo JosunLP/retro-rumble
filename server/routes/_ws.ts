@@ -360,7 +360,7 @@ function handlePhaseChange(peer: Peer, payload: PhaseChangePayload): void {
   const phase = normalizePhase(payload.phase);
   if (!phase) {
     sendMessage(peer, 'session:error', {
-      message: `Invalid phase: "${String(payload.phase)}". Use a recognised phase name.`,
+      message: `Invalid phase: "${String(payload.phase)}". Use a recognized phase name.`,
       code: 'INVALID_PHASE',
     });
     return;
