@@ -247,9 +247,9 @@ export class RetroSession implements IRetroSession {
   }
 
   /**
-   * Votes for a card.
-   * A participant may place multiple votes on the same card (dot voting),
-   * limited only by the per-user vote budget.
+   * Card voting is intentionally disabled.
+   * Voting is only supported on groups (see voteGroup).
+   * This method is a no-op and always returns false.
    */
   public voteCard(cardId: string, participantId: string): boolean {
     void cardId;

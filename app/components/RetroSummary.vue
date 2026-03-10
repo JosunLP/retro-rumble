@@ -14,7 +14,7 @@ import type {
     IRetroSession,
     RetroColumnType,
 } from '~/types';
-import { getTodayISODateUTC, isPastISODate } from '~/types';
+import { getTodayISODate, isPastISODate } from '~/types';
 import { COLUMN_META, ORDERED_COLUMNS } from '~/utils/columnConfig';
 import { sortByCreatedAt, sortByVotesThenCreatedAt } from '~/utils/retroSorting';
 
@@ -47,7 +47,7 @@ const actionError = ref<string | null>(null);
 const columns = ORDERED_COLUMNS;
 
 const columnConfig = COLUMN_META;
-const minDueDate = computed(() => getTodayISODateUTC());
+const minDueDate = computed(() => getTodayISODate());
 
 function cardsForColumn(col: RetroColumnType): IRetroCard[] {
   return sortByVotesThenCreatedAt(props.session.cards.filter((c) => c.column === col));
@@ -94,7 +94,7 @@ function validateDueDate(dueDate?: string): boolean {
     return true;
   }
 
-  if (isPastISODate(dueDate, getTodayISODateUTC())) {
+  if (isPastISODate(dueDate, getTodayISODate())) {
     actionError.value = t('summary.errors.pastDueDate');
     return false;
   }
