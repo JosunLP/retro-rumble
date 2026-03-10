@@ -196,8 +196,9 @@ function handleDeleteGroup(groupId: string) {
 }
 
 watch(
-  () => props.session.groups,
-  (nextGroups) => {
+  () => props.session.groups.map((g) => `${g.id}:${g.title}`),
+  () => {
+    const nextGroups = props.session.groups;
     const activeGroupIds = new Set(nextGroups.map((group) => group.id));
 
     for (const group of nextGroups) {
@@ -215,7 +216,7 @@ watch(
       }
     }
   },
-  { immediate: true, deep: true }
+  { immediate: true }
 );
 
 watch(

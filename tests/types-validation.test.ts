@@ -243,6 +243,14 @@ describe('normalizePhase()', () => {
     expect(normalizePhase(undefined)).toBeNull();
     expect(normalizePhase({})).toBeNull();
   });
+
+  test('returns null for inherited Object.prototype property names', () => {
+    expect(normalizePhase('toString')).toBeNull();
+    expect(normalizePhase('constructor')).toBeNull();
+    expect(normalizePhase('__proto__')).toBeNull();
+    expect(normalizePhase('hasOwnProperty')).toBeNull();
+    expect(normalizePhase('valueOf')).toBeNull();
+  });
 });
 
 describe('date helpers', () => {

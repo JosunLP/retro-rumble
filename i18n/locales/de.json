@@ -170,7 +170,12 @@
     "connectionFailed": "Verbindung zum Server fehlgeschlagen.",
     "clipboardFailed": "Kopieren in die Zwischenablage fehlgeschlagen. Bitte manuell kopieren.",
     "actionLimitReached": "Maßnahmen-Limit erreicht.",
-    "actionWrongPhase": "Maßnahmen können nur in der Aktions- oder Abschlussphase hinzugefügt werden."
+    "actionWrongPhase": "Maßnahmen können nur in der Aktions- oder Abschlussphase hinzugefügt werden.",
+    "pastDueDate": "Der Fälligkeitstermin darf nicht in der Vergangenheit liegen.",
+    "invalidDueDate": "Bitte gib ein gültiges Fälligkeitsdatum ein.",
+    "actionAddFailed": "Maßnahme konnte nicht hinzugefügt werden.",
+    "actionEditFailed": "Maßnahme konnte nicht bearbeitet werden.",
+    "genericError": "Ein unerwarteter Fehler ist aufgetreten. Bitte versuche es erneut."
   },
   "ui": {
     "leaveConfirm": "Möchtest du die Session wirklich verlassen?",
