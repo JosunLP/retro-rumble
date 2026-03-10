@@ -51,6 +51,10 @@ function userGroupVotes(group: ICardGroup): number {
 }
 
 const groupVoteBreakdowns = computed(() => {
+  const participantMap = new Map(
+    props.session.participants.map((p) => [p.id, p.name])
+  );
+
   return new Map(
     props.session.groups.map((group) => {
       const voteCounts = new Map<string, number>();
@@ -59,17 +63,16 @@ const groupVoteBreakdowns = computed(() => {
         voteCounts.set(voterId, (voteCounts.get(voterId) ?? 0) + 1);
       }
 
+      const breakdown = Array.from(voteCounts.entries()).map(([voterId, count]) => ({
+        participantId: voterId,
+        name: participantMap.get(voterId) ?? t('checkin.unknownParticipant'),
+        count,
+        isCurrentUser: voterId === props.currentUserId,
+      }));
+
       return [
         group.id,
-        props.session.participants
-          .map((participant) => ({
-            participantId: participant.id,
-            name: participant.name,
-            count: voteCounts.get(participant.id) ?? 0,
-            isCurrentUser: participant.id === props.currentUserId,
-          }))
-          .filter((entry) => entry.count > 0)
-          .sort((left, right) => right.count - left.count || left.name.localeCompare(right.name)),
+        breakdown.sort((left, right) => right.count - left.count || left.name.localeCompare(right.name)),
       ];
     })
   );
