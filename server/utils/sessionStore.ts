@@ -825,6 +825,7 @@ class SessionStore {
   /**
    * Sanitizes and validates an optional due-date string.
    * Returns a valid ISO date (YYYY-MM-DD) or null.
+   * Throws INVALID_DUE_DATE or PAST_DUE_DATE when the input is invalid.
    */
   private sanitizeDueDate(dueDate?: string): string | null {
     if (!dueDate) return null;
