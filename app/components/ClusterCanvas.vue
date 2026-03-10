@@ -175,6 +175,7 @@ function getDisplayedGroupTitle(groupId: string, currentTitle: string): string {
 
 function commitGroupRename(groupId: string, currentTitle: string): void {
   if (!isNamingMode.value) return;
+  if (editingGroupId.value !== groupId) return;
   const draft = (groupTitleDrafts[groupId] ?? currentTitle).trim();
   editingGroupId.value = null;
 
