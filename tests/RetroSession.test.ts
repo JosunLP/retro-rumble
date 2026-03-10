@@ -212,9 +212,8 @@ describe('RetroSession', () => {
     });
 
     test('group votes enforce max votes per user', () => {
-      advanceToPhase(session, 'decide-action');
-      advanceToPhase(session, 'voting');
-      session.phase = 'cluster-cards';
+      // Go back from voting (beforeEach) to cluster-cards to create groups properly
+      advanceToPhase(session, 'cluster-cards');
       const cards = [
         session.addCard('went-well', 'A', 'member-id'),
         session.addCard('went-well', 'B', 'member-id'),
@@ -245,7 +244,7 @@ describe('RetroSession', () => {
     });
 
     test('getRemainingVotes counts only group votes', () => {
-      session.phase = 'cluster-cards';
+      advanceToPhase(session, 'cluster-cards');
       const c1 = session.addCard('went-well', 'X', 'member-id');
       const c2 = session.addCard('went-well', 'Y', 'member-id');
       const group = session.createGroup('G', 'went-well', [c1.id, c2.id])!;
