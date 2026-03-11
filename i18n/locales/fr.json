@@ -173,6 +173,7 @@
     "actionWrongPhase": "Les actions ne peuvent être ajoutées que pendant la phase Actions ou Clôture.",
     "pastDueDate": "La date limite ne peut pas être dans le passé.",
     "invalidDueDate": "Veuillez saisir une date limite valide.",
+    "invalidPhase": "La phase sélectionnée n'est pas valide.",
     "actionAddFailed": "Impossible d'ajouter l'élément d'action.",
     "actionEditFailed": "Impossible de modifier l'élément d'action.",
     "genericError": "Une erreur inattendue s'est produite. Veuillez réessayer."

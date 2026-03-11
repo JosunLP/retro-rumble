@@ -173,6 +173,7 @@
     "actionWrongPhase": "Działania można dodawać tylko w fazie Działań lub Zamknięcia.",
     "pastDueDate": "Termin nie może być ustawiony w przeszłości.",
     "invalidDueDate": "Proszę wprowadzić prawidłowy termin.",
+    "invalidPhase": "Wybrana faza jest nieprawidłowa.",
     "actionAddFailed": "Nie można dodać elementu działania.",
     "actionEditFailed": "Nie można edytować elementu działania.",
     "genericError": "Wystąpił nieoczekiwany błąd. Spróbuj ponownie."

@@ -173,6 +173,7 @@
     "actionWrongPhase": "Maßnahmen können nur in der Aktions- oder Abschlussphase hinzugefügt werden.",
     "pastDueDate": "Der Fälligkeitstermin darf nicht in der Vergangenheit liegen.",
     "invalidDueDate": "Bitte gib ein gültiges Fälligkeitsdatum ein.",
+    "invalidPhase": "Die ausgewählte Phase ist ungültig.",
     "actionAddFailed": "Maßnahme konnte nicht hinzugefügt werden.",
     "actionEditFailed": "Maßnahme konnte nicht bearbeitet werden.",
     "genericError": "Ein unerwarteter Fehler ist aufgetreten. Bitte versuche es erneut."

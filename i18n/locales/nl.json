@@ -173,6 +173,7 @@
     "actionWrongPhase": "Acties kunnen alleen worden toegevoegd tijdens de Acties of Afsluitingsfase.",
     "pastDueDate": "De deadline kan niet in het verleden liggen.",
     "invalidDueDate": "Voer een geldige deadline in.",
+    "invalidPhase": "De geselecteerde fase is ongeldig.",
     "actionAddFailed": "Actie-item kon niet worden toegevoegd.",
     "actionEditFailed": "Actie-item kon niet worden bewerkt.",
     "genericError": "Er is een onverwachte fout opgetreden. Probeer het opnieuw."
