@@ -245,6 +245,7 @@ export function useRetroSession() {
         INVALID_PHASE: 'errors.invalidPhase',
         ACTION_ADD_FAILED: 'errors.actionAddFailed',
         ACTION_EDIT_FAILED: 'errors.actionEditFailed',
+        VOTE_GROUP_ONLY: 'errors.voteGroupOnly',
       };
 
       const specificKey = errorKeyMap[payload.code];

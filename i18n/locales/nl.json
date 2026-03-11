@@ -176,7 +176,8 @@
     "invalidPhase": "De geselecteerde fase is ongeldig.",
     "actionAddFailed": "Actie-item kon niet worden toegevoegd.",
     "actionEditFailed": "Actie-item kon niet worden bewerkt.",
-    "genericError": "Er is een onverwachte fout opgetreden. Probeer het opnieuw."
+    "genericError": "Er is een onverwachte fout opgetreden. Probeer het opnieuw.",
+    "voteGroupOnly": "Stemmen is alleen beschikbaar voor groepen."
   },
   "ui": {
     "leaveConfirm": "Weet je zeker dat je deze sessie wilt verlaten?",

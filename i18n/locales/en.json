@@ -176,7 +176,8 @@
     "invalidPhase": "The selected phase is invalid.",
     "actionAddFailed": "Could not add action item.",
     "actionEditFailed": "Could not edit action item.",
-    "genericError": "An unexpected error occurred. Please try again."
+    "genericError": "An unexpected error occurred. Please try again.",
+    "voteGroupOnly": "Voting is only available for groups."
   },
   "ui": {
     "leaveConfirm": "Are you sure you want to leave this session?",

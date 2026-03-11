@@ -176,7 +176,8 @@
     "invalidPhase": "Den valda fasen är ogiltig.",
     "actionAddFailed": "Det gick inte att lägga till åtgärdspunkten.",
     "actionEditFailed": "Det gick inte att redigera åtgärdspunkten.",
-    "genericError": "Ett oväntat fel inträffade. Försök igen."
+    "genericError": "Ett oväntat fel inträffade. Försök igen.",
+    "voteGroupOnly": "Röstning är endast tillgänglig för grupper."
   },
   "ui": {
     "leaveConfirm": "Är du säker på att du vill lämna den här sessionen?",

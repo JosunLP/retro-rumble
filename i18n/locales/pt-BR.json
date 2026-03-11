@@ -176,7 +176,8 @@
     "invalidPhase": "A fase selecionada é inválida.",
     "actionAddFailed": "Não foi possível adicionar o item de ação.",
     "actionEditFailed": "Não foi possível editar o item de ação.",
-    "genericError": "Ocorreu um erro inesperado. Por favor, tente novamente."
+    "genericError": "Ocorreu um erro inesperado. Por favor, tente novamente.",
+    "voteGroupOnly": "A votação está disponível apenas para grupos."
   },
   "ui": {
     "leaveConfirm": "Tem certeza que deseja sair desta sessão?",

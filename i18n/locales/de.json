@@ -176,7 +176,8 @@
     "invalidPhase": "Die ausgewählte Phase ist ungültig.",
     "actionAddFailed": "Maßnahme konnte nicht hinzugefügt werden.",
     "actionEditFailed": "Maßnahme konnte nicht bearbeitet werden.",
-    "genericError": "Ein unerwarteter Fehler ist aufgetreten. Bitte versuche es erneut."
+    "genericError": "Ein unerwarteter Fehler ist aufgetreten. Bitte versuche es erneut.",
+    "voteGroupOnly": "Abstimmung ist nur für Gruppen möglich."
   },
   "ui": {
     "leaveConfirm": "Möchtest du die Session wirklich verlassen?",

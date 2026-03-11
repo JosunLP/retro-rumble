@@ -176,7 +176,8 @@
     "invalidPhase": "選択したフェーズは無効です。",
     "actionAddFailed": "アクションアイテムを追加できませんでした。",
     "actionEditFailed": "アクションアイテムを編集できませんでした。",
-    "genericError": "予期しないエラーが発生しました。もう一度お試しください。"
+    "genericError": "予期しないエラーが発生しました。もう一度お試しください。",
+    "voteGroupOnly": "投票はグループのみで利用できます。"
   },
   "ui": {
     "leaveConfirm": "本当にこのセッションを離れますか？",

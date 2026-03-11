@@ -412,8 +412,7 @@ function handleVoteCard(peer: Peer, payload: VoteCardPayload): void {
 
   if (!session) {
     sendMessage(peer, 'session:error', {
-      message: 'Voting is only available for groups.',
-      code: 'VOTE_FAILED',
+      code: 'VOTE_GROUP_ONLY',
     });
     return;
   }
