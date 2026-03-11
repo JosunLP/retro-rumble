@@ -187,6 +187,18 @@ export function getTodayISODateUTC(now: Date = new Date()): string {
 }
 
 /**
+ * Returns yesterday's date in UTC as YYYY-MM-DD.
+ * Used as a grace-window floor for server-side due-date validation so that
+ * users in UTC-behind timezones can submit their local "today" without a
+ * false PAST_DUE_DATE rejection.
+ */
+export function getYesterdayISODateUTC(now: Date = new Date()): string {
+  const yesterday = new Date(now);
+  yesterday.setUTCDate(yesterday.getUTCDate() - 1);
+  return getTodayISODateUTC(yesterday);
+}
+
+/**
  * Returns true when a valid ISO date lies before today.
  */
 export function isPastISODate(

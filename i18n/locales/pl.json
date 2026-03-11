@@ -176,7 +176,8 @@
     "invalidPhase": "Wybrana faza jest nieprawidłowa.",
     "actionAddFailed": "Nie można dodać elementu działania.",
     "actionEditFailed": "Nie można edytować elementu działania.",
-    "genericError": "Wystąpił nieoczekiwany błąd. Spróbuj ponownie."
+    "genericError": "Wystąpił nieoczekiwany błąd. Spróbuj ponownie.",
+    "voteGroupOnly": "Głosowanie jest dostępne tylko dla grup."
   },
   "ui": {
     "leaveConfirm": "Czy na pewno chcesz opuścić tę sesję?",

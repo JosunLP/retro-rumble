@@ -176,7 +176,8 @@
     "invalidPhase": "La fase selezionata non è valida.",
     "actionAddFailed": "Impossibile aggiungere l'elemento di azione.",
     "actionEditFailed": "Impossibile modificare l'elemento di azione.",
-    "genericError": "Si è verificato un errore imprevisto. Per favore riprova."
+    "genericError": "Si è verificato un errore imprevisto. Per favore riprova.",
+    "voteGroupOnly": "Il voto è disponibile solo per i gruppi."
   },
   "ui": {
     "leaveConfirm": "Sei sicuro di voler abbandonare questa sessione?",

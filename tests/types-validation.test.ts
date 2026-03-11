@@ -9,6 +9,7 @@ import {
     formatJoinCode,
     getTodayISODate,
     getTodayISODateUTC,
+    getYesterdayISODateUTC,
     isPastISODate,
     isValidCheckInMood,
     isValidColumnType,
@@ -260,6 +261,15 @@ describe('date helpers', () => {
 
   test('getTodayISODateUTC returns UTC YYYY-MM-DD', () => {
     expect(getTodayISODateUTC(new Date('2026-03-09T23:30:00-05:00'))).toBe('2026-03-10');
+  });
+
+  test('getYesterdayISODateUTC returns the UTC date one day before the given instant', () => {
+    // At 2026-03-10 UTC, yesterday UTC is 2026-03-09
+    expect(getYesterdayISODateUTC(new Date('2026-03-10T00:00:00Z'))).toBe('2026-03-09');
+    // At 2026-03-10T23:59Z, yesterday UTC is still 2026-03-09
+    expect(getYesterdayISODateUTC(new Date('2026-03-10T23:59:00Z'))).toBe('2026-03-09');
+    // Crosses month boundary correctly
+    expect(getYesterdayISODateUTC(new Date('2026-03-01T12:00:00Z'))).toBe('2026-02-28');
   });
 
   test('isPastISODate detects dates before today', () => {
