@@ -305,7 +305,7 @@ export function useRetroSession() {
       state.value.session.groups,
       pid
     );
-    return state.value.session.maxVotesPerUser - used;
+    return Math.max(0, state.value.session.maxVotesPerUser - used);
   });
 
   const currentPhase = computed(
