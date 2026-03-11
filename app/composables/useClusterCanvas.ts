@@ -22,6 +22,11 @@ export interface DragCtx {
   offsetY: number;
 }
 
+interface PendingDragCtx extends DragCtx {
+  startX: number;
+  startY: number;
+}
+
 export interface DropResult {
   type: 'card' | 'group';
   id: string;
@@ -38,8 +43,59 @@ export interface DragAction {
 
 export function useClusterCanvas() {
   const dragging = ref<DragCtx | null>(null);
+  const pendingDrag = ref<PendingDragCtx | null>(null);
   const dropTarget = ref<DropResult | null>(null);
   const ghostPos = ref({ x: 0, y: 0 });
+  const scrollContainer = ref<HTMLElement | null>(null);
+
+  const DRAG_START_DISTANCE = 6;
+  const AUTO_SCROLL_EDGE = 48;
+  const AUTO_SCROLL_STEP = 18;
+
+  function registerScrollContainer(container: HTMLElement | null): void {
+    scrollContainer.value = container;
+  }
+
+  function maybeStartDragging(ev: PointerEvent): void {
+    const pending = pendingDrag.value;
+    if (!pending || dragging.value) return;
+
+    const distance = Math.hypot(
+      ev.clientX - pending.startX,
+      ev.clientY - pending.startY
+    );
+
+    if (distance < DRAG_START_DISTANCE) return;
+
+    dragging.value = {
+      cardId: pending.cardId,
+      originGroupId: pending.originGroupId,
+      offsetX: pending.offsetX,
+      offsetY: pending.offsetY,
+    };
+    ghostPos.value = {
+      x: ev.clientX - pending.offsetX,
+      y: ev.clientY - pending.offsetY,
+    };
+  }
+
+  function autoScrollContainer(ev: PointerEvent): void {
+    const container = scrollContainer.value;
+    if (!container) return;
+
+    const rect = container.getBoundingClientRect();
+    if (ev.clientY < rect.top + AUTO_SCROLL_EDGE) {
+      container.scrollTop -= AUTO_SCROLL_STEP;
+    } else if (ev.clientY > rect.bottom - AUTO_SCROLL_EDGE) {
+      container.scrollTop += AUTO_SCROLL_STEP;
+    }
+
+    if (ev.clientX < rect.left + AUTO_SCROLL_EDGE) {
+      container.scrollLeft -= AUTO_SCROLL_STEP;
+    } else if (ev.clientX > rect.right - AUTO_SCROLL_EDGE) {
+      container.scrollLeft += AUTO_SCROLL_STEP;
+    }
+  }
 
   /**
    * Start dragging a card.
@@ -53,12 +109,16 @@ export function useClusterCanvas() {
     if (!el) return;
 
     const rect = el.getBoundingClientRect();
-    dragging.value = {
+    pendingDrag.value = {
       cardId,
       originGroupId,
+      startX: ev.clientX,
+      startY: ev.clientY,
       offsetX: ev.clientX - rect.left,
       offsetY: ev.clientY - rect.top,
     };
+    dragging.value = null;
+    dropTarget.value = null;
     ghostPos.value = { x: rect.left, y: rect.top };
   }
 
@@ -66,6 +126,8 @@ export function useClusterCanvas() {
    * Update drag position and detect drop targets via DOM hit testing.
    */
   function moveDrag(ev: PointerEvent) {
+    maybeStartDragging(ev);
+
     const d = dragging.value;
     if (!d) return;
 
@@ -73,6 +135,7 @@ export function useClusterCanvas() {
       x: ev.clientX - d.offsetX,
       y: ev.clientY - d.offsetY,
     };
+    autoScrollContainer(ev);
 
     // DOM-based hit testing using data attributes
     const elements = document.elementsFromPoint(ev.clientX, ev.clientY);
@@ -109,6 +172,7 @@ export function useClusterCanvas() {
    * End drag and return the resulting action.
    */
   function endDrag(): DragAction | null {
+    pendingDrag.value = null;
     const d = dragging.value;
     if (!d) return null;
 
@@ -175,5 +239,6 @@ export function useClusterCanvas() {
     endDrag,
     isCardDropTarget,
     isGroupDropTarget,
+    registerScrollContainer,
   };
 }

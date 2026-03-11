@@ -44,7 +44,9 @@
   "phase": {
     "set-the-stage": "Einstimmung",
     "gather-data": "Daten sammeln",
-    "generate-insights": "Clustering",
+    "discuss-topics": "Diskussion",
+    "cluster-cards": "Clustering",
+    "name-groups": "Gruppen benennen",
     "voting": "Abstimmung",
     "decide-action": "Maßnahmen",
     "close-retro": "Abschluss",
@@ -52,17 +54,19 @@
     "next": "Weiter",
     "description": {
       "set-the-stage": "Willkommen! Teile deine Stimmung, um den Einstieg zu erleichtern.",
-      "gather-data": "Schreibe anonyme Karten darüber, was gut lief und was verbessert werden kann.",
-      "generate-insights": "Ziehe Karten in Gruppen, um gemeinsame Themen zu finden.",
-      "voting": "Stimme für die Themen ab, die dem Team am wichtigsten sind.",
+      "gather-data": "Schreibe anonyme Karten dazu, was das Team starten, stoppen und fortführen sollte.",
+      "discuss-topics": "Sprecht zunächst gemeinsam über die gesammelten Themen, bevor ihr clustert.",
+      "cluster-cards": "Ziehe zusammengehörige Karten in Gruppen, ohne sie jetzt schon zu benennen.",
+      "name-groups": "Gib den erstellten Gruppen klare Namen und schärfe die Titel nach.",
+      "voting": "Stimme für die gruppierten Themen ab, die dem Team am wichtigsten sind.",
       "decide-action": "Definiere konkrete Maßnahmen und weise Verantwortlichkeiten zu.",
       "close-retro": "Überprüfe die Zusammenfassung und gib Feedback zu dieser Retro."
     }
   },
   "column": {
-    "went-well": "Was lief gut",
-    "to-improve": "Was verbessern",
-    "action-items": "Maßnahmen",
+    "went-well": "Start",
+    "to-improve": "Stop",
+    "action-items": "Fortführen",
     "empty": "Noch keine Karten"
   },
   "card": {
@@ -75,6 +79,7 @@
   "grouping": {
     "instructionsHost": "Ziehe Karten aufeinander, um Gruppen zu erstellen. Ziehe Karten weg von einer Gruppe, um sie zu lösen.",
     "instructionsParticipant": "Ziehe Karten aufeinander, um Gruppen zu erstellen. Ziehe Karten weg von einer Gruppe, um sie zu lösen.",
+    "namingInstructions": "Benenne hier die Gruppen. Drag-and-Drop ist in diesem Schritt absichtlich deaktiviert, damit die Titel stabil bleiben.",
     "newGroupTitle": "Neue Gruppe",
     "clickToRename": "Klicken zum Umbenennen",
     "deleteGroup": "Gruppe löschen",
@@ -88,10 +93,12 @@
   "voting": {
     "title": "Abstimmung",
     "remaining": "Stimmen übrig",
-    "instructions": "Stimme für die Karten und Gruppen ab, die am wichtigsten zu besprechen sind. Du kannst deine Stimmen frei verteilen.",
+    "instructions": "Stimme für die gruppierten Themen ab, die am wichtigsten zu besprechen sind. Du kannst deine Stimmen frei verteilen.",
+    "groupOnlyHint": "Neue Stimmen sind nur auf Gruppen möglich. Ungruppierte Karten bleiben als Kontext sichtbar.",
     "groupCardCount": "({count} Karten)",
     "voteGroup": "Für Gruppe abstimmen",
     "unvoteGroup": "Stimme von Gruppe entfernen",
+    "notVotable": "Nicht votierbar",
     "voteCard": "Für Karte abstimmen",
     "unvoteCard": "Stimme von Karte entfernen"
   },
@@ -115,7 +122,10 @@
     "dueDate": "Fälligkeitsdatum",
     "dueDatePlaceholder": "JJJJ-MM-TT",
     "toggleDone": "Erledigt umschalten",
-    "topVoted": "Meiste Stimmen"
+    "topVoted": "Meiste Stimmen",
+    "errors": {
+      "pastDueDate": "Deadlines dürfen nicht in der Vergangenheit liegen."
+    }
   },
   "export": {
     "title": "Ergebnisse exportieren",
@@ -160,7 +170,14 @@
     "connectionFailed": "Verbindung zum Server fehlgeschlagen.",
     "clipboardFailed": "Kopieren in die Zwischenablage fehlgeschlagen. Bitte manuell kopieren.",
     "actionLimitReached": "Maßnahmen-Limit erreicht.",
-    "actionWrongPhase": "Maßnahmen können nur in der Aktions- oder Abschlussphase hinzugefügt werden."
+    "actionWrongPhase": "Maßnahmen können nur in der Aktions- oder Abschlussphase hinzugefügt werden.",
+    "pastDueDate": "Der Fälligkeitstermin darf nicht in der Vergangenheit liegen.",
+    "invalidDueDate": "Bitte gib ein gültiges Fälligkeitsdatum ein.",
+    "invalidPhase": "Die ausgewählte Phase ist ungültig.",
+    "actionAddFailed": "Maßnahme konnte nicht hinzugefügt werden.",
+    "actionEditFailed": "Maßnahme konnte nicht bearbeitet werden.",
+    "genericError": "Ein unerwarteter Fehler ist aufgetreten. Bitte versuche es erneut.",
+    "voteGroupOnly": "Abstimmung ist nur für Gruppen möglich."
   },
   "ui": {
     "leaveConfirm": "Möchtest du die Session wirklich verlassen?",

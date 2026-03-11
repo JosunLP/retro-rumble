@@ -14,7 +14,9 @@ import type {
     IRetroSession,
     RetroColumnType,
 } from '~/types';
+import { getTodayISODate, isPastISODate } from '~/types';
 import { COLUMN_META, ORDERED_COLUMNS } from '~/utils/columnConfig';
+import { sortByCreatedAt, sortByVotesThenCreatedAt } from '~/utils/retroSorting';
 
 const { t } = useI18n();
 
@@ -40,15 +42,15 @@ const editingActionId = ref<string | null>(null);
 const editActionText = ref('');
 const editActionAssignee = ref('');
 const editActionDueDate = ref('');
+const actionError = ref<string | null>(null);
 
 const columns = ORDERED_COLUMNS;
 
 const columnConfig = COLUMN_META;
+const minDueDate = computed(() => getTodayISODate());
 
 function cardsForColumn(col: RetroColumnType): IRetroCard[] {
-  return props.session.cards
-    .filter((c) => c.column === col)
-    .sort((a, b) => b.votes - a.votes);
+  return sortByVotesThenCreatedAt(props.session.cards.filter((c) => c.column === col));
 }
 
 function ungroupedCards(col: RetroColumnType): IRetroCard[] {
@@ -56,14 +58,15 @@ function ungroupedCards(col: RetroColumnType): IRetroCard[] {
 }
 
 function groupsForColumn(col: RetroColumnType): ICardGroup[] {
-  return props.session.groups.filter((g) => g.column === col);
+  return sortByCreatedAt(props.session.groups.filter((g) => g.column === col));
 }
 
 function cardsInGroup(group: ICardGroup): IRetroCard[] {
-  return group.cardIds
-    .map((id) => props.session.cards.find((c) => c.id === id))
-    .filter((c): c is IRetroCard => !!c)
-    .sort((a, b) => b.votes - a.votes);
+  return sortByVotesThenCreatedAt(
+    group.cardIds
+      .map((id) => props.session.cards.find((c) => c.id === id))
+      .filter((c): c is IRetroCard => !!c)
+  );
 }
 
 function totalVotesForColumn(col: RetroColumnType): number {
@@ -85,12 +88,28 @@ const completedActions = computed(
   () => props.session.actionItems.filter((a) => a.done).length
 );
 
+function validateDueDate(dueDate?: string): boolean {
+  if (!dueDate) {
+    actionError.value = null;
+    return true;
+  }
+
+  if (isPastISODate(dueDate, getTodayISODate())) {
+    actionError.value = t('summary.errors.pastDueDate');
+    return false;
+  }
+
+  actionError.value = null;
+  return true;
+}
+
 // Action item CRUD
 function handleAddAction(): void {
   const text = newActionText.value.trim();
   if (!text) return;
   const assignee = newActionAssignee.value.trim() || undefined;
   const dueDate = newActionDueDate.value.trim() || undefined;
+  if (!validateDueDate(dueDate)) return;
   emit('addActionItem', text, assignee, dueDate);
   newActionText.value = '';
   newActionAssignee.value = '';
@@ -110,12 +129,14 @@ function saveEditAction(): void {
   if (!text) return;
   const assignee = editActionAssignee.value.trim() || undefined;
   const dueDate = editActionDueDate.value.trim() || undefined;
+  if (!validateDueDate(dueDate)) return;
   emit('editActionItem', editingActionId.value, text, assignee, dueDate);
   editingActionId.value = null;
 }
 
 function cancelEditAction(): void {
   editingActionId.value = null;
+  actionError.value = null;
 }
 </script>
 
@@ -260,6 +281,13 @@ function cancelEditAction(): void {
       </div>
 
       <!-- Existing action items -->
+      <div
+        v-if="actionError"
+        class="mb-4 rounded-lg border border-error-200 bg-error-50 px-3 py-2 text-sm text-error-700"
+      >
+        {{ actionError }}
+      </div>
+
       <div v-if="session.actionItems.length > 0" class="space-y-2 mb-4">
         <div
           v-for="action in session.actionItems"
@@ -294,6 +322,7 @@ function cancelEditAction(): void {
               v-model="editActionDueDate"
               type="date"
               class="input w-36 text-sm"
+              :min="minDueDate"
               @keydown.enter="saveEditAction"
               @keydown.escape="cancelEditAction"
             >
@@ -412,6 +441,7 @@ function cancelEditAction(): void {
           v-model="newActionDueDate"
           type="date"
           class="input w-36 text-sm"
+          :min="minDueDate"
           :title="t('summary.dueDate')"
           @keydown.enter="handleAddAction"
         >

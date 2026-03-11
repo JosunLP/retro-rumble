@@ -44,7 +44,9 @@
   "phase": {
     "set-the-stage": "准备阶段",
     "gather-data": "收集数据",
-    "generate-insights": "分组",
+    "discuss-topics": "讨论主题",
+    "cluster-cards": "聚类分组",
+    "name-groups": "命名分组",
     "voting": "投票",
     "decide-action": "行动项",
     "close-retro": "回顾结束",
@@ -52,17 +54,19 @@
     "next": "下一步",
     "description": {
       "set-the-stage": "欢迎！分享你的心情，营造氛围。",
-      "gather-data": "匿名写下做得好的和可以改进的事情。",
-      "generate-insights": "将卡片拖入分组以发现共同主题。",
-      "voting": "为团队最关心的话题投票。",
+      "gather-data": "匿名写下团队应该开始做、停止做和继续做的事情。",
+      "discuss-topics": "在开始分组之前，先一起回顾收集到的话题。",
+      "cluster-cards": "将相关卡片拖入分组中，但先不要命名。",
+      "name-groups": "为创建好的分组命名，并完善它们的标题。",
+      "voting": "为团队最关心的已分组话题投票。",
       "decide-action": "定义具体的行动项并分配责任。",
       "close-retro": "查看总结并对本次回顾给出反馈。"
     }
   },
   "column": {
-    "went-well": "做得好的事",
-    "to-improve": "待改进的事",
-    "action-items": "行动项",
+    "went-well": "开始做",
+    "to-improve": "停止做",
+    "action-items": "继续做",
     "empty": "暂无卡片"
   },
   "card": {
@@ -75,6 +79,7 @@
   "grouping": {
     "instructionsHost": "将卡片拖到另一张卡片上以创建分组。将卡片从分组中拖出以取消分组。",
     "instructionsParticipant": "将卡片拖到另一张卡片上以创建分组。将卡片从分组中拖出以取消分组。",
+    "namingInstructions": "请在这里为分组命名。此步骤禁用了拖拽，以保持标题稳定。",
     "newGroupTitle": "新分组",
     "clickToRename": "点击重命名",
     "deleteGroup": "删除分组",
@@ -88,10 +93,12 @@
   "voting": {
     "title": "投票",
     "remaining": "剩余票数",
-    "instructions": "为最重要的卡片和分组投票以便讨论。你可以自由分配票数。",
+    "instructions": "为最值得讨论的已分组话题投票。你可以自由分配票数。",
+    "groupOnlyHint": "新投票只能投给分组。未分组卡片会继续显示，作为上下文参考。",
     "groupCardCount": "（{count} 张卡片）",
     "voteGroup": "为分组投票",
     "unvoteGroup": "撤销分组投票",
+    "notVotable": "不可投票",
     "voteCard": "为卡片投票",
     "unvoteCard": "撤销卡片投票"
   },
@@ -115,7 +122,10 @@
     "dueDate": "截止日期",
     "dueDatePlaceholder": "YYYY-MM-DD",
     "toggleDone": "切换完成状态",
-    "topVoted": "最多得票"
+    "topVoted": "最多得票",
+    "errors": {
+      "pastDueDate": "截止日期不能设置为过去的时间。"
+    }
   },
   "export": {
     "title": "导出结果",
@@ -160,7 +170,14 @@
     "connectionFailed": "无法连接到服务器。",
     "clipboardFailed": "无法复制到剪贴板。请手动复制。",
     "actionLimitReached": "已达到行动项上限。",
-    "actionWrongPhase": "行动项只能在行动阶段或结束阶段添加。"
+    "actionWrongPhase": "行动项只能在行动阶段或结束阶段添加。",
+    "pastDueDate": "截止日期不能设置为过去的时间。",
+    "invalidDueDate": "请输入有效的截止日期。",
+    "invalidPhase": "所选阶段无效。",
+    "actionAddFailed": "无法添加行动项。",
+    "actionEditFailed": "无法编辑行动项。",
+    "genericError": "发生了意外错误，请重试。",
+    "voteGroupOnly": "投票仅适用于组。"
   },
   "ui": {
     "leaveConfirm": "确定要离开此会话吗？",

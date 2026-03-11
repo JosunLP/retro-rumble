@@ -44,25 +44,29 @@
   "phase": {
     "set-the-stage": "準備",
     "gather-data": "データ収集",
-    "generate-insights": "グループ化",
+    "discuss-topics": "話し合い",
+    "cluster-cards": "クラスタリング",
+    "name-groups": "グループ名付け",
     "voting": "投票",
     "decide-action": "アクション",
     "close-retro": "クローズ",
     "previous": "前へ",
     "next": "次へ",
     "description": {
-    "set-the-stage": "ようこそ！今の気持ちを共有して、雰囲気を作りましょう。",
-    "gather-data": "うまくいったことや改善点について匿名カードを書きましょう。",
-    "generate-insights": "カードをドラッグしてグループにまとめ、共通テーマを見つけましょう。",
-    "voting": "チームにとって最も重要なトピックに投票しましょう。",
-    "decide-action": "具体的なアクションを定義し、担当を割り当てましょう。",
-    "close-retro": "まとめを確認し、このレトロにフィードバックをしましょう。"
+      "set-the-stage": "ようこそ！今の気持ちを共有して、雰囲気を作りましょう。",
+      "gather-data": "チームが始めるべきこと、やめるべきこと、続けるべきことを匿名カードに書きましょう。",
+      "discuss-topics": "クラスタリングを始める前に、集まったテーマをみんなで確認しましょう。",
+      "cluster-cards": "関連するカードを、まだ名前を付けずにグループへまとめましょう。",
+      "name-groups": "作成したグループに名前を付け、タイトルを整えましょう。",
+      "voting": "チームにとって重要な、グループ化されたテーマに投票しましょう。",
+      "decide-action": "具体的なアクションを定義し、担当を割り当てましょう。",
+      "close-retro": "まとめを確認し、このレトロにフィードバックをしましょう。"
     }
   },
   "column": {
-    "went-well": "うまくいったこと",
-    "to-improve": "改善点",
-    "action-items": "アクションアイテム",
+    "went-well": "始めること",
+    "to-improve": "やめること",
+    "action-items": "続けること",
     "empty": "カードはまだありません"
   },
   "card": {
@@ -75,6 +79,7 @@
   "grouping": {
     "instructionsHost": "カードを互いにドラッグしてグループを作成します。カードをグループから離してグループ解除します。",
     "instructionsParticipant": "カードを互いにドラッグしてグループを作成します。カードをグループから離してグループ解除します。",
+    "namingInstructions": "ここでグループ名を付けます。このステップではタイトルを安定させるため、ドラッグ操作は無効です。",
     "newGroupTitle": "新しいグループ",
     "clickToRename": "クリックして名前を変更",
     "deleteGroup": "グループを削除",
@@ -88,10 +93,12 @@
   "voting": {
     "title": "投票",
     "remaining": "残り投票数",
-    "instructions": "最も重要なカードやグループに投票してください。投票は自由に分配できます。",
+    "instructions": "議論すべき重要なグループ化済みテーマに投票してください。投票は自由に配分できます。",
+    "groupOnlyHint": "新しい投票はグループにのみ行えます。未グループのカードも文脈として表示されたままです。",
     "groupCardCount": "（{count}枚のカード）",
     "voteGroup": "グループに投票",
     "unvoteGroup": "グループの投票を取り消す",
+    "notVotable": "投票不可",
     "voteCard": "カードに投票",
     "unvoteCard": "カードの投票を取り消す"
   },
@@ -115,7 +122,10 @@
     "dueDate": "期限",
     "dueDatePlaceholder": "YYYY-MM-DD",
     "toggleDone": "完了を切り替え",
-    "topVoted": "最多得票"
+    "topVoted": "最多得票",
+    "errors": {
+      "pastDueDate": "期限を過去の日付に設定することはできません。"
+    }
   },
   "export": {
     "title": "結果をエクスポート",
@@ -160,7 +170,14 @@
     "connectionFailed": "サーバーに接続できませんでした。",
     "clipboardFailed": "クリップボードにコピーできませんでした。手動でコピーしてください。",
     "actionLimitReached": "アクションの上限に達しました。",
-    "actionWrongPhase": "アクションはアクションフェーズまたはクローズフェーズでのみ追加できます。"
+    "actionWrongPhase": "アクションはアクションフェーズまたはクローズフェーズでのみ追加できます。",
+    "pastDueDate": "期限を過去の日付に設定することはできません。",
+    "invalidDueDate": "有効な期限を入力してください。",
+    "invalidPhase": "選択したフェーズは無効です。",
+    "actionAddFailed": "アクションアイテムを追加できませんでした。",
+    "actionEditFailed": "アクションアイテムを編集できませんでした。",
+    "genericError": "予期しないエラーが発生しました。もう一度お試しください。",
+    "voteGroupOnly": "投票はグループのみで利用できます。"
   },
   "ui": {
     "leaveConfirm": "本当にこのセッションを離れますか？",

@@ -44,7 +44,9 @@
   "phase": {
     "set-the-stage": "Set the Stage",
     "gather-data": "Gather Data",
-    "generate-insights": "Clustering",
+    "discuss-topics": "Discuss",
+    "cluster-cards": "Cluster",
+    "name-groups": "Name Groups",
     "voting": "Voting",
     "decide-action": "Actions",
     "close-retro": "Close",
@@ -52,17 +54,19 @@
     "next": "Next",
     "description": {
       "set-the-stage": "Welcome! Share how you're feeling to set the mood.",
-      "gather-data": "Write cards anonymously about what went well and what to improve.",
-      "generate-insights": "Drag cards into groups to find common themes.",
-      "voting": "Vote on the topics that matter most to the team.",
+      "gather-data": "Write cards anonymously about what the team should start, stop, and continue.",
+      "discuss-topics": "Review the submitted topics together before you begin clustering.",
+      "cluster-cards": "Drag related cards into groups without naming them yet.",
+      "name-groups": "Name the groups you created and refine their titles.",
+      "voting": "Vote on the grouped topics that matter most to the team.",
       "decide-action": "Define concrete action items and assign responsibilities.",
       "close-retro": "Review the summary and give feedback on this retro."
     }
   },
   "column": {
-    "went-well": "What went well",
-    "to-improve": "What to improve",
-    "action-items": "Action Items",
+    "went-well": "Start",
+    "to-improve": "Stop",
+    "action-items": "Continue",
     "empty": "No cards yet"
   },
   "card": {
@@ -75,6 +79,7 @@
   "grouping": {
     "instructionsHost": "Drag cards onto each other to create groups. Drag away from a group to ungroup.",
     "instructionsParticipant": "Drag cards onto each other to create groups. Drag away from a group to ungroup.",
+    "namingInstructions": "Name the groups here. Dragging is disabled in this step so titles stay stable.",
     "newGroupTitle": "New Group",
     "clickToRename": "Click to rename",
     "deleteGroup": "Delete group",
@@ -88,10 +93,12 @@
   "voting": {
     "title": "Voting",
     "remaining": "Votes remaining",
-    "instructions": "Vote on the cards and groups that are most important to discuss. You can distribute your votes freely.",
+    "instructions": "Vote on the grouped topics that are most important to discuss. You can distribute your votes freely.",
+    "groupOnlyHint": "Only groups can receive new votes. Ungrouped cards stay visible for context.",
     "groupCardCount": "({count} cards)",
     "voteGroup": "Vote for group",
     "unvoteGroup": "Remove vote from group",
+    "notVotable": "Not votable",
     "voteCard": "Vote for card",
     "unvoteCard": "Remove vote from card"
   },
@@ -115,7 +122,10 @@
     "dueDate": "Due Date",
     "dueDatePlaceholder": "YYYY-MM-DD",
     "toggleDone": "Toggle done",
-    "topVoted": "Top Voted"
+    "topVoted": "Top Voted",
+    "errors": {
+      "pastDueDate": "Deadlines cannot be set in the past."
+    }
   },
   "export": {
     "title": "Export Results",
@@ -160,7 +170,14 @@
     "connectionFailed": "Could not connect to the server.",
     "clipboardFailed": "Could not copy to clipboard. Please copy manually.",
     "actionLimitReached": "Action item limit reached.",
-    "actionWrongPhase": "Action items can only be added during the Actions or Close phase."
+    "actionWrongPhase": "Action items can only be added during the Actions or Close phase.",
+    "pastDueDate": "Deadline cannot be in the past.",
+    "invalidDueDate": "Please enter a valid deadline.",
+    "invalidPhase": "The selected phase is invalid.",
+    "actionAddFailed": "Could not add action item.",
+    "actionEditFailed": "Could not edit action item.",
+    "genericError": "An unexpected error occurred. Please try again.",
+    "voteGroupOnly": "Voting is only available for groups."
   },
   "ui": {
     "leaveConfirm": "Are you sure you want to leave this session?",

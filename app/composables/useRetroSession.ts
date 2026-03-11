@@ -11,7 +11,7 @@ import type {
     RetroColumnType,
     RetroPhase,
 } from '~/types';
-import { countVotesForParticipant } from '~/types';
+import { countGroupVotesForParticipant, normalizePhase } from '~/types';
 import type {
     ParticipantJoinedPayload,
     ParticipantLeftPayload,
@@ -23,6 +23,7 @@ import type {
     SessionUpdatedPayload,
     TimerTickPayload,
 } from '~/types/websocket';
+import { mergeSessionSnapshot, normalizeSessionSnapshot } from '~/utils/sessionState';
 
 /**
  * Composable for retro session management with WebSocket
@@ -72,6 +73,39 @@ export function useRetroSession() {
     () => false
   );
 
+  function setSessionState(
+    payloadSession: SessionCreatedPayload['session'] | SessionJoinedPayload['session']
+  ): void {
+    const session = mergeSessionSnapshot(state.value.session, payloadSession);
+    const participant = session.participants.find(
+      (candidate) => candidate.id === state.value.currentParticipant?.id
+    );
+
+    state.value = {
+      ...state.value,
+      session,
+      currentParticipant: participant ?? state.value.currentParticipant,
+      isHost: session.hostId === (participant ?? state.value.currentParticipant)?.id,
+    };
+  }
+
+  function replaceSessionState(
+    payloadSession: SessionCreatedPayload['session'] | SessionJoinedPayload['session'],
+    participant: SessionCreatedPayload['participant'] | SessionJoinedPayload['participant'],
+    joinCodeValue: string,
+    hostOverride?: boolean
+  ): void {
+    const session = normalizeSessionSnapshot(payloadSession);
+    state.value = {
+      session,
+      currentParticipant: participant,
+      isHost: hostOverride ?? session.hostId === participant.id,
+      isConnected: true,
+      error: null,
+      joinCode: joinCodeValue,
+    };
+  }
+
   /**
    * Wait for connection if not yet connected
    */
@@ -104,55 +138,28 @@ export function useRetroSession() {
 
     // Session created
     on<SessionCreatedPayload>('session:created', (payload) => {
-      state.value = {
-        session: payload.session,
-        currentParticipant: payload.participant,
-        isHost: true,
-        isConnected: true,
-        error: null,
-        joinCode: payload.joinCode,
-      };
+      replaceSessionState(
+        payload.session,
+        payload.participant,
+        payload.joinCode,
+        true
+      );
     });
 
     // Session joined
     on<SessionJoinedPayload>('session:joined', (payload) => {
-      state.value = {
-        session: payload.session,
-        currentParticipant: payload.participant,
-        isHost: payload.session.hostId === payload.participant.id,
-        isConnected: true,
-        error: null,
-        joinCode: payload.joinCode,
-      };
+      replaceSessionState(payload.session, payload.participant, payload.joinCode);
     });
 
     // Session rejoined (after reconnect)
     on<SessionRejoinedPayload>('session:rejoined', (payload) => {
-      state.value = {
-        session: payload.session,
-        currentParticipant: payload.participant,
-        isHost: payload.session.hostId === payload.participant.id,
-        isConnected: true,
-        error: null,
-        joinCode: payload.joinCode,
-      };
+      replaceSessionState(payload.session, payload.participant, payload.joinCode);
     });
 
     // Session updated
     on<SessionUpdatedPayload>('session:updated', (payload) => {
       if (!state.value.currentParticipant) return;
-
-      const updatedParticipant = payload.session.participants.find(
-        (p) => p.id === state.value.currentParticipant?.id
-      );
-
-      state.value = {
-        ...state.value,
-        session: payload.session,
-        currentParticipant:
-          updatedParticipant ?? state.value.currentParticipant,
-        isHost: payload.session.hostId === state.value.currentParticipant?.id,
-      };
+      setSessionState(payload.session);
     });
 
     // Participant joined
@@ -164,15 +171,13 @@ export function useRetroSession() {
       );
       if (exists) return;
 
+      state.value.session.participants = [
+        ...state.value.session.participants,
+        payload.participant,
+      ];
       state.value = {
         ...state.value,
-        session: {
-          ...state.value.session,
-          participants: [
-            ...state.value.session.participants,
-            payload.participant,
-          ],
-        },
+        session: state.value.session,
       };
     });
 
@@ -180,14 +185,12 @@ export function useRetroSession() {
     on<ParticipantLeftPayload>('participant:left', (payload) => {
       if (!state.value.session) return;
 
+      state.value.session.participants = state.value.session.participants.filter(
+        (p) => p.id !== payload.participantId
+      );
       state.value = {
         ...state.value,
-        session: {
-          ...state.value.session,
-          participants: state.value.session.participants.filter(
-            (p) => p.id !== payload.participantId
-          ),
-        },
+        session: state.value.session,
       };
     });
 
@@ -235,9 +238,34 @@ export function useRetroSession() {
 
     // Error
     on<SessionErrorPayload>('session:error', (payload) => {
+      // Map backend error codes to i18n keys (do not resolve them eagerly)
+      const errorKeyMap: Record<string, string> = {
+        PAST_DUE_DATE: 'errors.pastDueDate',
+        INVALID_DUE_DATE: 'errors.invalidDueDate',
+        INVALID_PHASE: 'errors.invalidPhase',
+        ACTION_ADD_FAILED: 'errors.actionAddFailed',
+        ACTION_EDIT_FAILED: 'errors.actionEditFailed',
+        VOTE_GROUP_ONLY: 'errors.voteGroupOnly',
+      };
+
+      const specificKey = errorKeyMap[payload.code];
+      let specificMessage: string | null = null;
+      if (specificKey) {
+        const candidate = t(specificKey);
+        // If the translation key is missing, most i18n setups return the key itself
+        specificMessage = candidate === specificKey ? null : candidate;
+      }
+
+      // Generic fallback: use i18n generic error as a last resort
+      const genericKey = 'errors.genericError';
+      const genericCandidate = t(genericKey);
+      const genericMessage = genericCandidate === genericKey ? genericKey : genericCandidate;
+
+      // Prefer a specific mapped message, then server-provided message, then generic i18n
+      const message = specificMessage ?? payload.message ?? genericMessage;
       state.value = {
         ...state.value,
-        error: payload.message,
+        error: message,
       };
     });
 
@@ -273,15 +301,16 @@ export function useRetroSession() {
   const remainingVotes = computed(() => {
     if (!state.value.session || !state.value.currentParticipant) return 0;
     const pid = state.value.currentParticipant.id;
-    const used = countVotesForParticipant(
-      state.value.session.cards,
+    const used = countGroupVotesForParticipant(
       state.value.session.groups,
       pid
     );
-    return state.value.session.maxVotesPerUser - used;
+    return Math.max(0, state.value.session.maxVotesPerUser - used);
   });
 
-  const currentPhase = computed(() => state.value.session?.phase ?? 'set-the-stage');
+  const currentPhase = computed(
+    () => normalizePhase(state.value.session?.phase) ?? 'set-the-stage'
+  );
 
   // ============================================
   // Actions

@@ -5,6 +5,8 @@
  * Form for creating a new retro session or joining an existing one.
  */
 
+import { MAX_MAX_VOTES_PER_USER, MIN_MAX_VOTES_PER_USER } from '~/types';
+
 const { t } = useI18n();
 
 interface Props {
@@ -136,8 +138,8 @@ function switchMode(newMode: 'create' | 'join'): void {
               v-model.number="maxVotes"
               type="number"
               class="input"
-              min="1"
-              max="20"
+              :min="MIN_MAX_VOTES_PER_USER"
+              :max="MAX_MAX_VOTES_PER_USER"
             >
           </div>
           <div>

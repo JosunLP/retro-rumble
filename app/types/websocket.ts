@@ -281,7 +281,7 @@ export interface SessionLeftPayload {
 }
 
 export interface SessionErrorPayload {
-  message: string;
+  message?: string;
   code: string;
 }
 

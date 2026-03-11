@@ -35,6 +35,8 @@ import type {
     VoteCardPayload,
     VoteGroupPayload,
 } from '../../app/types/websocket';
+import type { IRetroSession } from '../../app/types/retro';
+import { normalizePhase } from '../../app/types/retro';
 import { sessionStore } from '../utils/sessionStore';
 
 /**
@@ -73,6 +75,25 @@ function broadcastToSession(
       peer.send(messageStr);
     }
   }
+}
+
+type ActionItemErrorCode =
+  | 'INVALID_DUE_DATE'
+  | 'PAST_DUE_DATE'
+  | 'ACTION_ADD_FAILED'
+  | 'ACTION_EDIT_FAILED';
+
+function getActionItemErrorCode(
+  error: unknown,
+  fallbackCode: 'ACTION_ADD_FAILED' | 'ACTION_EDIT_FAILED'
+): ActionItemErrorCode {
+  if (error instanceof Error) {
+    if (error.message === 'PAST_DUE_DATE') return 'PAST_DUE_DATE';
+    if (error.message === 'INVALID_DUE_DATE') return 'INVALID_DUE_DATE';
+  }
+
+  console.error(`[WebSocket] Unexpected ${fallbackCode}:`, error);
+  return fallbackCode;
 }
 
 /**
@@ -320,7 +341,14 @@ function handleLeaveSession(peer: Peer): void {
 // ============================================
 
 function handlePhaseChange(peer: Peer, payload: PhaseChangePayload): void {
-  const session = sessionStore.changePhase(peer, payload.phase);
+  const phase = normalizePhase(payload.phase);
+  if (!phase) {
+    sendMessage(peer, 'session:error', {
+      code: 'INVALID_PHASE',
+    });
+    return;
+  }
+  const session = sessionStore.changePhase(peer, phase);
 
   if (!session) {
     sendMessage(peer, 'session:error', {
@@ -385,8 +413,7 @@ function handleVoteCard(peer: Peer, payload: VoteCardPayload): void {
 
   if (!session) {
     sendMessage(peer, 'session:error', {
-      message: 'Could not vote. You may have reached your vote limit.',
-      code: 'VOTE_FAILED',
+      code: 'VOTE_GROUP_ONLY',
     });
     return;
   }
@@ -570,16 +597,24 @@ function handleUnvoteGroup(peer: Peer, payload: UnvoteGroupPayload): void {
 // ============================================
 
 function handleAddActionItem(peer: Peer, payload: AddActionItemPayload): void {
-  const session = sessionStore.addActionItem(
-    peer,
-    payload.text,
-    payload.assignee,
-    payload.dueDate
-  );
+  let session: IRetroSession | null = null;
+
+  try {
+    session = sessionStore.addActionItem(
+      peer,
+      payload.text,
+      payload.assignee,
+      payload.dueDate
+    );
+  } catch (error) {
+    sendMessage(peer, 'session:error', {
+      code: getActionItemErrorCode(error, 'ACTION_ADD_FAILED'),
+    });
+    return;
+  }
 
   if (!session) {
     sendMessage(peer, 'session:error', {
-      message: 'Could not add action item.',
       code: 'ACTION_ADD_FAILED',
     });
     return;
@@ -592,17 +627,25 @@ function handleEditActionItem(
   peer: Peer,
   payload: EditActionItemPayload
 ): void {
-  const session = sessionStore.editActionItem(
-    peer,
-    payload.actionId,
-    payload.text,
-    payload.assignee,
-    payload.dueDate
-  );
+  let session: IRetroSession | null = null;
+
+  try {
+    session = sessionStore.editActionItem(
+      peer,
+      payload.actionId,
+      payload.text,
+      payload.assignee,
+      payload.dueDate
+    );
+  } catch (error) {
+    sendMessage(peer, 'session:error', {
+      code: getActionItemErrorCode(error, 'ACTION_EDIT_FAILED'),
+    });
+    return;
+  }
 
   if (!session) {
     sendMessage(peer, 'session:error', {
-      message: 'Could not edit action item.',
       code: 'ACTION_EDIT_FAILED',
     });
     return;

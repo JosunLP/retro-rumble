@@ -44,7 +44,9 @@
   "phase": {
     "set-the-stage": "Preparazione",
     "gather-data": "Raccolta dati",
-    "generate-insights": "Raggruppamento",
+    "discuss-topics": "Discussione",
+    "cluster-cards": "Raggruppa",
+    "name-groups": "Dai un nome ai gruppi",
     "voting": "Votazione",
     "decide-action": "Azioni",
     "close-retro": "Chiusura",
@@ -52,17 +54,19 @@
     "next": "Successivo",
     "description": {
       "set-the-stage": "Benvenuto! Condividi come ti senti per rompere il ghiaccio.",
-      "gather-data": "Scrivi schede anonime su cosa è andato bene e cosa migliorare.",
-      "generate-insights": "Trascina le schede in gruppi per trovare temi comuni.",
-      "voting": "Vota i temi più importanti per il team.",
+      "gather-data": "Scrivi schede anonime su ciò che il team dovrebbe iniziare, smettere e continuare a fare.",
+      "discuss-topics": "Rivedete insieme i temi raccolti prima di iniziare a raggruppare.",
+      "cluster-cards": "Trascina le schede correlate nei gruppi senza ancora assegnare loro un nome.",
+      "name-groups": "Dai un nome ai gruppi creati e perfeziona i titoli.",
+      "voting": "Vota i temi raggruppati più importanti per il team.",
       "decide-action": "Definisci azioni concrete e assegna le responsabilità.",
       "close-retro": "Rivedi il riepilogo e dai il tuo feedback su questa retro."
     }
   },
   "column": {
-    "went-well": "Cosa ha funzionato",
-    "to-improve": "Da migliorare",
-    "action-items": "Azioni",
+    "went-well": "Iniziare",
+    "to-improve": "Smettere",
+    "action-items": "Continuare",
     "empty": "Nessuna scheda ancora"
   },
   "card": {
@@ -75,6 +79,7 @@
   "grouping": {
     "instructionsHost": "Trascina le schede l'una sull'altra per creare gruppi. Allontana una scheda da un gruppo per separarla.",
     "instructionsParticipant": "Trascina le schede l'una sull'altra per creare gruppi. Allontana una scheda da un gruppo per separarla.",
+    "namingInstructions": "Dai qui un nome ai gruppi. Il trascinamento è disattivato in questo passaggio per mantenere stabili i titoli.",
     "newGroupTitle": "Nuovo gruppo",
     "clickToRename": "Clicca per rinominare",
     "deleteGroup": "Elimina gruppo",
@@ -88,10 +93,12 @@
   "voting": {
     "title": "Votazione",
     "remaining": "Voti rimanenti",
-    "instructions": "Vota per le schede e i gruppi più importanti da discutere. Puoi distribuire i tuoi voti liberamente.",
+    "instructions": "Vota per i temi raggruppati più importanti da discutere. Puoi distribuire i tuoi voti liberamente.",
+    "groupOnlyHint": "Solo i gruppi possono ricevere nuovi voti. Le schede non raggruppate restano visibili come contesto.",
     "groupCardCount": "({count} schede)",
     "voteGroup": "Vota per il gruppo",
     "unvoteGroup": "Rimuovi voto dal gruppo",
+    "notVotable": "Non votabile",
     "voteCard": "Vota per la scheda",
     "unvoteCard": "Rimuovi voto dalla scheda"
   },
@@ -115,7 +122,10 @@
     "dueDate": "Scadenza",
     "dueDatePlaceholder": "AAAA-MM-GG",
     "toggleDone": "Segna come fatto",
-    "topVoted": "Più votati"
+    "topVoted": "Più votati",
+    "errors": {
+      "pastDueDate": "Le scadenze non possono essere nel passato."
+    }
   },
   "export": {
     "title": "Esporta risultati",
@@ -160,7 +170,14 @@
     "connectionFailed": "Impossibile connettersi al server.",
     "clipboardFailed": "Impossibile copiare negli appunti. Si prega di copiare manualmente.",
     "actionLimitReached": "Limite di azioni raggiunto.",
-    "actionWrongPhase": "Le azioni possono essere aggiunte solo durante la fase Azioni o Chiusura."
+    "actionWrongPhase": "Le azioni possono essere aggiunte solo durante la fase Azioni o Chiusura.",
+    "pastDueDate": "La scadenza non può essere nel passato.",
+    "invalidDueDate": "Si prega di inserire una scadenza valida.",
+    "invalidPhase": "La fase selezionata non è valida.",
+    "actionAddFailed": "Impossibile aggiungere l'elemento di azione.",
+    "actionEditFailed": "Impossibile modificare l'elemento di azione.",
+    "genericError": "Si è verificato un errore imprevisto. Per favore riprova.",
+    "voteGroupOnly": "Il voto è disponibile solo per i gruppi."
   },
   "ui": {
     "leaveConfirm": "Sei sicuro di voler abbandonare questa sessione?",

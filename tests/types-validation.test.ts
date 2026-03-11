@@ -4,8 +4,14 @@
 import { describe, expect, test } from 'bun:test';
 import {
     CHECK_IN_MOODS,
+    countGroupVotesForParticipant,
     countVotesForParticipant,
+    DEFAULT_MAX_VOTES_PER_USER,
     formatJoinCode,
+    getTodayISODate,
+    getTodayISODateUTC,
+    getYesterdayISODateUTC,
+    isPastISODate,
     isValidCheckInMood,
     isValidColumnType,
     isValidISODate,
@@ -15,11 +21,15 @@ import {
     JOIN_CODE_LENGTH,
     MAX_ACTION_ITEM_TEXT_LENGTH,
     MAX_CARD_CONTENT_LENGTH,
+    MAX_MAX_VOTES_PER_USER,
     MAX_GROUP_TITLE_LENGTH,
     MAX_PARTICIPANT_NAME_LENGTH,
     MAX_SESSION_NAME_LENGTH,
+    MIN_MAX_VOTES_PER_USER,
+    normalizePhase,
     RETRO_COLUMNS,
     RETRO_PHASES,
+    sanitizeMaxVotesPerUser,
 } from '../app/types/retro';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -70,7 +80,9 @@ describe('constants', () => {
     const expected = [
       'set-the-stage',
       'gather-data',
-      'generate-insights',
+      'discuss-topics',
+      'cluster-cards',
+      'name-groups',
       'voting',
       'decide-action',
       'close-retro',
@@ -194,9 +206,12 @@ describe('isValidPhase()', () => {
     }
   });
 
-  test('returns false for an unknown string', () => {
+  test('returns false for unknown strings and inherited object keys', () => {
     expect(isValidPhase('brainstorming')).toBe(false);
     expect(isValidPhase('writing')).toBe(false);
+    expect(isValidPhase('generate-insights')).toBe(false);
+    expect(isValidPhase('toString')).toBe(false);
+    expect(isValidPhase('constructor')).toBe(false);
     expect(isValidPhase('')).toBe(false);
   });
 
@@ -205,6 +220,90 @@ describe('isValidPhase()', () => {
     expect(isValidPhase(null)).toBe(false);
     expect(isValidPhase(undefined)).toBe(false);
     expect(isValidPhase({})).toBe(false);
+  });
+});
+
+// ─── normalizePhase ────────────────────────────────────────────────────────────
+
+describe('normalizePhase()', () => {
+  test('returns the canonical phase for each defined phase', () => {
+    for (const phase of RETRO_PHASES) {
+      expect(normalizePhase(phase)).toBe(phase);
+    }
+  });
+
+  test('maps legacy generate-insights to cluster-cards', () => {
+    expect(normalizePhase('generate-insights')).toBe('cluster-cards');
+  });
+
+  test('returns null for unknown strings', () => {
+    expect(normalizePhase('brainstorming')).toBeNull();
+    expect(normalizePhase('writing')).toBeNull();
+    expect(normalizePhase('')).toBeNull();
+  });
+
+  test('returns null for non-string types', () => {
+    expect(normalizePhase(42)).toBeNull();
+    expect(normalizePhase(null)).toBeNull();
+    expect(normalizePhase(undefined)).toBeNull();
+    expect(normalizePhase({})).toBeNull();
+  });
+
+  test('returns null for inherited Object.prototype property names', () => {
+    expect(normalizePhase('toString')).toBeNull();
+    expect(normalizePhase('constructor')).toBeNull();
+    expect(normalizePhase('__proto__')).toBeNull();
+    expect(normalizePhase('hasOwnProperty')).toBeNull();
+    expect(normalizePhase('valueOf')).toBeNull();
+  });
+});
+
+describe('date helpers', () => {
+  test('getTodayISODate returns local YYYY-MM-DD', () => {
+    expect(getTodayISODate(new Date('2026-03-09T12:34:56'))).toBe('2026-03-09');
+  });
+
+  test('getTodayISODateUTC returns UTC YYYY-MM-DD', () => {
+    expect(getTodayISODateUTC(new Date('2026-03-09T23:30:00-05:00'))).toBe('2026-03-10');
+  });
+
+  test('getYesterdayISODateUTC returns the UTC date one day before the given instant', () => {
+    // At 2026-03-10 UTC, yesterday UTC is 2026-03-09
+    expect(getYesterdayISODateUTC(new Date('2026-03-10T00:00:00Z'))).toBe('2026-03-09');
+    // At 2026-03-10T23:59Z, yesterday UTC is still 2026-03-09
+    expect(getYesterdayISODateUTC(new Date('2026-03-10T23:59:00Z'))).toBe('2026-03-09');
+    // Crosses month boundary correctly
+    expect(getYesterdayISODateUTC(new Date('2026-03-01T12:00:00Z'))).toBe('2026-02-28');
+  });
+
+  test('isPastISODate detects dates before today', () => {
+    expect(isPastISODate('2026-03-08', '2026-03-09')).toBe(true);
+    expect(isPastISODate('2026-03-09', '2026-03-09')).toBe(false);
+  });
+});
+
+describe('sanitizeMaxVotesPerUser()', () => {
+  test('returns default when value is missing, non-finite, or not a number at runtime', () => {
+    const stringAsNumber = '3' as unknown as number;
+    const objectAsNumber = {} as unknown as number;
+
+    expect(sanitizeMaxVotesPerUser(undefined)).toBe(DEFAULT_MAX_VOTES_PER_USER);
+    expect(sanitizeMaxVotesPerUser(Number.NaN)).toBe(DEFAULT_MAX_VOTES_PER_USER);
+    expect(sanitizeMaxVotesPerUser(Number.POSITIVE_INFINITY)).toBe(DEFAULT_MAX_VOTES_PER_USER);
+    expect(sanitizeMaxVotesPerUser(stringAsNumber)).toBe(DEFAULT_MAX_VOTES_PER_USER);
+    expect(sanitizeMaxVotesPerUser(objectAsNumber)).toBe(DEFAULT_MAX_VOTES_PER_USER);
+  });
+
+  test('rounds valid values to the nearest integer', () => {
+    expect(sanitizeMaxVotesPerUser(4.6)).toBe(5);
+  });
+
+  test('clamps values below the minimum', () => {
+    expect(sanitizeMaxVotesPerUser(0)).toBe(MIN_MAX_VOTES_PER_USER);
+  });
+
+  test('clamps values above the maximum', () => {
+    expect(sanitizeMaxVotesPerUser(999)).toBe(MAX_MAX_VOTES_PER_USER);
   });
 });
 
@@ -275,5 +374,16 @@ describe('countVotesForParticipant()', () => {
     const cards = [{ voterIds: ['other-1', 'other-2'] }];
     const groups = [{ voterIds: ['other-3'] }];
     expect(countVotesForParticipant(cards, groups, user)).toBe(0);
+  });
+});
+
+describe('countGroupVotesForParticipant()', () => {
+  test('counts only group votes for voting budget usage', () => {
+    const user = 'user-1';
+    const groups = [
+      { voterIds: [user] },
+      { voterIds: [user, user] },
+    ];
+    expect(countGroupVotesForParticipant(groups, user)).toBe(3);
   });
 });

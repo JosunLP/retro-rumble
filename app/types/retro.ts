@@ -24,6 +24,9 @@ export const MAX_PARTICIPANT_NAME_LENGTH = 50;
 export const MAX_SESSION_NAME_LENGTH = 80;
 export const MAX_GROUP_TITLE_LENGTH = 80;
 export const MAX_ACTION_ITEM_TEXT_LENGTH = 500;
+export const DEFAULT_MAX_VOTES_PER_USER = 5;
+export const MIN_MAX_VOTES_PER_USER = 1;
+export const MAX_MAX_VOTES_PER_USER = 99;
 
 /**
  * Rate limiting: maximum cards a single participant can create per session
@@ -49,21 +52,30 @@ export type RetroColumnType = (typeof RETRO_COLUMNS)[number];
  * Retro session phases (Scrum Retro Flow)
  *
  * 1. set-the-stage    – Welcome, ice-breaker / check-in
- * 2. gather-data      – Anonymous cards in three columns
- * 3. generate-insights – Group cards into clusters
- * 4. voting           – Vote on cards and groups
- * 5. decide-action    – SMART action items, assign & prioritize
- * 6. close-retro      – Feedback, export, summary
+ * 2. gather-data      – Anonymous cards in the retro columns
+ * 3. discuss-topics   – Review and discuss collected topics before clustering
+ * 4. cluster-cards    – Group related cards into clusters
+ * 5. name-groups      – Name and refine created groups
+ * 6. voting           – Vote on groups
+ * 7. decide-action    – SMART action items, assign & prioritize
+ * 8. close-retro      – Feedback, export, summary
  */
 export const RETRO_PHASES = [
   'set-the-stage',
   'gather-data',
-  'generate-insights',
+  'discuss-topics',
+  'cluster-cards',
+  'name-groups',
   'voting',
   'decide-action',
   'close-retro',
 ] as const;
 export type RetroPhase = (typeof RETRO_PHASES)[number];
+
+export const LEGACY_RETRO_PHASE_ALIASES = {
+  'generate-insights': 'cluster-cards',
+} as const;
+export type LegacyRetroPhase = keyof typeof LEGACY_RETRO_PHASE_ALIASES;
 
 /**
  * Available check-in mood emojis
@@ -121,13 +133,30 @@ export function isValidCheckInMood(value: unknown): value is CheckInMood {
 }
 
 /**
- * Validates a retro phase value
+ * Validates a retro phase value (canonical phases only).
+ * Does not accept legacy phase aliases — use normalizePhase() at input
+ * boundaries (WebSocket payloads, localStorage, etc.) where legacy values
+ * may appear.
  */
 export function isValidPhase(value: unknown): value is RetroPhase {
   return (
     typeof value === 'string' &&
     (RETRO_PHASES as readonly string[]).includes(value)
   );
+}
+
+/**
+ * Normalizes current and legacy retro phase values to the canonical phase list.
+ */
+export function normalizePhase(value: unknown): RetroPhase | null {
+  if (typeof value !== 'string') return null;
+  if ((RETRO_PHASES as readonly string[]).includes(value)) {
+    return value as RetroPhase;
+  }
+  if (Object.hasOwn(LEGACY_RETRO_PHASE_ALIASES, value)) {
+    return LEGACY_RETRO_PHASE_ALIASES[value as LegacyRetroPhase];
+  }
+  return null;
 }
 
 /**
@@ -138,6 +167,59 @@ export function isValidISODate(value: string): boolean {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
   const date = new Date(value + 'T00:00:00Z');
   return !isNaN(date.getTime()) && date.toISOString().startsWith(value);
+}
+
+/**
+ * Returns today's date in local time as YYYY-MM-DD.
+ */
+export function getTodayISODate(now: Date = new Date()): string {
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+/**
+ * Returns today's date in UTC as YYYY-MM-DD.
+ */
+export function getTodayISODateUTC(now: Date = new Date()): string {
+  return now.toISOString().slice(0, 10);
+}
+
+/**
+ * Returns yesterday's date in UTC as YYYY-MM-DD.
+ * Used as a grace-window floor for server-side due-date validation so that
+ * users in UTC-behind timezones can submit their local "today" without a
+ * false PAST_DUE_DATE rejection.
+ */
+export function getYesterdayISODateUTC(now: Date = new Date()): string {
+  const yesterday = new Date(now);
+  yesterday.setUTCDate(yesterday.getUTCDate() - 1);
+  return getTodayISODateUTC(yesterday);
+}
+
+/**
+ * Returns true when a valid ISO date lies before today.
+ */
+export function isPastISODate(
+  value: string,
+  today: string = getTodayISODate()
+): boolean {
+  return isValidISODate(value) && value < today;
+}
+
+/**
+ * Clamps the configurable vote budget to a controlled range.
+ */
+export function sanitizeMaxVotesPerUser(value: number | undefined): number {
+  if (typeof value !== 'number' || !Number.isFinite(value)) {
+    return DEFAULT_MAX_VOTES_PER_USER;
+  }
+
+  return Math.max(
+    MIN_MAX_VOTES_PER_USER,
+    Math.min(MAX_MAX_VOTES_PER_USER, Math.round(value))
+  );
 }
 
 /**
@@ -159,6 +241,19 @@ export function countVotesForParticipant(
     0
   );
   return cardVotes + groupVotes;
+}
+
+/**
+ * Counts only group votes for the current voting-budget rules.
+ */
+export function countGroupVotesForParticipant(
+  groups: Pick<ICardGroup, 'voterIds'>[],
+  participantId: string
+): number {
+  return groups.reduce(
+    (count, g) => count + g.voterIds.filter((id) => id === participantId).length,
+    0
+  );
 }
 
 // ============================================
