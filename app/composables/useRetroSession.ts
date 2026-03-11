@@ -254,13 +254,13 @@ export function useRetroSession() {
         specificMessage = candidate === specificKey ? null : candidate;
       }
 
-      // Generic fallback: try i18n first, then server message
+      // Generic fallback: use i18n generic error as a last resort
       const genericKey = 'errors.genericError';
       const genericCandidate = t(genericKey);
-      const genericMessage =
-        genericCandidate === genericKey ? (payload.message ?? genericKey) : genericCandidate;
+      const genericMessage = genericCandidate === genericKey ? genericKey : genericCandidate;
 
-      const message = specificMessage ?? genericMessage;
+      // Prefer a specific mapped message, then server-provided message, then generic i18n
+      const message = specificMessage ?? payload.message ?? genericMessage;
       state.value = {
         ...state.value,
         error: message,
