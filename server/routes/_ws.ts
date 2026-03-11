@@ -35,6 +35,7 @@ import type {
     VoteCardPayload,
     VoteGroupPayload,
 } from '../../app/types/websocket';
+import type { IRetroSession } from '../../app/types/retro';
 import { normalizePhase } from '../../app/types/retro';
 import { sessionStore } from '../utils/sessionStore';
 
@@ -596,7 +597,7 @@ function handleUnvoteGroup(peer: Peer, payload: UnvoteGroupPayload): void {
 // ============================================
 
 function handleAddActionItem(peer: Peer, payload: AddActionItemPayload): void {
-  let session = null;
+  let session: IRetroSession | null = null;
 
   try {
     session = sessionStore.addActionItem(
@@ -626,7 +627,7 @@ function handleEditActionItem(
   peer: Peer,
   payload: EditActionItemPayload
 ): void {
-  let session = null;
+  let session: IRetroSession | null = null;
 
   try {
     session = sessionStore.editActionItem(
