@@ -13,7 +13,7 @@ import type {
     RetroPhase,
 } from '../../app/types/retro';
 import {
-    getTodayISODateUTC,
+    getYesterdayISODateUTC,
     isPastISODate,
     isValidColumnType,
     isValidISODate,
@@ -826,6 +826,10 @@ class SessionStore {
    * Sanitizes and validates an optional due-date string.
    * Returns a valid ISO date (YYYY-MM-DD) or null.
    * Throws INVALID_DUE_DATE or PAST_DUE_DATE when the input is invalid.
+   *
+   * A 1-day UTC grace window (via getYesterdayISODateUTC) is applied so that
+   * users in UTC-behind timezones can submit their local "today" without a
+   * false PAST_DUE_DATE rejection. Dates older than yesterday UTC are rejected.
    */
   private sanitizeDueDate(dueDate?: string): string | null {
     if (!dueDate) return null;
@@ -833,7 +837,7 @@ class SessionStore {
     if (!isValidISODate(trimmed)) {
       throw new Error('INVALID_DUE_DATE');
     }
-    if (isPastISODate(trimmed, getTodayISODateUTC())) {
+    if (isPastISODate(trimmed, getYesterdayISODateUTC())) {
       throw new Error('PAST_DUE_DATE');
     }
     return trimmed;
