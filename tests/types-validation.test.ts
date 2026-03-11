@@ -6,6 +6,7 @@ import {
     CHECK_IN_MOODS,
     countGroupVotesForParticipant,
     countVotesForParticipant,
+    DEFAULT_MAX_VOTES_PER_USER,
     formatJoinCode,
     getTodayISODate,
     getTodayISODateUTC,
@@ -20,12 +21,15 @@ import {
     JOIN_CODE_LENGTH,
     MAX_ACTION_ITEM_TEXT_LENGTH,
     MAX_CARD_CONTENT_LENGTH,
+    MAX_MAX_VOTES_PER_USER,
     MAX_GROUP_TITLE_LENGTH,
     MAX_PARTICIPANT_NAME_LENGTH,
     MAX_SESSION_NAME_LENGTH,
+    MIN_MAX_VOTES_PER_USER,
     normalizePhase,
     RETRO_COLUMNS,
     RETRO_PHASES,
+    sanitizeMaxVotesPerUser,
 } from '../app/types/retro';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -275,6 +279,26 @@ describe('date helpers', () => {
   test('isPastISODate detects dates before today', () => {
     expect(isPastISODate('2026-03-08', '2026-03-09')).toBe(true);
     expect(isPastISODate('2026-03-09', '2026-03-09')).toBe(false);
+  });
+});
+
+describe('sanitizeMaxVotesPerUser()', () => {
+  test('returns default when value is missing or non-finite', () => {
+    expect(sanitizeMaxVotesPerUser(undefined)).toBe(DEFAULT_MAX_VOTES_PER_USER);
+    expect(sanitizeMaxVotesPerUser(Number.NaN)).toBe(DEFAULT_MAX_VOTES_PER_USER);
+    expect(sanitizeMaxVotesPerUser(Number.POSITIVE_INFINITY)).toBe(DEFAULT_MAX_VOTES_PER_USER);
+  });
+
+  test('rounds valid values to the nearest integer', () => {
+    expect(sanitizeMaxVotesPerUser(4.6)).toBe(5);
+  });
+
+  test('clamps values below the minimum', () => {
+    expect(sanitizeMaxVotesPerUser(0)).toBe(MIN_MAX_VOTES_PER_USER);
+  });
+
+  test('clamps values above the maximum', () => {
+    expect(sanitizeMaxVotesPerUser(999)).toBe(MAX_MAX_VOTES_PER_USER);
   });
 });
 

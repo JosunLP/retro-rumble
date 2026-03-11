@@ -212,7 +212,10 @@ export function isPastISODate(
  * Clamps the configurable vote budget to a controlled range.
  */
 export function sanitizeMaxVotesPerUser(value: number | undefined): number {
-  if (!Number.isFinite(value)) return DEFAULT_MAX_VOTES_PER_USER;
+  if (typeof value !== 'number' || !Number.isFinite(value)) {
+    return DEFAULT_MAX_VOTES_PER_USER;
+  }
+
   return Math.max(
     MIN_MAX_VOTES_PER_USER,
     Math.min(MAX_MAX_VOTES_PER_USER, Math.round(value))
