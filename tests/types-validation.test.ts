@@ -283,10 +283,15 @@ describe('date helpers', () => {
 });
 
 describe('sanitizeMaxVotesPerUser()', () => {
-  test('returns default when value is missing or non-finite', () => {
+  test('returns default when value is missing, non-finite, or not a number at runtime', () => {
+    const stringAsNumber = '3' as unknown as number;
+    const objectAsNumber = {} as unknown as number;
+
     expect(sanitizeMaxVotesPerUser(undefined)).toBe(DEFAULT_MAX_VOTES_PER_USER);
     expect(sanitizeMaxVotesPerUser(Number.NaN)).toBe(DEFAULT_MAX_VOTES_PER_USER);
     expect(sanitizeMaxVotesPerUser(Number.POSITIVE_INFINITY)).toBe(DEFAULT_MAX_VOTES_PER_USER);
+    expect(sanitizeMaxVotesPerUser(stringAsNumber)).toBe(DEFAULT_MAX_VOTES_PER_USER);
+    expect(sanitizeMaxVotesPerUser(objectAsNumber)).toBe(DEFAULT_MAX_VOTES_PER_USER);
   });
 
   test('rounds valid values to the nearest integer', () => {
