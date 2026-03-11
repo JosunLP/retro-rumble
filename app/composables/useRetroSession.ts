@@ -242,6 +242,7 @@ export function useRetroSession() {
       const errorKeyMap: Record<string, string> = {
         PAST_DUE_DATE: 'errors.pastDueDate',
         INVALID_DUE_DATE: 'errors.invalidDueDate',
+        INVALID_PHASE: 'errors.invalidPhase',
         ACTION_ADD_FAILED: 'errors.actionAddFailed',
         ACTION_EDIT_FAILED: 'errors.actionEditFailed',
       };
