@@ -151,9 +151,22 @@ function handleDragEnd() {
 
 // ---- Group Actions ----
 function getGroupCards(groupId: string): IRetroCard[] {
-  return sortByCreatedAt(
-    cards.value.filter((card) => card.groupId === groupId)
-  );
+  const group = props.session.groups.find((g) => g.id === groupId);
+  if (!group) {
+    return [];
+  }
+
+  const cardById = new Map(cards.value.map((card) => [card.id, card]));
+  const groupCards: IRetroCard[] = [];
+
+  for (const cardId of group.cardIds) {
+    const card = cardById.get(cardId);
+    if (card) {
+      groupCards.push(card);
+    }
+  }
+
+  return sortByCreatedAt(groupCards);
 }
 
 function startGroupRename(groupId: string, currentTitle: string): void {
