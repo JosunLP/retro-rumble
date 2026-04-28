@@ -118,9 +118,7 @@ export function useRetroSession() {
 
   function restoreStoredSessionIdentity(): void {
     const hasExistingSessionState = !!(
-      state.value.session
-      || state.value.currentParticipant
-      || state.value.joinCode
+      state.value.session || state.value.currentParticipant
     );
 
     if (hasExistingSessionState) {
