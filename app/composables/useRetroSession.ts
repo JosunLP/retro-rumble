@@ -13,6 +13,7 @@ import type {
 } from '~/types';
 import {
   countGroupVotesForParticipant,
+  formatJoinCode,
   JOIN_CODE_LENGTH,
   normalizePhase,
 } from '~/types';
@@ -420,7 +421,7 @@ export function useRetroSession() {
     code: string,
     participantName: string
   ): Promise<void> {
-    const normalizedCode = normalizeJoinCode(code);
+    const normalizedCode = formatJoinCode(code.trim());
     if (normalizedCode.length !== JOIN_CODE_LENGTH) {
       state.value = {
         ...state.value,

@@ -1,5 +1,4 @@
-import type { IParticipant } from '../types';
-import { formatJoinCode } from '../types';
+import { formatJoinCode, type IParticipant } from '../types';
 
 export const SESSION_IDENTITY_STORAGE_KEY = 'retro-rumble.session-identity';
 
@@ -29,6 +28,9 @@ interface IStoredSessionIdentityRecord {
 type StorageReader = Pick<Storage, 'getItem'>;
 type StorageWriter = Pick<Storage, 'setItem' | 'removeItem'>;
 
+/**
+ * Normalizes join-code values that may come from route/query storage inputs.
+ */
 export function normalizeJoinCode(
   value: string | string[] | null | undefined
 ): string {
