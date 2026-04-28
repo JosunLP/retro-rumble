@@ -50,9 +50,9 @@ export function useRetroSession() {
     ? readStoredSessionIdentity(window.localStorage)
     : null;
   const requestedJoinCode = normalizeJoinCode(route.query.join);
-  const shouldRestoreStoredIdentity
-    = !!storedIdentity
-      && (!requestedJoinCode || requestedJoinCode === storedIdentity.joinCode);
+  const shouldRestoreStoredIdentity =
+    !!storedIdentity
+    && (!requestedJoinCode || requestedJoinCode === storedIdentity.joinCode);
 
   /**
    * WebSocket Composable
