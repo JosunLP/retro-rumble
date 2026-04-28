@@ -11,7 +11,11 @@ import type {
     RetroColumnType,
     RetroPhase,
 } from '~/types';
-import { countGroupVotesForParticipant, normalizePhase } from '~/types';
+import {
+  countGroupVotesForParticipant,
+  JOIN_CODE_LENGTH,
+  normalizePhase,
+} from '~/types';
 import type {
     ParticipantJoinedPayload,
     ParticipantLeftPayload,
@@ -293,8 +297,10 @@ export function useRetroSession() {
         }
         state.value = {
           ...state.value,
+          session: null,
           currentParticipant: null,
           isHost: false,
+          isConnected: false,
           joinCode: null,
         };
       }
@@ -414,8 +420,8 @@ export function useRetroSession() {
     code: string,
     participantName: string
   ): Promise<void> {
-    const normalizedCode = code.toUpperCase().trim();
-    if (normalizedCode.length !== 6) {
+    const normalizedCode = normalizeJoinCode(code);
+    if (normalizedCode.length !== JOIN_CODE_LENGTH) {
       state.value = {
         ...state.value,
         error: t('errors.joinCodeLength'),

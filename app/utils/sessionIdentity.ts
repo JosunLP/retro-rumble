@@ -1,10 +1,23 @@
-import type { IParticipant } from '../types/retro';
+import type { IParticipant } from '../types';
+import { formatJoinCode } from '../types';
 
 export const SESSION_IDENTITY_STORAGE_KEY = 'retro-rumble.session-identity';
 
 export interface IStoredSessionIdentity {
   joinCode: string;
   participant: IParticipant;
+}
+
+interface IStoredParticipantRecord {
+  id: string;
+  name: string;
+  isHost: boolean;
+  joinedAt: string;
+}
+
+interface IStoredSessionIdentityRecord {
+  joinCode: string;
+  participant: IStoredParticipantRecord;
 }
 
 type StorageReader = Pick<Storage, 'getItem'>;
@@ -14,7 +27,31 @@ export function normalizeJoinCode(
   value: string | string[] | null | undefined
 ): string {
   const rawValue = Array.isArray(value) ? value[0] : value;
-  return rawValue?.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6) ?? '';
+  return rawValue ? formatJoinCode(rawValue) : '';
+}
+
+function isStoredParticipantRecord(
+  value: unknown
+): value is IStoredParticipantRecord {
+  return (
+    typeof value === 'object'
+    && value !== null
+    && typeof value.id === 'string'
+    && typeof value.name === 'string'
+    && typeof value.isHost === 'boolean'
+    && typeof value.joinedAt === 'string'
+  );
+}
+
+function isStoredSessionIdentityRecord(
+  value: unknown
+): value is IStoredSessionIdentityRecord {
+  return (
+    typeof value === 'object'
+    && value !== null
+    && typeof value.joinCode === 'string'
+    && isStoredParticipantRecord(value.participant)
+  );
 }
 
 export function parseStoredSessionIdentity(
@@ -23,18 +60,15 @@ export function parseStoredSessionIdentity(
   if (!value) return null;
 
   try {
-    const parsed = JSON.parse(value) as Partial<IStoredSessionIdentity>;
+    const parsed = JSON.parse(value) as unknown;
+    if (!isStoredSessionIdentityRecord(parsed)) {
+      return null;
+    }
+
     const joinCode = normalizeJoinCode(parsed.joinCode);
     const participant = parsed.participant;
 
-    if (
-      !joinCode
-      || !participant
-      || typeof participant.id !== 'string'
-      || typeof participant.name !== 'string'
-      || typeof participant.isHost !== 'boolean'
-      || typeof participant.joinedAt !== 'string'
-    ) {
+    if (!joinCode) {
       return null;
     }
 
