@@ -117,11 +117,13 @@ export function useRetroSession() {
   }
 
   function restoreStoredSessionIdentity(): void {
-    if (
+    const hasExistingSessionState = !!(
       state.value.session
       || state.value.currentParticipant
       || state.value.joinCode
-    ) {
+    );
+
+    if (hasExistingSessionState) {
       return;
     }
 
@@ -138,7 +140,6 @@ export function useRetroSession() {
     state.value = {
       ...state.value,
       currentParticipant: storedIdentity.participant,
-      isHost: false,
       joinCode: storedIdentity.joinCode,
     };
 
