@@ -61,7 +61,7 @@ function getAudioContext(): AudioContext {
 }
 
 /**
- * Plays a single sine tone with smooth envelope
+ * Plays a single oscillator tone with smooth envelope
  */
 function playTone(
   ctx: AudioContext,
@@ -94,11 +94,13 @@ function playTone(
  * Selects the synthesized timer sound preset for the current day.
  */
 export function getTimerSoundPreset(date = new Date()): ITimerSoundPreset {
-  if (date.getMonth() === 3 && date.getDate() === 1) {
+  const month = date.getMonth() + 1;
+
+  if (month === 4 && date.getDate() === 1) {
     return APRIL_FOOLS_TIMER_SOUND;
   }
 
-  if (date.getMonth() === 4 && date.getDate() === 4) {
+  if (month === 5 && date.getDate() === 4) {
     return MAY_THE_FOURTH_TIMER_SOUND;
   }
 
