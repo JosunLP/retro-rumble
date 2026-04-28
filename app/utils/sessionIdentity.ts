@@ -36,6 +36,10 @@ function isStoredParticipantRecord(
   return (
     typeof value === 'object'
     && value !== null
+    && 'id' in value
+    && 'name' in value
+    && 'isHost' in value
+    && 'joinedAt' in value
     && typeof value.id === 'string'
     && typeof value.name === 'string'
     && typeof value.isHost === 'boolean'
@@ -49,6 +53,8 @@ function isStoredSessionIdentityRecord(
   return (
     typeof value === 'object'
     && value !== null
+    && 'joinCode' in value
+    && 'participant' in value
     && typeof value.joinCode === 'string'
     && isStoredParticipantRecord(value.participant)
   );
