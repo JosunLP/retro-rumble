@@ -45,10 +45,14 @@ export function useRetroSession() {
    */
   const { t } = useI18n();
 
+  function getStoredSessionIdentity() {
+    return import.meta.client
+      ? readStoredSessionIdentity(window.localStorage)
+      : null;
+  }
+
   const route = useRoute();
-  const storedIdentity = import.meta.client
-    ? readStoredSessionIdentity(window.localStorage)
-    : null;
+  const storedIdentity = getStoredSessionIdentity();
   const requestedJoinCode = normalizeJoinCode(route.query.join);
   const shouldRestoreStoredIdentity =
     !!storedIdentity
@@ -337,7 +341,11 @@ export function useRetroSession() {
       }
     });
 
-    if (shouldRestoreStoredIdentity && connectionStatus.value === 'connected') {
+    if (
+      shouldRestoreStoredIdentity
+      && connectionStatus.value === 'connected'
+      && !state.value.session
+    ) {
       sendRejoinRequest();
     }
   }
@@ -428,9 +436,7 @@ export function useRetroSession() {
       return;
     }
 
-    const sessionIdentity = import.meta.client
-      ? readStoredSessionIdentity(window.localStorage)
-      : null;
+    const sessionIdentity = getStoredSessionIdentity();
 
     if (
       sessionIdentity
