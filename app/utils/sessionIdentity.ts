@@ -26,7 +26,7 @@ interface IStoredSessionIdentityRecord {
 }
 
 type StorageReader = Pick<Storage, 'getItem'>;
-type StorageWriter = Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>;
+type StorageAccessor = Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>;
 
 /**
  * Normalizes join-code values that may come from route/query storage inputs.
@@ -145,7 +145,7 @@ export function readStoredSessionIdentity(
 }
 
 export function storeSessionIdentity(
-  storage: StorageWriter,
+  storage: StorageAccessor,
   identity: IStoredSessionIdentity
 ): void {
   const joinCode = normalizeJoinCode(identity.joinCode);
@@ -164,7 +164,7 @@ export function storeSessionIdentity(
 }
 
 export function clearStoredSessionIdentity(
-  storage: StorageWriter,
+  storage: StorageAccessor,
   joinCode?: string
 ): void {
   const normalizedJoinCode = normalizeJoinCode(joinCode);
