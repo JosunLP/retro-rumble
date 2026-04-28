@@ -57,11 +57,6 @@ export function useRetroSession() {
   }
 
   const route = useRoute();
-  const storedIdentity = getStoredSessionIdentity();
-  const requestedJoinCode = normalizeJoinCode(route.query.join);
-  const shouldRestoreStoredIdentity =
-    !!storedIdentity
-    && (!requestedJoinCode || requestedJoinCode === storedIdentity.joinCode);
 
   /**
    * WebSocket Composable
@@ -82,13 +77,11 @@ export function useRetroSession() {
    */
   const state = useState<IExtendedSessionState>('retro-session', () => ({
     session: null,
-    currentParticipant: shouldRestoreStoredIdentity
-      ? storedIdentity.participant
-      : null,
+    currentParticipant: null,
     isHost: false,
     isConnected: false,
     error: null,
-    joinCode: shouldRestoreStoredIdentity ? storedIdentity.joinCode : null,
+    joinCode: null,
   }));
 
   /**
@@ -121,6 +114,38 @@ export function useRetroSession() {
       joinCode: state.value.joinCode,
       participantId: state.value.currentParticipant.id,
     });
+  }
+
+  function restoreStoredSessionIdentity(): void {
+    if (
+      !import.meta.client
+      || state.value.session
+      || state.value.currentParticipant
+      || state.value.joinCode
+    ) {
+      return;
+    }
+
+    const storedIdentity = getStoredSessionIdentity();
+    const requestedJoinCode = normalizeJoinCode(route.query.join);
+
+    if (
+      !storedIdentity
+      || (requestedJoinCode && requestedJoinCode !== storedIdentity.joinCode)
+    ) {
+      return;
+    }
+
+    state.value = {
+      ...state.value,
+      currentParticipant: storedIdentity.participant,
+      isHost: false,
+      joinCode: storedIdentity.joinCode,
+    };
+
+    if (connectionStatus.value === 'connected') {
+      sendRejoinRequest();
+    }
   }
 
   function setSessionState(
@@ -348,13 +373,12 @@ export function useRetroSession() {
       }
     });
 
-    if (
-      shouldRestoreStoredIdentity
-      && connectionStatus.value === 'connected'
-      && !state.value.session
-    ) {
-      sendRejoinRequest();
-    }
+  }
+
+  if (import.meta.client) {
+    onMounted(() => {
+      restoreStoredSessionIdentity();
+    });
   }
 
   // ============================================
