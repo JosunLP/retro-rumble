@@ -8,6 +8,9 @@ export interface IStoredSessionIdentity {
   participant: IParticipant;
 }
 
+/**
+ * Raw participant record stored in localStorage before joinedAt is revived.
+ */
 interface IStoredParticipantRecord {
   id: string;
   name: string;
@@ -15,6 +18,9 @@ interface IStoredParticipantRecord {
   joinedAt: string;
 }
 
+/**
+ * Raw session identity record used only for deserialization/type guards.
+ */
 interface IStoredSessionIdentityRecord {
   joinCode: string;
   participant: IStoredParticipantRecord;
