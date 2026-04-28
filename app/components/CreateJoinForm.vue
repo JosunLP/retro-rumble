@@ -40,6 +40,17 @@ const timerDuration = ref(300);
 const joinCode = ref(props.initialJoinCode);
 const joinName = ref('');
 
+watch(
+  () => props.initialJoinCode,
+  (newJoinCode) => {
+    joinCode.value = newJoinCode;
+    if (newJoinCode) {
+      mode.value = 'join';
+    }
+  },
+  { immediate: true }
+);
+
 function handleCreate(): void {
   emit(
     'create',

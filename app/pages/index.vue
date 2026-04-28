@@ -6,6 +6,8 @@
  * Enables creating a new retro session or displays the active session.
  */
 
+import { normalizeJoinCode } from '~/utils/sessionIdentity';
+
 const { t } = useI18n();
 
 /**
@@ -59,17 +61,7 @@ const route = useRoute();
 /**
  * Join-Code from URL parameter
  */
-const initialJoinCode = ref('');
-
-onMounted(() => {
-  const urlJoinCode = route.query.join as string;
-  if (urlJoinCode) {
-    initialJoinCode.value = urlJoinCode
-      .toUpperCase()
-      .replace(/[^A-Z0-9]/g, '')
-      .slice(0, 6);
-  }
-});
+const initialJoinCode = computed(() => normalizeJoinCode(route.query.join));
 
 /**
  * SEO Meta Data

@@ -23,6 +23,12 @@ import type {
     SessionUpdatedPayload,
     TimerTickPayload,
 } from '~/types/websocket';
+import {
+  clearStoredSessionIdentity,
+  normalizeJoinCode,
+  readStoredSessionIdentity,
+  storeSessionIdentity,
+} from '~/utils/sessionIdentity';
 import { mergeSessionSnapshot, normalizeSessionSnapshot } from '~/utils/sessionState';
 
 /**
@@ -38,6 +44,15 @@ export function useRetroSession() {
    * i18n for translated error messages (composable runs inside setup())
    */
   const { t } = useI18n();
+
+  const route = useRoute();
+  const storedIdentity = import.meta.client
+    ? readStoredSessionIdentity(window.localStorage)
+    : null;
+  const requestedJoinCode = normalizeJoinCode(route.query.join);
+  const shouldRestoreStoredIdentity
+    = !!storedIdentity
+      && (!requestedJoinCode || requestedJoinCode === storedIdentity.joinCode);
 
   /**
    * WebSocket Composable
@@ -58,11 +73,13 @@ export function useRetroSession() {
    */
   const state = useState<IExtendedSessionState>('retro-session', () => ({
     session: null,
-    currentParticipant: null,
+    currentParticipant: shouldRestoreStoredIdentity
+      ? storedIdentity.participant
+      : null,
     isHost: false,
     isConnected: false,
     error: null,
-    joinCode: null,
+    joinCode: shouldRestoreStoredIdentity ? storedIdentity.joinCode : null,
   }));
 
   /**
@@ -72,6 +89,30 @@ export function useRetroSession() {
     'retro-handlers-registered',
     () => false
   );
+
+  function persistSessionIdentity(
+    joinCodeValue: string,
+    participant:
+      | SessionCreatedPayload['participant']
+      | SessionJoinedPayload['participant']
+      | SessionRejoinedPayload['participant']
+  ): void {
+    if (!import.meta.client) return;
+
+    storeSessionIdentity(window.localStorage, {
+      joinCode: joinCodeValue,
+      participant,
+    });
+  }
+
+  function sendRejoinRequest(): void {
+    if (!state.value.joinCode || !state.value.currentParticipant) return;
+
+    send('session:rejoin', {
+      joinCode: state.value.joinCode,
+      participantId: state.value.currentParticipant.id,
+    });
+  }
 
   function setSessionState(
     payloadSession: SessionCreatedPayload['session'] | SessionJoinedPayload['session']
@@ -104,6 +145,7 @@ export function useRetroSession() {
       error: null,
       joinCode: joinCodeValue,
     };
+    persistSessionIdentity(joinCodeValue, participant);
   }
 
   /**
@@ -195,7 +237,10 @@ export function useRetroSession() {
     });
 
     // Session left confirmed
-    on<SessionLeftPayload>('session:left', () => {
+    on<SessionLeftPayload>('session:left', (payload) => {
+      if (payload.success && import.meta.client) {
+        clearStoredSessionIdentity(window.localStorage);
+      }
       state.value = {
         session: null,
         currentParticipant: null,
@@ -238,6 +283,18 @@ export function useRetroSession() {
 
     // Error
     on<SessionErrorPayload>('session:error', (payload) => {
+      if (payload.code === 'REJOIN_FAILED') {
+        if (import.meta.client) {
+          clearStoredSessionIdentity(window.localStorage);
+        }
+        state.value = {
+          ...state.value,
+          currentParticipant: null,
+          isHost: false,
+          joinCode: null,
+        };
+      }
+
       // Map backend error codes to i18n keys (do not resolve them eagerly)
       const errorKeyMap: Record<string, string> = {
         PAST_DUE_DATE: 'errors.pastDueDate',
@@ -276,12 +333,13 @@ export function useRetroSession() {
         state.value.joinCode &&
         state.value.currentParticipant
       ) {
-        send('session:rejoin', {
-          joinCode: state.value.joinCode,
-          participantId: state.value.currentParticipant.id,
-        });
+        sendRejoinRequest();
       }
     });
+
+    if (shouldRestoreStoredIdentity && connectionStatus.value === 'connected') {
+      sendRejoinRequest();
+    }
   }
 
   // ============================================
@@ -367,6 +425,21 @@ export function useRetroSession() {
         ...state.value,
         error: t('errors.connectionFailed'),
       };
+      return;
+    }
+
+    const sessionIdentity = import.meta.client
+      ? readStoredSessionIdentity(window.localStorage)
+      : null;
+
+    if (
+      sessionIdentity
+      && sessionIdentity.joinCode === normalizedCode
+    ) {
+      send('session:rejoin', {
+        joinCode: normalizedCode,
+        participantId: sessionIdentity.participant.id,
+      });
       return;
     }
 
