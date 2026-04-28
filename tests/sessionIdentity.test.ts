@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'bun:test';
 import {
   clearStoredSessionIdentity,
+  getSessionIdentityStorageKey,
   normalizeJoinCode,
   parseStoredSessionIdentity,
   readStoredSessionIdentity,
@@ -31,11 +32,11 @@ describe('sessionIdentity utils', () => {
     expect(normalizeJoinCode(undefined)).toBe('');
   });
 
-  test('stores and restores a participant identity', () => {
+  test('stores and restores participant identities scoped by join code', () => {
     const storage = makeStorage();
 
     storeSessionIdentity(storage, {
-      joinCode: 'abc123',
+      joinCode: 'abc234',
       participant: {
         id: 'participant-1',
         name: 'Alex',
@@ -43,11 +44,35 @@ describe('sessionIdentity utils', () => {
         joinedAt: new Date('2026-04-28T10:00:00Z'),
       },
     });
+    storeSessionIdentity(storage, {
+      joinCode: 'xyz789',
+      participant: {
+        id: 'participant-2',
+        name: 'Taylor',
+        isHost: true,
+        joinedAt: new Date('2026-04-28T11:00:00Z'),
+      },
+    });
 
-    const restored = readStoredSessionIdentity(storage);
+    const restoredLatest = readStoredSessionIdentity(storage);
+    const restoredScoped = readStoredSessionIdentity(storage, 'abc234');
 
-    expect(restored).toEqual({
-      joinCode: 'ABC123',
+    expect(storage.getItem(SESSION_IDENTITY_STORAGE_KEY)).toBe('XYZ789');
+    expect(storage.getItem(getSessionIdentityStorageKey('abc234'))).not.toBeNull();
+    expect(storage.getItem(getSessionIdentityStorageKey('xyz789'))).not.toBeNull();
+
+    expect(restoredLatest).toEqual({
+      joinCode: 'XYZ789',
+      participant: {
+        id: 'participant-2',
+        name: 'Taylor',
+        isHost: true,
+        joinedAt: new Date('2026-04-28T11:00:00Z'),
+      },
+    });
+
+    expect(restoredScoped).toEqual({
+      joinCode: 'ABC234',
       participant: {
         id: 'participant-1',
         name: 'Alex',
@@ -62,7 +87,20 @@ describe('sessionIdentity utils', () => {
     expect(
       parseStoredSessionIdentity(
         JSON.stringify({
-          joinCode: 'ABC123',
+          joinCode: 'ABC12',
+          participant: {
+            id: 'participant-1',
+            name: 'Alex',
+            isHost: false,
+            joinedAt: '2026-04-28T10:00:00Z',
+          },
+        })
+      )
+    ).toBeNull();
+    expect(
+      parseStoredSessionIdentity(
+        JSON.stringify({
+          joinCode: 'ABC234',
           participant: {
             id: 'participant-1',
             name: 'Alex',
@@ -74,12 +112,40 @@ describe('sessionIdentity utils', () => {
     ).toBeNull();
   });
 
-  test('clears the stored session identity', () => {
+  test('clears only the targeted stored session identity', () => {
     const storage = makeStorage();
 
-    storage.setItem(SESSION_IDENTITY_STORAGE_KEY, 'value');
-    clearStoredSessionIdentity(storage);
+    storeSessionIdentity(storage, {
+      joinCode: 'abc234',
+      participant: {
+        id: 'participant-1',
+        name: 'Alex',
+        isHost: false,
+        joinedAt: new Date('2026-04-28T10:00:00Z'),
+      },
+    });
+    storeSessionIdentity(storage, {
+      joinCode: 'xyz789',
+      participant: {
+        id: 'participant-2',
+        name: 'Taylor',
+        isHost: false,
+        joinedAt: new Date('2026-04-28T11:00:00Z'),
+      },
+    });
+
+    clearStoredSessionIdentity(storage, 'xyz789');
 
     expect(storage.getItem(SESSION_IDENTITY_STORAGE_KEY)).toBeNull();
+    expect(storage.getItem(getSessionIdentityStorageKey('xyz789'))).toBeNull();
+    expect(readStoredSessionIdentity(storage, 'abc234')).toEqual({
+      joinCode: 'ABC234',
+      participant: {
+        id: 'participant-1',
+        name: 'Alex',
+        isHost: false,
+        joinedAt: new Date('2026-04-28T10:00:00Z'),
+      },
+    });
   });
 });

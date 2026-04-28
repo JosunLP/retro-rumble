@@ -50,9 +50,9 @@ export function useRetroSession() {
    */
   const { t } = useI18n();
 
-  function getStoredSessionIdentity() {
+  function getStoredSessionIdentity(joinCodeValue?: string) {
     return import.meta.client
-      ? readStoredSessionIdentity(window.localStorage)
+      ? readStoredSessionIdentity(window.localStorage, joinCodeValue)
       : null;
   }
 
@@ -125,8 +125,8 @@ export function useRetroSession() {
       return;
     }
 
-    const storedIdentity = getStoredSessionIdentity();
     const requestedJoinCode = normalizeJoinCode(route.query.join);
+    const storedIdentity = getStoredSessionIdentity(requestedJoinCode || undefined);
 
     if (
       !storedIdentity
@@ -269,9 +269,9 @@ export function useRetroSession() {
     });
 
     // Session left confirmed
-    on<SessionLeftPayload>('session:left', (payload) => {
-      if (payload.success && import.meta.client) {
-        clearStoredSessionIdentity(window.localStorage);
+    on<SessionLeftPayload>('session:left', (_payload) => {
+      if (import.meta.client) {
+        clearStoredSessionIdentity(window.localStorage, state.value.joinCode ?? undefined);
       }
       state.value = {
         session: null,
@@ -317,7 +317,7 @@ export function useRetroSession() {
     on<SessionErrorPayload>('session:error', (payload) => {
       if (payload.code === 'REJOIN_FAILED') {
         if (import.meta.client) {
-          clearStoredSessionIdentity(window.localStorage);
+          clearStoredSessionIdentity(window.localStorage, state.value.joinCode ?? undefined);
         }
         state.value = {
           ...state.value,
@@ -465,7 +465,7 @@ export function useRetroSession() {
       return;
     }
 
-    const sessionIdentity = getStoredSessionIdentity();
+    const sessionIdentity = getStoredSessionIdentity(normalizedCode);
 
     if (
       sessionIdentity

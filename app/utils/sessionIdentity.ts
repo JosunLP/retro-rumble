@@ -1,4 +1,4 @@
-import { formatJoinCode, type IParticipant } from '../types';
+import { formatJoinCode, isValidJoinCode, type IParticipant } from '../types';
 
 export const SESSION_IDENTITY_STORAGE_KEY = 'retro-rumble.session-identity';
 
@@ -26,7 +26,7 @@ interface IStoredSessionIdentityRecord {
 }
 
 type StorageReader = Pick<Storage, 'getItem'>;
-type StorageWriter = Pick<Storage, 'setItem' | 'removeItem'>;
+type StorageWriter = Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>;
 
 /**
  * Normalizes join-code values that may come from route/query storage inputs.
@@ -36,6 +36,10 @@ export function normalizeJoinCode(
 ): string {
   const rawValue = Array.isArray(value) ? value[0] : value;
   return rawValue ? formatJoinCode(rawValue) : '';
+}
+
+export function getSessionIdentityStorageKey(joinCode: string): string {
+  return `${SESSION_IDENTITY_STORAGE_KEY}.${normalizeJoinCode(joinCode)}`;
 }
 
 function isStoredParticipantRecord(
@@ -82,7 +86,7 @@ export function parseStoredSessionIdentity(
     const joinCode = formatJoinCode(parsed.joinCode);
     const participant = parsed.participant;
 
-    if (!joinCode) {
+    if (!isValidJoinCode(joinCode)) {
       return null;
     }
 
@@ -106,8 +110,35 @@ export function parseStoredSessionIdentity(
 }
 
 export function readStoredSessionIdentity(
-  storage: StorageReader
+  storage: StorageReader,
+  joinCode?: string
 ): IStoredSessionIdentity | null {
+  const normalizedJoinCode = normalizeJoinCode(joinCode);
+
+  if (isValidJoinCode(normalizedJoinCode)) {
+    const scopedIdentity = parseStoredSessionIdentity(
+      storage.getItem(getSessionIdentityStorageKey(normalizedJoinCode))
+    );
+    if (scopedIdentity) {
+      return scopedIdentity;
+    }
+
+    const legacyIdentity = parseStoredSessionIdentity(
+      storage.getItem(SESSION_IDENTITY_STORAGE_KEY)
+    );
+    return legacyIdentity?.joinCode === normalizedJoinCode
+      ? legacyIdentity
+      : null;
+  }
+
+  const latestJoinCode = normalizeJoinCode(storage.getItem(SESSION_IDENTITY_STORAGE_KEY));
+
+  if (isValidJoinCode(latestJoinCode)) {
+    return parseStoredSessionIdentity(
+      storage.getItem(getSessionIdentityStorageKey(latestJoinCode))
+    );
+  }
+
   return parseStoredSessionIdentity(
     storage.getItem(SESSION_IDENTITY_STORAGE_KEY)
   );
@@ -117,12 +148,49 @@ export function storeSessionIdentity(
   storage: StorageWriter,
   identity: IStoredSessionIdentity
 ): void {
+  const joinCode = normalizeJoinCode(identity.joinCode);
+  if (!isValidJoinCode(joinCode)) {
+    return;
+  }
+
   storage.setItem(
-    SESSION_IDENTITY_STORAGE_KEY,
-    JSON.stringify(identity)
+    getSessionIdentityStorageKey(joinCode),
+    JSON.stringify({
+      ...identity,
+      joinCode,
+    })
   );
+  storage.setItem(SESSION_IDENTITY_STORAGE_KEY, joinCode);
 }
 
-export function clearStoredSessionIdentity(storage: StorageWriter): void {
+export function clearStoredSessionIdentity(
+  storage: StorageWriter,
+  joinCode?: string
+): void {
+  const normalizedJoinCode = normalizeJoinCode(joinCode);
+
+  if (isValidJoinCode(normalizedJoinCode)) {
+    storage.removeItem(getSessionIdentityStorageKey(normalizedJoinCode));
+
+    const latestJoinCode = normalizeJoinCode(storage.getItem(SESSION_IDENTITY_STORAGE_KEY));
+    const legacyIdentity = parseStoredSessionIdentity(
+      storage.getItem(SESSION_IDENTITY_STORAGE_KEY)
+    );
+
+    if (
+      latestJoinCode === normalizedJoinCode
+      || legacyIdentity?.joinCode === normalizedJoinCode
+    ) {
+      storage.removeItem(SESSION_IDENTITY_STORAGE_KEY);
+    }
+
+    return;
+  }
+
+  const latestJoinCode = normalizeJoinCode(storage.getItem(SESSION_IDENTITY_STORAGE_KEY));
+  if (isValidJoinCode(latestJoinCode)) {
+    storage.removeItem(getSessionIdentityStorageKey(latestJoinCode));
+  }
+
   storage.removeItem(SESSION_IDENTITY_STORAGE_KEY);
 }
