@@ -5,24 +5,7 @@
  * Special days can swap in easter-egg melodies while keeping
  * everything synthesized in-browser without external audio files.
  */
-
-type TimerSoundPresetId =
-  | 'default-chime'
-  | 'april-fools-riff'
-  | 'may-the-fourth-march';
-
-interface ITimerSoundNote {
-  frequency: number;
-  delay: number;
-  duration: number;
-  volume: number;
-  type?: OscillatorType;
-}
-
-interface ITimerSoundPreset {
-  id: TimerSoundPresetId;
-  notes: ITimerSoundNote[];
-}
+import type { ITimerSoundPreset, TimerSoundType } from '~/types';
 
 let audioCtx: AudioContext | null = null;
 
@@ -86,7 +69,7 @@ function playTone(
   startTime: number,
   duration: number,
   volume: number,
-  type: OscillatorType = 'sine'
+  type: TimerSoundType = 'sine'
 ): void {
   const oscillator = ctx.createOscillator();
   const gainNode = ctx.createGain();
@@ -134,7 +117,7 @@ function playPreset(preset: ITimerSoundPreset): void {
         now + note.delay,
         note.duration,
         note.volume,
-        note.type
+        note.type ?? 'sine'
       );
     }
   } catch {
