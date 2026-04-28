@@ -116,11 +116,11 @@ export function readStoredSessionIdentity(
   const normalizedJoinCode = normalizeJoinCode(joinCode);
 
   if (isValidJoinCode(normalizedJoinCode)) {
-    const scopedIdentity = parseStoredSessionIdentity(
-      storage.getItem(getSessionIdentityStorageKey(normalizedJoinCode))
+    const scopedStorageValue = storage.getItem(
+      getSessionIdentityStorageKey(normalizedJoinCode)
     );
-    if (scopedIdentity) {
-      return scopedIdentity;
+    if (scopedStorageValue !== null) {
+      return parseStoredSessionIdentity(scopedStorageValue);
     }
 
     const legacyIdentity = parseStoredSessionIdentity(
@@ -173,14 +173,16 @@ export function clearStoredSessionIdentity(
     storage.removeItem(getSessionIdentityStorageKey(normalizedJoinCode));
 
     const latestJoinCode = normalizeJoinCode(storage.getItem(SESSION_IDENTITY_STORAGE_KEY));
+
+    if (latestJoinCode === normalizedJoinCode) {
+      storage.removeItem(SESSION_IDENTITY_STORAGE_KEY);
+      return;
+    }
+
     const legacyIdentity = parseStoredSessionIdentity(
       storage.getItem(SESSION_IDENTITY_STORAGE_KEY)
     );
-
-    if (
-      latestJoinCode === normalizedJoinCode
-      || legacyIdentity?.joinCode === normalizedJoinCode
-    ) {
+    if (legacyIdentity?.joinCode === normalizedJoinCode) {
       storage.removeItem(SESSION_IDENTITY_STORAGE_KEY);
     }
 

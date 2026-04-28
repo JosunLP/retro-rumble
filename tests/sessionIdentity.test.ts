@@ -112,6 +112,26 @@ describe('sessionIdentity utils', () => {
     ).toBeNull();
   });
 
+  test('does not fall back to legacy data when scoped storage is malformed', () => {
+    const storage = makeStorage();
+
+    storage.setItem(
+      SESSION_IDENTITY_STORAGE_KEY,
+      JSON.stringify({
+        joinCode: 'ABC234',
+        participant: {
+          id: 'participant-1',
+          name: 'Alex',
+          isHost: false,
+          joinedAt: '2026-04-28T10:00:00Z',
+        },
+      })
+    );
+    storage.setItem(getSessionIdentityStorageKey('abc234'), '{');
+
+    expect(readStoredSessionIdentity(storage, 'abc234')).toBeNull();
+  });
+
   test('clears only the targeted stored session identity', () => {
     const storage = makeStorage();
 
