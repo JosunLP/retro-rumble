@@ -118,8 +118,7 @@ export function useRetroSession() {
 
   function restoreStoredSessionIdentity(): void {
     if (
-      !import.meta.client
-      || state.value.session
+      state.value.session
       || state.value.currentParticipant
       || state.value.joinCode
     ) {
