@@ -79,7 +79,7 @@ export function parseStoredSessionIdentity(
       return null;
     }
 
-    const joinCode = normalizeJoinCode(parsed.joinCode);
+    const joinCode = formatJoinCode(parsed.joinCode);
     const participant = parsed.participant;
 
     if (!joinCode) {

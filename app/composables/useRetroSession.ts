@@ -421,7 +421,7 @@ export function useRetroSession() {
     code: string,
     participantName: string
   ): Promise<void> {
-    const normalizedCode = formatJoinCode(code.trim());
+    const normalizedCode = formatJoinCode(code);
     if (normalizedCode.length !== JOIN_CODE_LENGTH) {
       state.value = {
         ...state.value,
