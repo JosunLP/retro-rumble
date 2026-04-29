@@ -168,4 +168,68 @@ describe('sessionIdentity utils', () => {
       },
     });
   });
+
+  test('clears the latest pointer when it still contains legacy JSON for the same join code', () => {
+    const storage = makeStorage();
+
+    storage.setItem(
+      SESSION_IDENTITY_STORAGE_KEY,
+      JSON.stringify({
+        joinCode: 'ABC234',
+        participant: {
+          id: 'participant-1',
+          name: 'Alex',
+          isHost: false,
+          joinedAt: '2026-04-28T10:00:00Z',
+        },
+      })
+    );
+    storage.setItem(
+      getSessionIdentityStorageKey('abc234'),
+      JSON.stringify({
+        joinCode: 'ABC234',
+        participant: {
+          id: 'participant-1',
+          name: 'Alex',
+          isHost: false,
+          joinedAt: '2026-04-28T10:00:00Z',
+        },
+      })
+    );
+
+    clearStoredSessionIdentity(storage, 'abc234');
+
+    expect(storage.getItem(SESSION_IDENTITY_STORAGE_KEY)).toBeNull();
+    expect(storage.getItem(getSessionIdentityStorageKey('abc234'))).toBeNull();
+  });
+
+  test('ignores storage access failures when reading, storing, and clearing session identity', () => {
+    const throwingStorage = {
+      getItem() {
+        throw new Error('storage disabled');
+      },
+      setItem() {
+        throw new Error('storage disabled');
+      },
+      removeItem() {
+        throw new Error('storage disabled');
+      },
+    };
+
+    expect(readStoredSessionIdentity(throwingStorage, 'abc234')).toBeNull();
+    expect(() =>
+      storeSessionIdentity(throwingStorage, {
+        joinCode: 'abc234',
+        participant: {
+          id: 'participant-1',
+          name: 'Alex',
+          isHost: false,
+          joinedAt: new Date('2026-04-28T10:00:00Z'),
+        },
+      })
+    ).not.toThrow();
+    expect(() =>
+      clearStoredSessionIdentity(throwingStorage, 'abc234')
+    ).not.toThrow();
+  });
 });

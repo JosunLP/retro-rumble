@@ -50,9 +50,20 @@ export function useRetroSession() {
    */
   const { t } = useI18n();
 
+  function getBrowserStorage(): Storage | null {
+    if (!import.meta.client) return null;
+
+    try {
+      return window.localStorage;
+    } catch {
+      return null;
+    }
+  }
+
   function getStoredSessionIdentity(joinCodeValue?: string) {
-    return import.meta.client
-      ? readStoredSessionIdentity(window.localStorage, joinCodeValue)
+    const storage = getBrowserStorage();
+    return storage
+      ? readStoredSessionIdentity(storage, joinCodeValue)
       : null;
   }
 
@@ -99,9 +110,10 @@ export function useRetroSession() {
       | SessionJoinedPayload['participant']
       | SessionRejoinedPayload['participant']
   ): void {
-    if (!import.meta.client) return;
+    const storage = getBrowserStorage();
+    if (!storage) return;
 
-    storeSessionIdentity(window.localStorage, {
+    storeSessionIdentity(storage, {
       joinCode: joinCodeValue,
       participant,
     });
@@ -283,8 +295,9 @@ export function useRetroSession() {
 
     // Session left confirmed
     on<SessionLeftPayload>('session:left', (_payload) => {
-      if (import.meta.client) {
-        clearStoredSessionIdentity(window.localStorage, state.value.joinCode ?? undefined);
+      const storage = getBrowserStorage();
+      if (storage) {
+        clearStoredSessionIdentity(storage, state.value.joinCode ?? undefined);
       }
       state.value = {
         session: null,
@@ -333,8 +346,9 @@ export function useRetroSession() {
           ? normalizeJoinCode(state.value.joinCode)
           : null;
 
-        if (import.meta.client && joinCodeToClear) {
-          clearStoredSessionIdentity(window.localStorage, joinCodeToClear);
+        const storage = getBrowserStorage();
+        if (storage && joinCodeToClear) {
+          clearStoredSessionIdentity(storage, joinCodeToClear);
         }
         state.value = {
           ...state.value,

@@ -45,31 +45,75 @@ export function getSessionIdentityStorageKey(joinCode: string): string {
 function isStoredParticipantRecord(
   value: unknown
 ): value is IStoredParticipantRecord {
+  if (typeof value !== 'object' || value === null) {
+    return false;
+  }
+
+  const record = value as Record<string, unknown>;
+
   return (
-    typeof value === 'object'
-    && value !== null
-    && 'id' in value
-    && 'name' in value
-    && 'isHost' in value
-    && 'joinedAt' in value
-    && typeof value.id === 'string'
-    && typeof value.name === 'string'
-    && typeof value.isHost === 'boolean'
-    && typeof value.joinedAt === 'string'
+    'id' in record
+    && 'name' in record
+    && 'isHost' in record
+    && 'joinedAt' in record
+    && typeof record.id === 'string'
+    && typeof record.name === 'string'
+    && typeof record.isHost === 'boolean'
+    && typeof record.joinedAt === 'string'
   );
 }
 
 function isStoredSessionIdentityRecord(
   value: unknown
 ): value is IStoredSessionIdentityRecord {
+  if (typeof value !== 'object' || value === null) {
+    return false;
+  }
+
+  const record = value as Record<string, unknown>;
+
   return (
-    typeof value === 'object'
-    && value !== null
-    && 'joinCode' in value
-    && 'participant' in value
-    && typeof value.joinCode === 'string'
-    && isStoredParticipantRecord(value.participant)
+    'joinCode' in record
+    && 'participant' in record
+    && typeof record.joinCode === 'string'
+    && isStoredParticipantRecord(record.participant)
   );
+}
+
+function safeGetItem(storage: StorageReader, key: string): string | null {
+  try {
+    return storage.getItem(key);
+  } catch {
+    return null;
+  }
+}
+
+function safeSetItem(storage: StorageAccessor, key: string, value: string): void {
+  try {
+    storage.setItem(key, value);
+  } catch {
+    return;
+  }
+}
+
+function safeRemoveItem(storage: StorageAccessor, key: string): void {
+  try {
+    storage.removeItem(key);
+  } catch {
+    return;
+  }
+}
+
+function getLatestStoredJoinCode(storage: StorageReader): string | null {
+  const latestValue = safeGetItem(storage, SESSION_IDENTITY_STORAGE_KEY);
+  const legacyIdentity = parseStoredSessionIdentity(latestValue);
+
+  if (legacyIdentity) {
+    return legacyIdentity.joinCode;
+  }
+
+  const latestJoinCode = normalizeJoinCode(latestValue);
+  return isValidJoinCode(latestJoinCode) ? latestJoinCode : null;
 }
 
 export function parseStoredSessionIdentity(
@@ -116,7 +160,8 @@ export function readStoredSessionIdentity(
   const normalizedJoinCode = normalizeJoinCode(joinCode);
 
   if (isValidJoinCode(normalizedJoinCode)) {
-    const scopedStorageValue = storage.getItem(
+    const scopedStorageValue = safeGetItem(
+      storage,
       getSessionIdentityStorageKey(normalizedJoinCode)
     );
     if (scopedStorageValue !== null) {
@@ -124,23 +169,23 @@ export function readStoredSessionIdentity(
     }
 
     const legacyIdentity = parseStoredSessionIdentity(
-      storage.getItem(SESSION_IDENTITY_STORAGE_KEY)
+      safeGetItem(storage, SESSION_IDENTITY_STORAGE_KEY)
     );
     return legacyIdentity?.joinCode === normalizedJoinCode
       ? legacyIdentity
       : null;
   }
 
-  const latestJoinCode = normalizeJoinCode(storage.getItem(SESSION_IDENTITY_STORAGE_KEY));
+  const latestJoinCode = getLatestStoredJoinCode(storage);
 
-  if (isValidJoinCode(latestJoinCode)) {
+  if (latestJoinCode) {
     return parseStoredSessionIdentity(
-      storage.getItem(getSessionIdentityStorageKey(latestJoinCode))
+      safeGetItem(storage, getSessionIdentityStorageKey(latestJoinCode))
     );
   }
 
   return parseStoredSessionIdentity(
-    storage.getItem(SESSION_IDENTITY_STORAGE_KEY)
+    safeGetItem(storage, SESSION_IDENTITY_STORAGE_KEY)
   );
 }
 
@@ -153,14 +198,15 @@ export function storeSessionIdentity(
     return;
   }
 
-  storage.setItem(
+  safeSetItem(
+    storage,
     getSessionIdentityStorageKey(joinCode),
     JSON.stringify({
       ...identity,
       joinCode,
     })
   );
-  storage.setItem(SESSION_IDENTITY_STORAGE_KEY, joinCode);
+  safeSetItem(storage, SESSION_IDENTITY_STORAGE_KEY, joinCode);
 }
 
 export function clearStoredSessionIdentity(
@@ -170,29 +216,29 @@ export function clearStoredSessionIdentity(
   const normalizedJoinCode = normalizeJoinCode(joinCode);
 
   if (isValidJoinCode(normalizedJoinCode)) {
-    storage.removeItem(getSessionIdentityStorageKey(normalizedJoinCode));
+    safeRemoveItem(storage, getSessionIdentityStorageKey(normalizedJoinCode));
 
-    const latestJoinCode = normalizeJoinCode(storage.getItem(SESSION_IDENTITY_STORAGE_KEY));
+    const latestJoinCode = getLatestStoredJoinCode(storage);
 
     if (latestJoinCode === normalizedJoinCode) {
-      storage.removeItem(SESSION_IDENTITY_STORAGE_KEY);
+      safeRemoveItem(storage, SESSION_IDENTITY_STORAGE_KEY);
       return;
     }
 
     const legacyIdentity = parseStoredSessionIdentity(
-      storage.getItem(SESSION_IDENTITY_STORAGE_KEY)
+      safeGetItem(storage, SESSION_IDENTITY_STORAGE_KEY)
     );
     if (legacyIdentity?.joinCode === normalizedJoinCode) {
-      storage.removeItem(SESSION_IDENTITY_STORAGE_KEY);
+      safeRemoveItem(storage, SESSION_IDENTITY_STORAGE_KEY);
     }
 
     return;
   }
 
-  const latestJoinCode = normalizeJoinCode(storage.getItem(SESSION_IDENTITY_STORAGE_KEY));
-  if (isValidJoinCode(latestJoinCode)) {
-    storage.removeItem(getSessionIdentityStorageKey(latestJoinCode));
+  const latestJoinCode = getLatestStoredJoinCode(storage);
+  if (latestJoinCode) {
+    safeRemoveItem(storage, getSessionIdentityStorageKey(latestJoinCode));
   }
 
-  storage.removeItem(SESSION_IDENTITY_STORAGE_KEY);
+  safeRemoveItem(storage, SESSION_IDENTITY_STORAGE_KEY);
 }
