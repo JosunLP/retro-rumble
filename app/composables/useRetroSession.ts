@@ -36,7 +36,11 @@ import {
   shouldRequireParticipantNameForJoin,
   storeSessionIdentity,
 } from '~/utils/sessionIdentity';
-import { mergeSessionSnapshot, normalizeSessionSnapshot } from '~/utils/sessionState';
+import {
+  mergeSessionSnapshot,
+  normalizeParticipantSnapshot,
+  normalizeSessionSnapshot,
+} from '~/utils/sessionState';
 
 const REJOIN_REQUEST_TIMEOUT_MS = 5000;
 
@@ -230,15 +234,16 @@ export function useRetroSession() {
   ): void {
     clearPendingRejoinRequest();
     const session = normalizeSessionSnapshot(payloadSession);
+    const normalizedParticipant = normalizeParticipantSnapshot(participant);
     state.value = {
       session,
-      currentParticipant: participant,
-      isHost: hostOverride ?? session.hostId === participant.id,
+      currentParticipant: normalizedParticipant,
+      isHost: hostOverride ?? session.hostId === normalizedParticipant.id,
       isConnected: true,
       error: null,
       joinCode: joinCodeValue,
     };
-    persistSessionIdentity(joinCodeValue, participant);
+    persistSessionIdentity(joinCodeValue, normalizedParticipant);
   }
 
   /**
@@ -306,9 +311,10 @@ export function useRetroSession() {
       );
       if (exists) return;
 
+      const participant = normalizeParticipantSnapshot(payload.participant);
       state.value.session.participants = [
         ...state.value.session.participants,
-        payload.participant,
+        participant,
       ];
       state.value = {
         ...state.value,

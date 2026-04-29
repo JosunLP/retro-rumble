@@ -7,8 +7,8 @@
 
 import type {
     CheckInMood,
-    IParticipant,
-    IRetroSession,
+    IParticipantSnapshot,
+    IRetroSessionSnapshot,
     RetroColumnType,
     RetroPhase,
 } from './retro';
@@ -255,25 +255,25 @@ export interface FeedbackRespondPayload {
 // ============================================
 
 export interface SessionCreatedPayload {
-  session: IRetroSession;
+  session: IRetroSessionSnapshot;
   joinCode: string;
-  participant: IParticipant;
+  participant: IParticipantSnapshot;
 }
 
 export interface SessionJoinedPayload {
-  session: IRetroSession;
+  session: IRetroSessionSnapshot;
   joinCode: string;
-  participant: IParticipant;
+  participant: IParticipantSnapshot;
 }
 
 export interface SessionRejoinedPayload {
-  session: IRetroSession;
+  session: IRetroSessionSnapshot;
   joinCode: string;
-  participant: IParticipant;
+  participant: IParticipantSnapshot;
 }
 
 export interface SessionUpdatedPayload {
-  session: IRetroSession;
+  session: IRetroSessionSnapshot;
 }
 
 export interface SessionLeftPayload {
@@ -286,7 +286,7 @@ export interface SessionErrorPayload {
 }
 
 export interface ParticipantJoinedPayload {
-  participant: IParticipant;
+  participant: IParticipantSnapshot;
   sessionId: string;
 }
 

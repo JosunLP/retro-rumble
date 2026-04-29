@@ -1,11 +1,23 @@
 import type {
   IActionItem,
   ICardGroup,
+  ICardGroupSnapshot,
   IParticipant,
+  IParticipantSnapshot,
   IRetroCard,
+  IRetroCardSnapshot,
   IRetroSession,
-} from '~/types';
-import { normalizePhase, sanitizeMaxVotesPerUser } from '~/types';
+  IRetroSessionSnapshot,
+} from '../types';
+import { normalizePhase, sanitizeMaxVotesPerUser } from '../types';
+
+function normalizeDate(value: Date | string | number): Date {
+  if (value instanceof Date) {
+    return new Date(value.getTime());
+  }
+
+  return new Date(value);
+}
 
 function cloneParticipant(participant: IParticipant): IParticipant {
   return { ...participant };
@@ -30,13 +42,55 @@ function cloneActionItem(actionItem: IActionItem): IActionItem {
   return { ...actionItem };
 }
 
-export function normalizeSessionSnapshot(session: IRetroSession): IRetroSession {
+function getSessionTimestamp(value: unknown): number | null {
+  if (value instanceof Date) {
+    const timestamp = value.getTime();
+    return Number.isNaN(timestamp) ? null : timestamp;
+  }
+
+  if (typeof value === 'string' || typeof value === 'number') {
+    const timestamp = new Date(value).getTime();
+    return Number.isNaN(timestamp) ? null : timestamp;
+  }
+
+  return null;
+}
+
+export function normalizeParticipantSnapshot(
+  participant: IParticipant | IParticipantSnapshot
+): IParticipant {
+  return {
+    ...participant,
+    joinedAt: normalizeDate(participant.joinedAt),
+  };
+}
+
+function normalizeCardSnapshot(card: IRetroCard | IRetroCardSnapshot): IRetroCard {
+  return {
+    ...card,
+    voterIds: [...card.voterIds],
+    createdAt: normalizeDate(card.createdAt),
+  };
+}
+
+function normalizeGroupSnapshot(group: ICardGroup | ICardGroupSnapshot): ICardGroup {
+  return {
+    ...group,
+    cardIds: [...group.cardIds],
+    voterIds: [...group.voterIds],
+    createdAt: normalizeDate(group.createdAt),
+  };
+}
+
+export function normalizeSessionSnapshot(
+  session: IRetroSession | IRetroSessionSnapshot
+): IRetroSession {
   return {
     ...session,
     phase: normalizePhase(session.phase) ?? 'set-the-stage',
-    participants: session.participants.map(cloneParticipant),
-    cards: session.cards.map(cloneCard),
-    groups: session.groups.map(cloneGroup),
+    participants: session.participants.map(normalizeParticipantSnapshot),
+    cards: session.cards.map(normalizeCardSnapshot),
+    groups: session.groups.map(normalizeGroupSnapshot),
     actionItems: session.actionItems.map(cloneActionItem),
     checkInResponses: session.checkInResponses.map((response) => ({
       ...response,
@@ -45,6 +99,8 @@ export function normalizeSessionSnapshot(session: IRetroSession): IRetroSession 
       ...response,
     })),
     maxVotesPerUser: sanitizeMaxVotesPerUser(session.maxVotesPerUser),
+    createdAt: normalizeDate(session.createdAt),
+    updatedAt: normalizeDate(session.updatedAt),
   };
 }
 
@@ -92,13 +148,24 @@ function mergeActionItem(target: IActionItem, source: IActionItem): void {
 
 export function mergeSessionSnapshot(
   currentSession: IRetroSession | null,
-  incomingSession: IRetroSession
+  incomingSession: IRetroSession | IRetroSessionSnapshot
 ): IRetroSession {
-  const nextSession = normalizeSessionSnapshot(incomingSession);
-
   if (!currentSession) {
-    return nextSession;
+    return normalizeSessionSnapshot(incomingSession);
   }
+
+  const currentTimestamp = getSessionTimestamp(currentSession.updatedAt);
+  const nextTimestamp = getSessionTimestamp(incomingSession.updatedAt);
+
+  if (
+    currentTimestamp !== null
+    && nextTimestamp !== null
+    && nextTimestamp < currentTimestamp
+  ) {
+    return currentSession;
+  }
+
+  const nextSession = normalizeSessionSnapshot(incomingSession);
 
   currentSession.name = nextSession.name;
   currentSession.phase = nextSession.phase;
