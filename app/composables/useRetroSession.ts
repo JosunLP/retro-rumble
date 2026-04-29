@@ -503,10 +503,7 @@ export function useRetroSession() {
       && sessionIdentity.joinCode === normalizedCode
     ) {
       setPendingRejoinState(normalizedCode, sessionIdentity.participant);
-      send('session:rejoin', {
-        joinCode: normalizedCode,
-        participantId: sessionIdentity.participant.id,
-      });
+      sendRejoinRequest();
       return;
     }
 

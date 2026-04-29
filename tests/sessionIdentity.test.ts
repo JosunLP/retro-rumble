@@ -232,4 +232,37 @@ describe('sessionIdentity utils', () => {
       clearStoredSessionIdentity(throwingStorage, 'abc234')
     ).not.toThrow();
   });
+
+  test('does not update the latest pointer when scoped identity storage fails', () => {
+    const data = new Map<string, string>();
+    const scopedStorageKey = getSessionIdentityStorageKey('abc234');
+    const storage = {
+      getItem(key: string) {
+        return data.get(key) ?? null;
+      },
+      setItem(key: string, value: string) {
+        if (key === scopedStorageKey) {
+          throw new Error('quota exceeded');
+        }
+
+        data.set(key, value);
+      },
+      removeItem(key: string) {
+        data.delete(key);
+      },
+    };
+
+    storeSessionIdentity(storage, {
+      joinCode: 'abc234',
+      participant: {
+        id: 'participant-1',
+        name: 'Alex',
+        isHost: false,
+        joinedAt: new Date('2026-04-28T10:00:00Z'),
+      },
+    });
+
+    expect(storage.getItem(scopedStorageKey)).toBeNull();
+    expect(storage.getItem(SESSION_IDENTITY_STORAGE_KEY)).toBeNull();
+  });
 });

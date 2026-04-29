@@ -88,11 +88,12 @@ function safeGetItem(storage: StorageReader, key: string): string | null {
   }
 }
 
-function safeSetItem(storage: StorageAccessor, key: string, value: string): void {
+function safeSetItem(storage: StorageAccessor, key: string, value: string): boolean {
   try {
     storage.setItem(key, value);
+    return true;
   } catch {
-    return;
+    return false;
   }
 }
 
@@ -198,14 +199,21 @@ export function storeSessionIdentity(
     return;
   }
 
-  safeSetItem(
+  const scopedStorageKey = getSessionIdentityStorageKey(joinCode);
+  const scopedStorageValue = JSON.stringify({
+    ...identity,
+    joinCode,
+  });
+
+  const storedScopedIdentity = safeSetItem(
     storage,
-    getSessionIdentityStorageKey(joinCode),
-    JSON.stringify({
-      ...identity,
-      joinCode,
-    })
+    scopedStorageKey,
+    scopedStorageValue
   );
+  if (!storedScopedIdentity) {
+    return;
+  }
+
   safeSetItem(storage, SESSION_IDENTITY_STORAGE_KEY, joinCode);
 }
 
