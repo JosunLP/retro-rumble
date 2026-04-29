@@ -6,4 +6,5 @@
  */
 
 export * from './retro';
+export * from './timerSound';
 export * from './websocket';
