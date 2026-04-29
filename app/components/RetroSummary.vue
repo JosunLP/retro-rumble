@@ -158,7 +158,7 @@ function cancelEditAction(): void {
     >
       <div
         v-for="{ group, cards } in groupedCards"
-        :key="group.id"
+        :key="`group:${group.id}`"
         class="rounded-xl border p-4"
         :class="[columnConfig[group.column].bgClass, columnConfig[group.column].borderClass]"
       >
@@ -208,7 +208,7 @@ function cancelEditAction(): void {
 
       <div
         v-for="card in ungroupedCards"
-        :key="card.id"
+        :key="`card:${card.id}`"
         class="rounded-xl border p-4"
         :class="[columnConfig[card.column].bgClass, columnConfig[card.column].borderClass]"
       >

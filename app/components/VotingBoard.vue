@@ -124,7 +124,7 @@ function handleUnvoteGroup(groupId: string) {
     >
       <div
         v-for="{ group, cards } in groups"
-        :key="group.id"
+        :key="`group:${group.id}`"
         class="rounded-xl border border-secondary-200 bg-white shadow-sm overflow-hidden"
       >
           <!-- Group Header with Vote -->
@@ -147,7 +147,7 @@ function handleUnvoteGroup(groupId: string) {
                 {{ group.title }}
                 </span>
                 <span class="text-xs text-secondary-400">
-                  {{ t('voting.groupCardCount', { count: group.cardIds.length }) }}
+                  {{ t('voting.groupCardCount', { count: cards.length }) }}
                 </span>
               </div>
             </div>
@@ -237,7 +237,7 @@ function handleUnvoteGroup(groupId: string) {
 
       <div
         v-for="card in ungroupedCards"
-        :key="card.id"
+        :key="`card:${card.id}`"
         class="rounded-xl border p-4 shadow-sm"
         :class="columnMeta[card.column].cardClass"
       >
