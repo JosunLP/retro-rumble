@@ -28,21 +28,21 @@ describe('useRetroSession join helpers', () => {
   test('does not require a participant name when rejoining with stored identity', () => {
     expect(
       shouldRequireParticipantNameForJoin('', storedIdentity)
-    ).toBeFalse();
+    ).toBe(false);
     expect(
       shouldRequireParticipantNameForJoin('   ', storedIdentity)
-    ).toBeFalse();
+    ).toBe(false);
   });
 
   test('still requires a participant name for manual join without stored identity', () => {
     expect(
       shouldRequireParticipantNameForJoin('', null)
-    ).toBeTrue();
+    ).toBe(true);
     expect(
       shouldRequireParticipantNameForJoin('   ', null)
-    ).toBeTrue();
+    ).toBe(true);
     expect(
       shouldRequireParticipantNameForJoin('Alex', null)
-    ).toBeFalse();
+    ).toBe(false);
   });
 });
