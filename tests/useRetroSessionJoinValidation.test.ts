@@ -1,5 +1,9 @@
 import { describe, expect, test } from 'bun:test';
-import { getJoinCodeErrorKey, normalizeValidJoinCode } from '../app/utils/joinCode';
+import {
+  getJoinCodeErrorKey,
+  getNormalizedJoinCodeErrorKey,
+  normalizeValidJoinCode,
+} from '../app/utils/joinCode';
 
 describe('joinCode validation helpers', () => {
   test('returns a length error for short join codes', () => {
@@ -9,6 +13,12 @@ describe('joinCode validation helpers', () => {
   test('returns an invalid-code error for disallowed join code characters', () => {
     expect(getJoinCodeErrorKey('abcde0')).toBe('errors.invalidJoinCode');
     expect(getJoinCodeErrorKey('abcde1')).toBe('errors.invalidJoinCode');
+  });
+
+  test('reuses normalized join code validation without reformatting again', () => {
+    expect(getNormalizedJoinCodeErrorKey('ABC23')).toBe('errors.joinCodeLength');
+    expect(getNormalizedJoinCodeErrorKey('ABCDE0')).toBe('errors.invalidJoinCode');
+    expect(getNormalizedJoinCodeErrorKey('ABCD23')).toBeNull();
   });
 
   test('returns a normalized join code when it contains only allowed characters', () => {

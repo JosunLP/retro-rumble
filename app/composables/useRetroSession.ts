@@ -15,7 +15,8 @@ import {
   countGroupVotesForParticipant,
   normalizePhase,
 } from '~/types';
-import { getJoinCodeErrorKey, normalizeValidJoinCode } from '~/utils/joinCode';
+import { getNormalizedJoinCodeErrorKey } from '~/utils/joinCode';
+import { getBrowserStorage } from '~/utils/browserStorage';
 import type {
     ParticipantJoinedPayload,
     ParticipantLeftPayload,
@@ -50,16 +51,6 @@ export function useRetroSession() {
    * i18n for translated error messages (composable runs inside setup())
    */
   const { t } = useI18n();
-
-  function getBrowserStorage(): Storage | null {
-    if (!import.meta.client) return null;
-
-    try {
-      return window.localStorage;
-    } catch {
-      return null;
-    }
-  }
 
   function getStoredSessionIdentity(joinCodeValue?: string) {
     const storage = getBrowserStorage();
@@ -475,15 +466,16 @@ export function useRetroSession() {
     code: string,
     participantName: string
   ): Promise<void> {
-    const normalizedCode = normalizeValidJoinCode(code);
-    if (!normalizedCode) {
-      const joinCodeErrorKey = getJoinCodeErrorKey(code) ?? 'errors.joinCodeLength';
+    const normalizedCode = normalizeJoinCode(code);
+    const joinCodeErrorKey = getNormalizedJoinCodeErrorKey(normalizedCode);
+    if (joinCodeErrorKey) {
       state.value = {
         ...state.value,
         error: t(joinCodeErrorKey),
       };
       return;
     }
+
     const sessionIdentity = getMatchingStoredSessionIdentity(
       normalizedCode,
       getStoredSessionIdentity(normalizedCode)

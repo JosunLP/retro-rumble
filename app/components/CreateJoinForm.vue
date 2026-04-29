@@ -6,6 +6,7 @@
  */
 
 import { MAX_MAX_VOTES_PER_USER, MIN_MAX_VOTES_PER_USER } from '~/types';
+import { getBrowserStorage } from '~/utils/browserStorage';
 import {
   getMatchingStoredSessionIdentity,
   normalizeJoinCode,
@@ -45,18 +46,6 @@ const timerDuration = ref(300);
 // Join form
 const joinCode = ref(props.prefilledJoinCode);
 const joinName = ref('');
-
-function getBrowserStorage(): Storage | null {
-  if (!import.meta.client) {
-    return null;
-  }
-
-  try {
-    return window.localStorage;
-  } catch {
-    return null;
-  }
-}
 
 const matchingStoredJoinIdentity = computed(() => {
   const normalizedJoinCode = normalizeJoinCode(joinCode.value);
