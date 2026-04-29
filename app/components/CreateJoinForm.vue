@@ -6,6 +6,12 @@
  */
 
 import { MAX_MAX_VOTES_PER_USER, MIN_MAX_VOTES_PER_USER } from '~/types';
+import {
+  getMatchingStoredSessionIdentity,
+  normalizeJoinCode,
+  readStoredSessionIdentity,
+  shouldRequireParticipantNameForJoin,
+} from '~/utils/sessionIdentity';
 
 const { t } = useI18n();
 
@@ -39,6 +45,31 @@ const timerDuration = ref(300);
 // Join form
 const joinCode = ref(props.prefilledJoinCode);
 const joinName = ref('');
+
+const matchingStoredJoinIdentity = computed(() => {
+  if (typeof window === 'undefined') {
+    return null;
+  }
+
+  const normalizedJoinCode = normalizeJoinCode(joinCode.value);
+
+  if (!normalizedJoinCode) {
+    return null;
+  }
+
+  return getMatchingStoredSessionIdentity(
+    normalizedJoinCode,
+    readStoredSessionIdentity(window.localStorage, normalizedJoinCode)
+  );
+});
+
+const requiresJoinName = computed(() =>
+  shouldRequireParticipantNameForJoin(joinName.value, matchingStoredJoinIdentity.value)
+);
+
+const isJoinDisabled = computed(
+  () => !joinCode.value.trim() || requiresJoinName.value
+);
 
 watch(
   () => props.prefilledJoinCode,
@@ -210,14 +241,14 @@ function switchMode(newMode: 'create' | 'join'): void {
             type="text"
             class="input"
             :placeholder="t('form.yourNamePlaceholder')"
-            required
+            :required="requiresJoinName"
           >
         </div>
 
         <button
           type="submit"
           class="btn btn-primary w-full"
-          :disabled="!joinCode.trim() || !joinName.trim()"
+          :disabled="isJoinDisabled"
         >
           <Icon
             name="heroicons:arrow-right-on-rectangle"

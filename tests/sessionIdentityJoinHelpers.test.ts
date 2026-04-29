@@ -15,7 +15,7 @@ const storedIdentity: IStoredSessionIdentity = {
   },
 };
 
-describe('useRetroSession join helpers', () => {
+describe('sessionIdentity join helpers', () => {
   test('matches stored identity only for the same normalized join code', () => {
     expect(
       getMatchingStoredSessionIdentity('ABC234', storedIdentity)
