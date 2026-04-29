@@ -84,8 +84,14 @@ watch(
   { immediate: true }
 );
 
-function handleJoinCodeInput(event: Event): void {
-  joinCode.value = normalizeJoinCode((event.target as HTMLInputElement).value);
+function handleJoinCodeInput(event: InputEvent): void {
+  const target = event.target;
+
+  if (!(target instanceof HTMLInputElement)) {
+    return;
+  }
+
+  joinCode.value = normalizeJoinCode(target.value);
 }
 
 function handleCreate(): void {
@@ -229,7 +235,7 @@ function switchMode(newMode: 'create' | 'join'): void {
             {{ t('form.joinCode') }}
           </label>
           <input
-            v-model="joinCode"
+            :value="joinCode"
             type="text"
             class="input font-mono text-center text-lg tracking-widest uppercase"
             :placeholder="t('form.joinCodePlaceholder')"
