@@ -4,8 +4,8 @@ import type {
   IParticipant,
   IRetroCard,
   IRetroSession,
-} from '~/types';
-import { normalizePhase, sanitizeMaxVotesPerUser } from '~/types';
+} from '../types';
+import { normalizePhase, sanitizeMaxVotesPerUser } from '../types';
 
 function cloneParticipant(participant: IParticipant): IParticipant {
   return { ...participant };
@@ -28,6 +28,20 @@ function cloneGroup(group: ICardGroup): ICardGroup {
 
 function cloneActionItem(actionItem: IActionItem): IActionItem {
   return { ...actionItem };
+}
+
+function getSessionTimestamp(value: unknown): number | null {
+  if (value instanceof Date) {
+    const timestamp = value.getTime();
+    return Number.isNaN(timestamp) ? null : timestamp;
+  }
+
+  if (typeof value === 'string' || typeof value === 'number') {
+    const timestamp = new Date(value).getTime();
+    return Number.isNaN(timestamp) ? null : timestamp;
+  }
+
+  return null;
 }
 
 export function normalizeSessionSnapshot(session: IRetroSession): IRetroSession {
@@ -98,6 +112,17 @@ export function mergeSessionSnapshot(
 
   if (!currentSession) {
     return nextSession;
+  }
+
+  const currentTimestamp = getSessionTimestamp(currentSession.updatedAt);
+  const nextTimestamp = getSessionTimestamp(nextSession.updatedAt);
+
+  if (
+    currentTimestamp !== null
+    && nextTimestamp !== null
+    && nextTimestamp < currentTimestamp
+  ) {
+    return currentSession;
   }
 
   currentSession.name = nextSession.name;

@@ -91,4 +91,20 @@ describe('mergeSessionSnapshot()', () => {
 
     expect(merged.phase).toBe('cluster-cards');
   });
+
+  test('ignores stale session snapshots so newer group titles are not reset', () => {
+    const current = makeSession();
+    current.groups[0]!.title = 'Renamed Group';
+    current.updatedAt = '2026-03-09T10:05:00.000Z' as unknown as Date;
+
+    const incoming = makeSession();
+    incoming.groups[0]!.title = 'Communication';
+    incoming.updatedAt = '2026-03-09T10:04:00.000Z' as unknown as Date;
+
+    const merged = mergeSessionSnapshot(current, incoming);
+
+    expect(merged).toBe(current);
+    expect(merged.groups[0]!.title).toBe('Renamed Group');
+    expect(merged.updatedAt).toBe('2026-03-09T10:05:00.000Z' as unknown as Date);
+  });
 });
