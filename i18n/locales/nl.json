@@ -166,6 +166,7 @@
   "errors": {
     "fillAllFields": "Vul alle velden in.",
     "joinCodeLength": "De toegangscode moet 6 tekens lang zijn.",
+    "invalidJoinCode": "Voer een geldige toegangscode in.",
     "enterYourName": "Voer je naam in.",
     "connectionFailed": "Kan geen verbinding maken met de server.",
     "clipboardFailed": "Kon niet naar klembord kopiëren. Kopieer handmatig.",

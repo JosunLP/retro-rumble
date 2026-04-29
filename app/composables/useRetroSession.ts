@@ -11,7 +11,12 @@ import type {
     RetroColumnType,
     RetroPhase,
 } from '~/types';
-import { countGroupVotesForParticipant, normalizePhase } from '~/types';
+import {
+  countGroupVotesForParticipant,
+  normalizePhase,
+} from '~/types';
+import { getNormalizedJoinCodeErrorKey } from '~/utils/joinCode';
+import { getBrowserStorage } from '~/utils/browserStorage';
 import type {
     ParticipantJoinedPayload,
     ParticipantLeftPayload,
@@ -23,7 +28,17 @@ import type {
     SessionUpdatedPayload,
     TimerTickPayload,
 } from '~/types/websocket';
+import {
+  clearStoredSessionIdentity,
+  getMatchingStoredSessionIdentity,
+  normalizeJoinCode,
+  readStoredSessionIdentity,
+  shouldRequireParticipantNameForJoin,
+  storeSessionIdentity,
+} from '~/utils/sessionIdentity';
 import { mergeSessionSnapshot, normalizeSessionSnapshot } from '~/utils/sessionState';
+
+const REJOIN_REQUEST_TIMEOUT_MS = 5000;
 
 /**
  * Composable for retro session management with WebSocket
@@ -38,6 +53,15 @@ export function useRetroSession() {
    * i18n for translated error messages (composable runs inside setup())
    */
   const { t } = useI18n();
+
+  function getStoredSessionIdentity(joinCodeValue?: string) {
+    const storage = getBrowserStorage();
+    return storage
+      ? readStoredSessionIdentity(storage, joinCodeValue)
+      : null;
+  }
+
+  const route = useRoute();
 
   /**
    * WebSocket Composable
@@ -72,6 +96,115 @@ export function useRetroSession() {
     'retro-handlers-registered',
     () => false
   );
+  const pendingRejoinRequestKey = useState<string | null>(
+    'retro-pending-rejoin-request-key',
+    () => null
+  );
+  const pendingRejoinRequestStartedAt = useState<number | null>(
+    'retro-pending-rejoin-request-started-at',
+    () => null
+  );
+
+  function getRejoinRequestKey(
+    joinCodeValue: string,
+    participantId: string
+  ): string {
+    return JSON.stringify([joinCodeValue, participantId]);
+  }
+
+  function clearPendingRejoinRequest(): void {
+    pendingRejoinRequestKey.value = null;
+    pendingRejoinRequestStartedAt.value = null;
+  }
+
+  function persistSessionIdentity(
+    joinCodeValue: string,
+    participant:
+      | SessionCreatedPayload['participant']
+      | SessionJoinedPayload['participant']
+      | SessionRejoinedPayload['participant']
+  ): void {
+    const storage = getBrowserStorage();
+    if (!storage) return;
+
+    storeSessionIdentity(storage, {
+      joinCode: joinCodeValue,
+      participant,
+    });
+  }
+
+  function sendRejoinRequest(): void {
+    if (!state.value.joinCode || !state.value.currentParticipant) return;
+
+    const requestKey = getRejoinRequestKey(
+      state.value.joinCode,
+      state.value.currentParticipant.id
+    );
+    const now = Date.now();
+    const isPendingRequestFresh =
+      pendingRejoinRequestStartedAt.value !== null
+      && (
+        now - pendingRejoinRequestStartedAt.value
+      ) < REJOIN_REQUEST_TIMEOUT_MS;
+
+    if (
+      pendingRejoinRequestKey.value === requestKey
+      && isPendingRequestFresh
+    ) {
+      return;
+    }
+
+    pendingRejoinRequestKey.value = requestKey;
+    pendingRejoinRequestStartedAt.value = now;
+
+    send('session:rejoin', {
+      joinCode: state.value.joinCode,
+      participantId: state.value.currentParticipant.id,
+    });
+  }
+
+  function setPendingRejoinState(
+    joinCodeValue: string,
+    participant:
+      | SessionCreatedPayload['participant']
+      | SessionJoinedPayload['participant']
+      | SessionRejoinedPayload['participant']
+  ): void {
+    state.value = {
+      ...state.value,
+      currentParticipant: participant,
+      isHost: false,
+      isConnected: connectionStatus.value === 'connected',
+      error: null,
+      joinCode: joinCodeValue,
+    };
+  }
+
+  function restoreStoredSessionIdentity(): void {
+    const hasExistingSessionState = !!(
+      state.value.session || state.value.currentParticipant
+    );
+
+    if (hasExistingSessionState) {
+      return;
+    }
+
+    const requestedJoinCode = normalizeJoinCode(route.query.join);
+    const storedIdentity = getStoredSessionIdentity(requestedJoinCode || undefined);
+
+    if (
+      !storedIdentity
+      || (requestedJoinCode && requestedJoinCode !== storedIdentity.joinCode)
+    ) {
+      return;
+    }
+
+    setPendingRejoinState(storedIdentity.joinCode, storedIdentity.participant);
+
+    if (connectionStatus.value === 'connected') {
+      sendRejoinRequest();
+    }
+  }
 
   function setSessionState(
     payloadSession: SessionCreatedPayload['session'] | SessionJoinedPayload['session']
@@ -95,6 +228,7 @@ export function useRetroSession() {
     joinCodeValue: string,
     hostOverride?: boolean
   ): void {
+    clearPendingRejoinRequest();
     const session = normalizeSessionSnapshot(payloadSession);
     state.value = {
       session,
@@ -104,6 +238,7 @@ export function useRetroSession() {
       error: null,
       joinCode: joinCodeValue,
     };
+    persistSessionIdentity(joinCodeValue, participant);
   }
 
   /**
@@ -195,7 +330,12 @@ export function useRetroSession() {
     });
 
     // Session left confirmed
-    on<SessionLeftPayload>('session:left', () => {
+    on<SessionLeftPayload>('session:left', (_payload) => {
+      const storage = getBrowserStorage();
+      if (storage) {
+        clearStoredSessionIdentity(storage, state.value.joinCode ?? undefined);
+      }
+      clearPendingRejoinRequest();
       state.value = {
         session: null,
         currentParticipant: null,
@@ -238,6 +378,32 @@ export function useRetroSession() {
 
     // Error
     on<SessionErrorPayload>('session:error', (payload) => {
+      const hadPendingRejoinRequest = !!pendingRejoinRequestKey.value;
+      clearPendingRejoinRequest();
+
+      if (payload.code === 'REJOIN_FAILED') {
+        if (!hadPendingRejoinRequest) {
+          return;
+        }
+
+        const joinCodeToClear = state.value.joinCode
+          ? normalizeJoinCode(state.value.joinCode)
+          : null;
+
+        const storage = getBrowserStorage();
+        if (storage && joinCodeToClear) {
+          clearStoredSessionIdentity(storage, joinCodeToClear);
+        }
+        state.value = {
+          ...state.value,
+          session: null,
+          currentParticipant: null,
+          isHost: false,
+          isConnected: false,
+          joinCode: null,
+        };
+      }
+
       // Map backend error codes to i18n keys (do not resolve them eagerly)
       const errorKeyMap: Record<string, string> = {
         PAST_DUE_DATE: 'errors.pastDueDate',
@@ -271,16 +437,24 @@ export function useRetroSession() {
 
     // Auto-rejoin when WebSocket reconnects
     watch(connectionStatus, (newStatus) => {
+      if (newStatus !== 'connected') {
+        clearPendingRejoinRequest();
+      }
+
       if (
         newStatus === 'connected' &&
         state.value.joinCode &&
         state.value.currentParticipant
       ) {
-        send('session:rejoin', {
-          joinCode: state.value.joinCode,
-          participantId: state.value.currentParticipant.id,
-        });
+        sendRejoinRequest();
       }
+    });
+
+  }
+
+  if (import.meta.client) {
+    onMounted(() => {
+      restoreStoredSessionIdentity();
     });
   }
 
@@ -348,15 +522,22 @@ export function useRetroSession() {
     code: string,
     participantName: string
   ): Promise<void> {
-    const normalizedCode = code.toUpperCase().trim();
-    if (normalizedCode.length !== 6) {
+    const normalizedCode = normalizeJoinCode(code);
+    const joinCodeErrorKey = getNormalizedJoinCodeErrorKey(normalizedCode);
+    if (joinCodeErrorKey) {
       state.value = {
         ...state.value,
-        error: t('errors.joinCodeLength'),
+        error: t(joinCodeErrorKey),
       };
       return;
     }
-    if (!participantName.trim()) {
+
+    const sessionIdentity = getMatchingStoredSessionIdentity(
+      normalizedCode,
+      getStoredSessionIdentity(normalizedCode)
+    );
+
+    if (shouldRequireParticipantNameForJoin(participantName, sessionIdentity)) {
       state.value = { ...state.value, error: t('errors.enterYourName') };
       return;
     }
@@ -367,6 +548,12 @@ export function useRetroSession() {
         ...state.value,
         error: t('errors.connectionFailed'),
       };
+      return;
+    }
+
+    if (sessionIdentity) {
+      setPendingRejoinState(normalizedCode, sessionIdentity.participant);
+      sendRejoinRequest();
       return;
     }
 

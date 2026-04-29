@@ -166,6 +166,7 @@
   "errors": {
     "fillAllFields": "Proszę wypełnić wszystkie pola.",
     "joinCodeLength": "Kod dostępu musi mieć 6 znaków.",
+    "invalidJoinCode": "Wprowadź prawidłowy kod dostępu.",
     "enterYourName": "Proszę podać swoje imię.",
     "connectionFailed": "Nie można połączyć się z serwerem.",
     "clipboardFailed": "Nie udało się skopiować do schowka. Proszę skopiować ręcznie.",

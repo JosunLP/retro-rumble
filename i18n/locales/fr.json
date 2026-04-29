@@ -166,6 +166,7 @@
   "errors": {
     "fillAllFields": "Veuillez remplir tous les champs.",
     "joinCodeLength": "Le code d'accès doit comporter 6 caractères.",
+    "invalidJoinCode": "Veuillez saisir un code d'accès valide.",
     "enterYourName": "Veuillez entrer votre nom.",
     "connectionFailed": "Impossible de se connecter au serveur.",
     "clipboardFailed": "Impossible de copier dans le presse-papiers. Veuillez copier manuellement.",

@@ -166,6 +166,7 @@
   "errors": {
     "fillAllFields": "Por favor, preencha todos os campos.",
     "joinCodeLength": "O código de acesso deve ter 6 caracteres.",
+    "invalidJoinCode": "Digite um código de acesso válido.",
     "enterYourName": "Por favor, insira seu nome.",
     "connectionFailed": "Não foi possível conectar ao servidor.",
     "clipboardFailed": "Não foi possível copiar para a área de transferência. Por favor, copie manualmente.",

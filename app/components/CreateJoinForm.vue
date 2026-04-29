@@ -5,17 +5,29 @@
  * Form for creating a new retro session or joining an existing one.
  */
 
-import { MAX_MAX_VOTES_PER_USER, MIN_MAX_VOTES_PER_USER } from '~/types';
+import {
+  isValidJoinCode,
+  JOIN_CODE_LENGTH,
+  MAX_MAX_VOTES_PER_USER,
+  MIN_MAX_VOTES_PER_USER,
+} from '~/types';
+import { getBrowserStorage } from '~/utils/browserStorage';
+import {
+  getMatchingStoredSessionIdentity,
+  normalizeJoinCode,
+  readStoredSessionIdentity,
+  shouldRequireParticipantNameForJoin,
+} from '~/utils/sessionIdentity';
 
 const { t } = useI18n();
 
 interface Props {
-  /** Initial join code (from URL) */
-  initialJoinCode?: string;
+  /** Prefilled join code (from URL) */
+  prefilledJoinCode?: string;
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  initialJoinCode: '',
+  prefilledJoinCode: '',
 });
 
 const emit = defineEmits<{
@@ -28,7 +40,7 @@ const emit = defineEmits<{
   join: [code: string, participantName: string];
 }>();
 
-const mode = ref<'create' | 'join'>(props.initialJoinCode ? 'join' : 'create');
+const mode = ref<'create' | 'join'>(props.prefilledJoinCode ? 'join' : 'create');
 
 // Create form
 const sessionName = ref('');
@@ -37,8 +49,82 @@ const maxVotes = ref(5);
 const timerDuration = ref(300);
 
 // Join form
-const joinCode = ref(props.initialJoinCode);
+const joinCode = ref(props.prefilledJoinCode);
 const joinName = ref('');
+const normalizedJoinCode = computed(() => normalizeJoinCode(joinCode.value));
+
+const matchingStoredJoinIdentity = computed(() => {
+  if (!isValidJoinCode(normalizedJoinCode.value)) {
+    return null;
+  }
+
+  const storage = getBrowserStorage();
+
+  if (!storage) {
+    return null;
+  }
+
+  return getMatchingStoredSessionIdentity(
+    normalizedJoinCode.value,
+    readStoredSessionIdentity(storage, normalizedJoinCode.value)
+  );
+});
+
+const requiresJoinName = computed(() =>
+  shouldRequireParticipantNameForJoin(joinName.value, matchingStoredJoinIdentity.value)
+);
+
+const isJoinDisabled = computed(
+  () => !joinCode.value.trim() || requiresJoinName.value
+);
+
+watch(
+  () => props.prefilledJoinCode,
+  (newJoinCode) => {
+    joinCode.value = normalizeJoinCode(newJoinCode);
+    if (newJoinCode) {
+      mode.value = 'join';
+    }
+  },
+  { immediate: true }
+);
+
+function handleJoinCodeInput(event: Event): void {
+  const target = event.target;
+
+  if (!(target instanceof HTMLInputElement)) {
+    return;
+  }
+
+  joinCode.value = normalizeJoinCode(target.value);
+}
+
+function handleJoinCodeBeforeInput(event: Event): void {
+  const target = event.target;
+
+  if (!(target instanceof HTMLInputElement) || !(event instanceof InputEvent)) {
+    return;
+  }
+
+  if (!event.inputType.startsWith('insert') || event.data === null) {
+    return;
+  }
+
+  const selectionStart = target.selectionStart ?? target.value.length;
+  const selectionEnd = target.selectionEnd ?? selectionStart;
+  const nextValue = `${target.value.slice(0, selectionStart)}${event.data}${target.value.slice(selectionEnd)}`;
+  const normalizedValue = normalizeJoinCode(nextValue);
+
+  if (
+    nextValue === normalizedValue
+    && normalizedValue.length <= JOIN_CODE_LENGTH
+  ) {
+    return;
+  }
+
+  event.preventDefault();
+  joinCode.value = normalizedValue;
+}
 
 function handleCreate(): void {
   emit(
@@ -181,12 +267,14 @@ function switchMode(newMode: 'create' | 'join'): void {
             {{ t('form.joinCode') }}
           </label>
           <input
-            v-model="joinCode"
+            :value="joinCode"
             type="text"
             class="input font-mono text-center text-lg tracking-widest uppercase"
             :placeholder="t('form.joinCodePlaceholder')"
-            maxlength="6"
+            :maxlength="JOIN_CODE_LENGTH"
             required
+            @beforeinput="handleJoinCodeBeforeInput"
+            @input="handleJoinCodeInput"
           >
         </div>
 
@@ -199,14 +287,14 @@ function switchMode(newMode: 'create' | 'join'): void {
             type="text"
             class="input"
             :placeholder="t('form.yourNamePlaceholder')"
-            required
+            :required="requiresJoinName"
           >
         </div>
 
         <button
           type="submit"
           class="btn btn-primary w-full"
-          :disabled="!joinCode.trim() || !joinName.trim()"
+          :disabled="isJoinDisabled"
         >
           <Icon
             name="heroicons:arrow-right-on-rectangle"

@@ -166,6 +166,7 @@
   "errors": {
     "fillAllFields": "Fyll i alla fält.",
     "joinCodeLength": "Åtkomstkoden måste vara 6 tecken.",
+    "invalidJoinCode": "Ange en giltig åtkomstkod.",
     "enterYourName": "Ange ditt namn.",
     "connectionFailed": "Det gick inte att ansluta till servern.",
     "clipboardFailed": "Kunde inte kopiera till urklipp. Vänligen kopiera manuellt.",

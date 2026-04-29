@@ -166,6 +166,7 @@
   "errors": {
     "fillAllFields": "すべてのフィールドを入力してください。",
     "joinCodeLength": "参加コードは6文字でなければなりません。",
+    "invalidJoinCode": "有効な参加コードを入力してください。",
     "enterYourName": "名前を入力してください。",
     "connectionFailed": "サーバーに接続できませんでした。",
     "clipboardFailed": "クリップボードにコピーできませんでした。手動でコピーしてください。",
