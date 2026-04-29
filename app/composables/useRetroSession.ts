@@ -30,8 +30,10 @@ import type {
 } from '~/types/websocket';
 import {
   clearStoredSessionIdentity,
+  getMatchingStoredSessionIdentity,
   normalizeJoinCode,
   readStoredSessionIdentity,
+  shouldRequireParticipantNameForJoin,
   storeSessionIdentity,
 } from '~/utils/sessionIdentity';
 import { mergeSessionSnapshot, normalizeSessionSnapshot } from '~/utils/sessionState';
@@ -482,7 +484,12 @@ export function useRetroSession() {
       };
       return;
     }
-    if (!participantName.trim()) {
+    const sessionIdentity = getMatchingStoredSessionIdentity(
+      normalizedCode,
+      getStoredSessionIdentity(normalizedCode)
+    );
+
+    if (shouldRequireParticipantNameForJoin(participantName, sessionIdentity)) {
       state.value = { ...state.value, error: t('errors.enterYourName') };
       return;
     }
@@ -496,12 +503,7 @@ export function useRetroSession() {
       return;
     }
 
-    const sessionIdentity = getStoredSessionIdentity(normalizedCode);
-
-    if (
-      sessionIdentity
-      && sessionIdentity.joinCode === normalizedCode
-    ) {
+    if (sessionIdentity) {
       setPendingRejoinState(normalizedCode, sessionIdentity.participant);
       sendRejoinRequest();
       return;

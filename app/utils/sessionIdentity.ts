@@ -42,6 +42,24 @@ export function getSessionIdentityStorageKey(joinCode: string): string {
   return `${SESSION_IDENTITY_STORAGE_KEY}.${normalizeJoinCode(joinCode)}`;
 }
 
+export function getMatchingStoredSessionIdentity(
+  normalizedCode: string,
+  sessionIdentity: IStoredSessionIdentity | null
+): IStoredSessionIdentity | null {
+  if (!sessionIdentity || sessionIdentity.joinCode !== normalizedCode) {
+    return null;
+  }
+
+  return sessionIdentity;
+}
+
+export function shouldRequireParticipantNameForJoin(
+  participantName: string,
+  sessionIdentity: IStoredSessionIdentity | null
+): boolean {
+  return !sessionIdentity && !participantName.trim();
+}
+
 function isStoredParticipantRecord(
   value: unknown
 ): value is IStoredParticipantRecord {
