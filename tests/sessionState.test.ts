@@ -89,11 +89,11 @@ describe('mergeSessionSnapshot()', () => {
     const currentGroupRef = current.groups[0]!;
     const currentCardRef = current.cards[0]!;
 
-    const incoming = makeSessionSnapshot();
-    incoming.groups[0]!.title = 'Daily Collaboration';
-    incoming.updatedAt = '2026-03-09T10:04:00.000Z';
+    const incomingSnapshot = makeSessionSnapshot();
+    incomingSnapshot.groups[0]!.title = 'Daily Collaboration';
+    incomingSnapshot.updatedAt = '2026-03-09T10:04:00.000Z';
 
-    const merged = mergeSessionSnapshot(current, incoming);
+    const merged = mergeSessionSnapshot(current, incomingSnapshot);
 
     expect(merged).toBe(current);
     expect(merged.groups[0]).toBe(currentGroupRef);
@@ -120,11 +120,11 @@ describe('mergeSessionSnapshot()', () => {
     current.groups[0]!.title = 'Renamed Group';
     current.updatedAt = new Date('2026-03-09T10:05:00.000Z');
 
-    const incoming = makeSessionSnapshot();
-    incoming.updatedAt = '2026-03-09T10:04:00.000Z';
-    incoming.groups[0]!.title = 'Communication';
+    const incomingSnapshot = makeSessionSnapshot();
+    incomingSnapshot.updatedAt = '2026-03-09T10:04:00.000Z';
+    incomingSnapshot.groups[0]!.title = 'Communication';
 
-    const merged = mergeSessionSnapshot(current, incoming);
+    const merged = mergeSessionSnapshot(current, incomingSnapshot);
 
     expect(merged).toBe(current);
     expect(merged.groups[0]!.title).toBe('Renamed Group');
