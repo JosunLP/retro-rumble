@@ -265,4 +265,36 @@ describe('sessionIdentity utils', () => {
     expect(storage.getItem(scopedStorageKey)).toBeNull();
     expect(storage.getItem(SESSION_IDENTITY_STORAGE_KEY)).toBeNull();
   });
+
+  test('rolls back the scoped identity when the latest pointer write fails', () => {
+    const data = new Map<string, string>();
+    const storage = {
+      getItem(key: string) {
+        return data.get(key) ?? null;
+      },
+      setItem(key: string, value: string) {
+        if (key === SESSION_IDENTITY_STORAGE_KEY) {
+          throw new Error('storage disabled');
+        }
+
+        data.set(key, value);
+      },
+      removeItem(key: string) {
+        data.delete(key);
+      },
+    };
+
+    storeSessionIdentity(storage, {
+      joinCode: 'abc234',
+      participant: {
+        id: 'participant-1',
+        name: 'Alex',
+        isHost: false,
+        joinedAt: new Date('2026-04-28T10:00:00Z'),
+      },
+    });
+
+    expect(storage.getItem(getSessionIdentityStorageKey('abc234'))).toBeNull();
+    expect(storage.getItem(SESSION_IDENTITY_STORAGE_KEY)).toBeNull();
+  });
 });

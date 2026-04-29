@@ -214,7 +214,15 @@ export function storeSessionIdentity(
     return;
   }
 
-  safeSetItem(storage, SESSION_IDENTITY_STORAGE_KEY, joinCode);
+  const storedLatestJoinCode = safeSetItem(
+    storage,
+    SESSION_IDENTITY_STORAGE_KEY,
+    joinCode
+  );
+
+  if (!storedLatestJoinCode) {
+    safeRemoveItem(storage, scopedStorageKey);
+  }
 }
 
 export function clearStoredSessionIdentity(
