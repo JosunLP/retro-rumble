@@ -47,6 +47,7 @@ import { mergeSessionSnapshot, normalizeSessionSnapshot } from '~/utils/sessionS
  * ```
  */
 export function useRetroSession() {
+  const REJOIN_REQUEST_TIMEOUT_MS = 5000;
   /**
    * i18n for translated error messages (composable runs inside setup())
    */
@@ -98,6 +99,10 @@ export function useRetroSession() {
     'retro-pending-rejoin-request-key',
     () => null
   );
+  const pendingRejoinRequestStartedAt = useState<number | null>(
+    'retro-pending-rejoin-request-started-at',
+    () => null
+  );
 
   function getRejoinRequestKey(
     joinCodeValue: string,
@@ -108,6 +113,7 @@ export function useRetroSession() {
 
   function clearPendingRejoinRequest(): void {
     pendingRejoinRequestKey.value = null;
+    pendingRejoinRequestStartedAt.value = null;
   }
 
   function persistSessionIdentity(
@@ -133,12 +139,19 @@ export function useRetroSession() {
       state.value.joinCode,
       state.value.currentParticipant.id
     );
+    const now = Date.now();
+    const isPendingRequestFresh = pendingRejoinRequestStartedAt.value !== null
+      && now - pendingRejoinRequestStartedAt.value < REJOIN_REQUEST_TIMEOUT_MS;
 
-    if (pendingRejoinRequestKey.value === requestKey) {
+    if (
+      pendingRejoinRequestKey.value === requestKey
+      && isPendingRequestFresh
+    ) {
       return;
     }
 
     pendingRejoinRequestKey.value = requestKey;
+    pendingRejoinRequestStartedAt.value = now;
 
     send('session:rejoin', {
       joinCode: state.value.joinCode,
