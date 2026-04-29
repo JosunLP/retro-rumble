@@ -94,6 +94,21 @@ export function useRetroSession() {
     'retro-handlers-registered',
     () => false
   );
+  const pendingRejoinRequestKey = useState<string | null>(
+    'retro-pending-rejoin-request-key',
+    () => null
+  );
+
+  function getRejoinRequestKey(
+    joinCodeValue: string,
+    participantId: string
+  ): string {
+    return `${joinCodeValue}:${participantId}`;
+  }
+
+  function clearPendingRejoinRequest(): void {
+    pendingRejoinRequestKey.value = null;
+  }
 
   function persistSessionIdentity(
     joinCodeValue: string,
@@ -113,6 +128,17 @@ export function useRetroSession() {
 
   function sendRejoinRequest(): void {
     if (!state.value.joinCode || !state.value.currentParticipant) return;
+
+    const requestKey = getRejoinRequestKey(
+      state.value.joinCode,
+      state.value.currentParticipant.id
+    );
+
+    if (pendingRejoinRequestKey.value === requestKey) {
+      return;
+    }
+
+    pendingRejoinRequestKey.value = requestKey;
 
     send('session:rejoin', {
       joinCode: state.value.joinCode,
@@ -185,6 +211,7 @@ export function useRetroSession() {
     joinCodeValue: string,
     hostOverride?: boolean
   ): void {
+    clearPendingRejoinRequest();
     const session = normalizeSessionSnapshot(payloadSession);
     state.value = {
       session,
@@ -333,7 +360,14 @@ export function useRetroSession() {
 
     // Error
     on<SessionErrorPayload>('session:error', (payload) => {
+      const hadPendingRejoinRequest = !!pendingRejoinRequestKey.value;
+      clearPendingRejoinRequest();
+
       if (payload.code === 'REJOIN_FAILED') {
+        if (!hadPendingRejoinRequest) {
+          return;
+        }
+
         const joinCodeToClear = state.value.joinCode
           ? normalizeJoinCode(state.value.joinCode)
           : null;
@@ -385,6 +419,10 @@ export function useRetroSession() {
 
     // Auto-rejoin when WebSocket reconnects
     watch(connectionStatus, (newStatus) => {
+      if (newStatus !== 'connected') {
+        clearPendingRejoinRequest();
+      }
+
       if (
         newStatus === 'connected' &&
         state.value.joinCode &&

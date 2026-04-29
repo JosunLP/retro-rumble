@@ -5,8 +5,7 @@ export function getBrowserStorage(): Storage | null {
 
   try {
     return window.localStorage;
-  }
-  catch {
+  } catch {
     return null;
   }
 }
