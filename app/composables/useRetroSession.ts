@@ -116,6 +116,23 @@ export function useRetroSession() {
     });
   }
 
+  function setPendingRejoinState(
+    joinCodeValue: string,
+    participant:
+      | SessionCreatedPayload['participant']
+      | SessionJoinedPayload['participant']
+      | SessionRejoinedPayload['participant']
+  ): void {
+    state.value = {
+      ...state.value,
+      currentParticipant: participant,
+      isHost: false,
+      isConnected: connectionStatus.value === 'connected',
+      error: null,
+      joinCode: joinCodeValue,
+    };
+  }
+
   function restoreStoredSessionIdentity(): void {
     const hasExistingSessionState = !!(
       state.value.session || state.value.currentParticipant
@@ -135,11 +152,7 @@ export function useRetroSession() {
       return;
     }
 
-    state.value = {
-      ...state.value,
-      currentParticipant: storedIdentity.participant,
-      joinCode: storedIdentity.joinCode,
-    };
+    setPendingRejoinState(storedIdentity.joinCode, storedIdentity.participant);
 
     if (connectionStatus.value === 'connected') {
       sendRejoinRequest();
@@ -316,8 +329,12 @@ export function useRetroSession() {
     // Error
     on<SessionErrorPayload>('session:error', (payload) => {
       if (payload.code === 'REJOIN_FAILED') {
-        if (import.meta.client) {
-          clearStoredSessionIdentity(window.localStorage, state.value.joinCode ?? undefined);
+        const joinCodeToClear = state.value.joinCode
+          ? normalizeJoinCode(state.value.joinCode)
+          : null;
+
+        if (import.meta.client && joinCodeToClear) {
+          clearStoredSessionIdentity(window.localStorage, joinCodeToClear);
         }
         state.value = {
           ...state.value,
@@ -471,6 +488,7 @@ export function useRetroSession() {
       sessionIdentity
       && sessionIdentity.joinCode === normalizedCode
     ) {
+      setPendingRejoinState(normalizedCode, sessionIdentity.participant);
       send('session:rejoin', {
         joinCode: normalizedCode,
         participantId: sessionIdentity.participant.id,
