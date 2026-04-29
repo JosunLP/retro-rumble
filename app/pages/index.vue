@@ -61,7 +61,7 @@ const route = useRoute();
 /**
  * Join-Code from URL parameter
  */
-const initialJoinCode = computed(() => normalizeJoinCode(route.query.join));
+const prefilledJoinCode = computed(() => normalizeJoinCode(route.query.join));
 
 /**
  * SEO Meta Data
@@ -176,7 +176,7 @@ function handleJoinSession(code: string, participantName: string): void {
         </div>
 
         <CreateJoinForm
-          :initial-join-code="initialJoinCode"
+          :initial-join-code="prefilledJoinCode"
           @create="handleCreateSession"
           @join="handleJoinSession"
         />
