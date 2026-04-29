@@ -140,7 +140,8 @@ export function useRetroSession() {
       state.value.currentParticipant.id
     );
     const now = Date.now();
-    const isPendingRequestFresh = pendingRejoinRequestStartedAt.value !== null
+    const isPendingRequestFresh =
+      pendingRejoinRequestStartedAt.value !== null
       && now - pendingRejoinRequestStartedAt.value < REJOIN_REQUEST_TIMEOUT_MS;
 
     if (
