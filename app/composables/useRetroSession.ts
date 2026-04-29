@@ -38,6 +38,8 @@ import {
 } from '~/utils/sessionIdentity';
 import { mergeSessionSnapshot, normalizeSessionSnapshot } from '~/utils/sessionState';
 
+const REJOIN_REQUEST_TIMEOUT_MS = 5000;
+
 /**
  * Composable for retro session management with WebSocket
  *
@@ -47,7 +49,6 @@ import { mergeSessionSnapshot, normalizeSessionSnapshot } from '~/utils/sessionS
  * ```
  */
 export function useRetroSession() {
-  const REJOIN_REQUEST_TIMEOUT_MS = 5000;
   /**
    * i18n for translated error messages (composable runs inside setup())
    */
@@ -142,7 +143,9 @@ export function useRetroSession() {
     const now = Date.now();
     const isPendingRequestFresh =
       pendingRejoinRequestStartedAt.value !== null
-      && now - pendingRejoinRequestStartedAt.value < REJOIN_REQUEST_TIMEOUT_MS;
+      && (
+        now - pendingRejoinRequestStartedAt.value
+      ) < REJOIN_REQUEST_TIMEOUT_MS;
 
     if (
       pendingRejoinRequestKey.value === requestKey
