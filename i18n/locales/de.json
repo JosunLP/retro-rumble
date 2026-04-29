@@ -166,6 +166,7 @@
   "errors": {
     "fillAllFields": "Bitte alle Felder ausfüllen.",
     "joinCodeLength": "Der Beitrittscode muss 6 Zeichen lang sein.",
+    "invalidJoinCode": "Bitte gib einen gültigen Beitrittscode ein.",
     "enterYourName": "Bitte gib deinen Namen ein.",
     "connectionFailed": "Verbindung zum Server fehlgeschlagen.",
     "clipboardFailed": "Kopieren in die Zwischenablage fehlgeschlagen. Bitte manuell kopieren.",

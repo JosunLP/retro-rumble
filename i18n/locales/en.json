@@ -166,6 +166,7 @@
   "errors": {
     "fillAllFields": "Please fill in all fields.",
     "joinCodeLength": "The join code must be 6 characters long.",
+    "invalidJoinCode": "Please enter a valid join code.",
     "enterYourName": "Please enter your name.",
     "connectionFailed": "Could not connect to the server.",
     "clipboardFailed": "Could not copy to clipboard. Please copy manually.",
