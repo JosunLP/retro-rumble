@@ -3,20 +3,17 @@
  * RetroSummary Component
  *
  * Displays the full summary of a retro session in the summary phase.
- * Shows results organized by column with groups, vote counts,
+ * Shows clustered results in a responsive wrapped layout with vote counts
  * and an interactive action items section.
  */
 
 import type {
     IActionItem,
-    ICardGroup,
-    IRetroCard,
     IRetroSession,
-    RetroColumnType,
 } from '~/types';
 import { getTodayISODate, isPastISODate } from '~/types';
-import { COLUMN_META, ORDERED_COLUMNS } from '~/utils/columnConfig';
-import { sortByCreatedAt, sortByVotesThenCreatedAt } from '~/utils/retroSorting';
+import { COLUMN_META } from '~/utils/columnConfig';
+import { getUngroupedCards, resolveCardGroups } from '~/utils/postClusterBoard';
 
 const { t } = useI18n();
 
@@ -44,38 +41,8 @@ const editActionAssignee = ref('');
 const editActionDueDate = ref('');
 const actionError = ref<string | null>(null);
 
-const columns = ORDERED_COLUMNS;
-
 const columnConfig = COLUMN_META;
 const minDueDate = computed(() => getTodayISODate());
-
-function cardsForColumn(col: RetroColumnType): IRetroCard[] {
-  return sortByVotesThenCreatedAt(props.session.cards.filter((c) => c.column === col));
-}
-
-function ungroupedCards(col: RetroColumnType): IRetroCard[] {
-  return cardsForColumn(col).filter((c) => !c.groupId);
-}
-
-function groupsForColumn(col: RetroColumnType): ICardGroup[] {
-  return sortByCreatedAt(props.session.groups.filter((g) => g.column === col));
-}
-
-function cardsInGroup(group: ICardGroup): IRetroCard[] {
-  return sortByVotesThenCreatedAt(
-    group.cardIds
-      .map((id) => props.session.cards.find((c) => c.id === id))
-      .filter((c): c is IRetroCard => !!c)
-  );
-}
-
-function totalVotesForColumn(col: RetroColumnType): number {
-  const cardVotes = cardsForColumn(col).reduce((sum, c) => sum + c.votes, 0);
-  const groupVotes = props.session.groups
-    .filter((g) => g.column === col)
-    .reduce((sum, g) => sum + g.votes, 0);
-  return cardVotes + groupVotes;
-}
 
 // Statistics
 const totalCards = computed(() => props.session.cards.length);
@@ -87,6 +54,9 @@ const totalGroups = computed(() => props.session.groups.length);
 const completedActions = computed(
   () => props.session.actionItems.filter((a) => a.done).length
 );
+const groupedCards = computed(() => resolveCardGroups(props.session.groups, props.session.cards));
+const ungroupedCards = computed(() => getUngroupedCards(props.session.cards));
+const hasBoardItems = computed(() => groupedCards.value.length > 0 || ungroupedCards.value.length > 0);
 
 function validateDueDate(dueDate?: string): boolean {
   if (!dueDate) {
@@ -180,70 +150,47 @@ function cancelEditAction(): void {
       </div>
     </div>
 
-    <!-- Column Summaries -->
-    <div class="grid md:grid-cols-3 gap-4">
+    <TransitionGroup
+      v-if="hasBoardItems"
+      name="list"
+      tag="div"
+      class="grid grid-cols-1 xl:grid-cols-2 2xl:grid-cols-3 gap-4"
+    >
       <div
-        v-for="col in columns"
-        :key="col"
+        v-for="{ group, cards } in groupedCards"
+        :key="group.id"
         class="rounded-xl border p-4"
-        :class="[columnConfig[col].bgClass, columnConfig[col].borderClass]"
+        :class="[columnConfig[group.column].bgClass, columnConfig[group.column].borderClass]"
       >
-        <!-- Column header -->
-        <div class="flex items-center gap-2 mb-3">
-          <Icon
-            :name="columnConfig[col].icon"
-            class="w-5 h-5"
-            :class="columnConfig[col].headerTextClass"
-          />
-          <h3 class="font-bold" :class="columnConfig[col].headerTextClass">
-            {{ t(`column.${col}`) }}
-          </h3>
-          <span class="ml-auto text-xs text-secondary-500">
-            {{ cardsForColumn(col).length }} {{ t('summary.cards') }} ·
-            {{ totalVotesForColumn(col) }} {{ t('summary.votes') }}
+        <div class="flex items-start justify-between gap-3 mb-3">
+          <div class="min-w-0 space-y-2">
+            <span
+              class="inline-flex items-center gap-1 rounded-full bg-white/80 px-2 py-0.5 text-[11px] font-medium text-secondary-600"
+            >
+              <span>{{ columnConfig[group.column].emoji }}</span>
+              {{ t(`column.${group.column}`) }}
+            </span>
+            <div class="flex items-center gap-2 min-w-0">
+              <Icon name="heroicons:folder" class="w-3.5 h-3.5 flex-shrink-0" />
+              <h3 class="font-bold truncate" :class="columnConfig[group.column].headerTextClass">
+                {{ group.title }}
+              </h3>
+            </div>
+          </div>
+          <span class="text-xs text-secondary-500 text-right">
+            {{ cards.length }} {{ t('summary.cards') }}
+            <template v-if="group.votes > 0">
+              · {{ group.votes }} {{ t('summary.votes') }}
+            </template>
           </span>
         </div>
 
-        <!-- Groups -->
-        <div v-for="group in groupsForColumn(col)" :key="group.id" class="mb-3">
+        <div
+          class="space-y-1.5 pl-3 border-l-2"
+          :class="columnConfig[group.column].borderClass"
+        >
           <div
-            class="text-xs font-semibold text-secondary-600 mb-1 flex items-center gap-1"
-          >
-            <Icon name="heroicons:folder" class="w-3.5 h-3.5" />
-            {{ group.title }}
-            <span
-              v-if="group.votes > 0"
-              class="inline-flex items-center gap-0.5 text-xs font-medium text-primary-600 bg-primary-100 rounded-full px-1.5 py-0.5 ml-auto"
-            >
-              <Icon name="heroicons:hand-thumb-up-solid" class="w-3 h-3" />
-              {{ group.votes }}
-            </span>
-          </div>
-          <div
-            class="space-y-1.5 pl-3 border-l-2"
-            :class="columnConfig[col].borderClass"
-          >
-            <div
-              v-for="card in cardsInGroup(group)"
-              :key="card.id"
-              class="flex items-start gap-2 text-sm text-secondary-700 bg-white/60 rounded-lg px-2.5 py-1.5"
-            >
-              <span class="flex-1">{{ card.content }}</span>
-              <span
-                v-if="card.votes > 0"
-                class="inline-flex items-center gap-0.5 text-xs font-medium text-primary-600 bg-primary-100 rounded-full px-1.5 py-0.5"
-              >
-                <Icon name="heroicons:hand-thumb-up-solid" class="w-3 h-3" />
-                {{ card.votes }}
-              </span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Ungrouped cards -->
-        <div class="space-y-1.5">
-          <div
-            v-for="card in ungroupedCards(col)"
+            v-for="card in cards"
             :key="card.id"
             class="flex items-start gap-2 text-sm text-secondary-700 bg-white/60 rounded-lg px-2.5 py-1.5"
           >
@@ -257,15 +204,40 @@ function cancelEditAction(): void {
             </span>
           </div>
         </div>
-
-        <!-- Empty state -->
-        <div
-          v-if="cardsForColumn(col).length === 0"
-          class="text-sm text-secondary-400 italic text-center py-4"
-        >
-          {{ t('column.empty') }}
-        </div>
       </div>
+
+      <div
+        v-for="card in ungroupedCards"
+        :key="card.id"
+        class="rounded-xl border p-4"
+        :class="[columnConfig[card.column].bgClass, columnConfig[card.column].borderClass]"
+      >
+        <div class="flex items-center justify-between gap-3 mb-3">
+          <span
+            class="inline-flex items-center gap-1 rounded-full bg-white/80 px-2 py-0.5 text-[11px] font-medium text-secondary-600"
+          >
+            <span>{{ columnConfig[card.column].emoji }}</span>
+            {{ t(`column.${card.column}`) }}
+          </span>
+          <span
+            v-if="card.votes > 0"
+            class="inline-flex items-center gap-0.5 text-xs font-medium text-primary-600 bg-primary-100 rounded-full px-1.5 py-0.5"
+          >
+            <Icon name="heroicons:hand-thumb-up-solid" class="w-3 h-3" />
+            {{ card.votes }}
+          </span>
+        </div>
+        <p class="text-sm text-secondary-700 whitespace-pre-wrap break-words">
+          {{ card.content }}
+        </p>
+      </div>
+    </TransitionGroup>
+
+    <div
+      v-else
+      class="text-sm text-secondary-400 italic text-center py-4"
+    >
+      {{ t('column.empty') }}
     </div>
 
     <!-- Action Items Section -->
