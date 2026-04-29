@@ -1,10 +1,6 @@
 import { describe, expect, test } from 'bun:test';
-import type { IRetroSession } from '../app/types/retro';
+import type { IRetroSession, IRetroSessionSnapshot } from '../app/types/retro';
 import { mergeSessionSnapshot } from '../app/utils/sessionState';
-
-type SessionWithRawUpdatedAt = Omit<IRetroSession, 'updatedAt'> & {
-  updatedAt: string;
-};
 
 function makeSession(): IRetroSession {
   return {
@@ -65,15 +61,37 @@ function makeSession(): IRetroSession {
   };
 }
 
+function makeSessionSnapshot(): IRetroSessionSnapshot {
+  const session = makeSession();
+
+  return {
+    ...session,
+    participants: session.participants.map((participant) => ({
+      ...participant,
+      joinedAt: participant.joinedAt.toISOString(),
+    })),
+    cards: session.cards.map((card) => ({
+      ...card,
+      createdAt: card.createdAt.toISOString(),
+    })),
+    groups: session.groups.map((group) => ({
+      ...group,
+      createdAt: group.createdAt.toISOString(),
+    })),
+    createdAt: session.createdAt.toISOString(),
+    updatedAt: session.updatedAt.toISOString(),
+  };
+}
+
 describe('mergeSessionSnapshot()', () => {
-  test('keeps existing entity references while applying updated group titles', () => {
+  test('normalizes snapshot timestamps while applying updated group titles', () => {
     const current = makeSession();
     const currentGroupRef = current.groups[0]!;
     const currentCardRef = current.cards[0]!;
 
-    const incoming = makeSession();
+    const incoming = makeSessionSnapshot();
     incoming.groups[0]!.title = 'Daily Collaboration';
-    incoming.updatedAt = new Date('2026-03-09T10:04:00Z');
+    incoming.updatedAt = '2026-03-09T10:04:00.000Z';
 
     const merged = mergeSessionSnapshot(current, incoming);
 
@@ -82,6 +100,7 @@ describe('mergeSessionSnapshot()', () => {
     expect(merged.cards[0]).toBe(currentCardRef);
     expect(merged.groups[0]!.title).toBe('Daily Collaboration');
     expect(merged.updatedAt).toEqual(new Date('2026-03-09T10:04:00Z'));
+    expect(merged.participants[0]!.joinedAt).toBeInstanceOf(Date);
   });
 
   test('normalizes legacy phase values during merge', () => {
@@ -97,25 +116,18 @@ describe('mergeSessionSnapshot()', () => {
   });
 
   test('ignores stale session snapshots so newer group titles are not reset', () => {
-    const current: SessionWithRawUpdatedAt = {
-      ...makeSession(),
-      updatedAt: '2026-03-09T10:05:00.000Z',
-    };
+    const current = makeSession();
     current.groups[0]!.title = 'Renamed Group';
+    current.updatedAt = new Date('2026-03-09T10:05:00.000Z');
 
-    const incoming: SessionWithRawUpdatedAt = {
-      ...makeSession(),
-      updatedAt: '2026-03-09T10:04:00.000Z',
-    };
+    const incoming = makeSessionSnapshot();
+    incoming.updatedAt = '2026-03-09T10:04:00.000Z';
     incoming.groups[0]!.title = 'Communication';
 
-    const merged = mergeSessionSnapshot(
-      current as unknown as IRetroSession,
-      incoming as unknown as IRetroSession
-    );
+    const merged = mergeSessionSnapshot(current, incoming);
 
     expect(merged).toBe(current);
     expect(merged.groups[0]!.title).toBe('Renamed Group');
-    expect(current.updatedAt).toBe('2026-03-09T10:05:00.000Z');
+    expect(current.updatedAt).toEqual(new Date('2026-03-09T10:05:00.000Z'));
   });
 });

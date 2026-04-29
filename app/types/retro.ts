@@ -386,6 +386,31 @@ export interface IRetroSession {
   updatedAt: Date;
 }
 
+export type RetroTimestampValue = Date | string | number;
+
+export interface IParticipantSnapshot extends Omit<IParticipant, 'joinedAt'> {
+  joinedAt: RetroTimestampValue;
+}
+
+export interface IRetroCardSnapshot extends Omit<IRetroCard, 'createdAt'> {
+  createdAt: RetroTimestampValue;
+}
+
+export interface ICardGroupSnapshot extends Omit<ICardGroup, 'createdAt'> {
+  createdAt: RetroTimestampValue;
+}
+
+export interface IRetroSessionSnapshot extends Omit<
+  IRetroSession,
+  'participants' | 'cards' | 'groups' | 'createdAt' | 'updatedAt'
+> {
+  participants: IParticipantSnapshot[];
+  cards: IRetroCardSnapshot[];
+  groups: ICardGroupSnapshot[];
+  createdAt: RetroTimestampValue;
+  updatedAt: RetroTimestampValue;
+}
+
 /**
  * Configuration for a retro session
  */

@@ -1,11 +1,23 @@
 import type {
   IActionItem,
   ICardGroup,
+  ICardGroupSnapshot,
   IParticipant,
+  IParticipantSnapshot,
   IRetroCard,
+  IRetroCardSnapshot,
   IRetroSession,
+  IRetroSessionSnapshot,
 } from '../types';
 import { normalizePhase, sanitizeMaxVotesPerUser } from '../types';
+
+function normalizeDate(value: Date | string | number): Date {
+  if (value instanceof Date) {
+    return new Date(value.getTime());
+  }
+
+  return new Date(value);
+}
 
 function cloneParticipant(participant: IParticipant): IParticipant {
   return { ...participant };
@@ -44,13 +56,41 @@ function getSessionTimestamp(value: unknown): number | null {
   return null;
 }
 
-export function normalizeSessionSnapshot(session: IRetroSession): IRetroSession {
+export function normalizeParticipantSnapshot(
+  participant: IParticipant | IParticipantSnapshot
+): IParticipant {
+  return {
+    ...participant,
+    joinedAt: normalizeDate(participant.joinedAt),
+  };
+}
+
+function normalizeCardSnapshot(card: IRetroCard | IRetroCardSnapshot): IRetroCard {
+  return {
+    ...card,
+    voterIds: [...card.voterIds],
+    createdAt: normalizeDate(card.createdAt),
+  };
+}
+
+function normalizeGroupSnapshot(group: ICardGroup | ICardGroupSnapshot): ICardGroup {
+  return {
+    ...group,
+    cardIds: [...group.cardIds],
+    voterIds: [...group.voterIds],
+    createdAt: normalizeDate(group.createdAt),
+  };
+}
+
+export function normalizeSessionSnapshot(
+  session: IRetroSession | IRetroSessionSnapshot
+): IRetroSession {
   return {
     ...session,
     phase: normalizePhase(session.phase) ?? 'set-the-stage',
-    participants: session.participants.map(cloneParticipant),
-    cards: session.cards.map(cloneCard),
-    groups: session.groups.map(cloneGroup),
+    participants: session.participants.map(normalizeParticipantSnapshot),
+    cards: session.cards.map(normalizeCardSnapshot),
+    groups: session.groups.map(normalizeGroupSnapshot),
     actionItems: session.actionItems.map(cloneActionItem),
     checkInResponses: session.checkInResponses.map((response) => ({
       ...response,
@@ -59,6 +99,8 @@ export function normalizeSessionSnapshot(session: IRetroSession): IRetroSession 
       ...response,
     })),
     maxVotesPerUser: sanitizeMaxVotesPerUser(session.maxVotesPerUser),
+    createdAt: normalizeDate(session.createdAt),
+    updatedAt: normalizeDate(session.updatedAt),
   };
 }
 
@@ -106,7 +148,7 @@ function mergeActionItem(target: IActionItem, source: IActionItem): void {
 
 export function mergeSessionSnapshot(
   currentSession: IRetroSession | null,
-  incomingSession: IRetroSession
+  incomingSession: IRetroSession | IRetroSessionSnapshot
 ): IRetroSession {
   if (!currentSession) {
     return normalizeSessionSnapshot(incomingSession);
