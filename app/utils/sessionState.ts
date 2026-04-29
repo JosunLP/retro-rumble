@@ -108,14 +108,12 @@ export function mergeSessionSnapshot(
   currentSession: IRetroSession | null,
   incomingSession: IRetroSession
 ): IRetroSession {
-  const nextSession = normalizeSessionSnapshot(incomingSession);
-
   if (!currentSession) {
-    return nextSession;
+    return normalizeSessionSnapshot(incomingSession);
   }
 
   const currentTimestamp = getSessionTimestamp(currentSession.updatedAt);
-  const nextTimestamp = getSessionTimestamp(nextSession.updatedAt);
+  const nextTimestamp = getSessionTimestamp(incomingSession.updatedAt);
 
   if (
     currentTimestamp !== null
@@ -124,6 +122,8 @@ export function mergeSessionSnapshot(
   ) {
     return currentSession;
   }
+
+  const nextSession = normalizeSessionSnapshot(incomingSession);
 
   currentSession.name = nextSession.name;
   currentSession.phase = nextSession.phase;

@@ -2,6 +2,10 @@ import { describe, expect, test } from 'bun:test';
 import type { IRetroSession } from '../app/types/retro';
 import { mergeSessionSnapshot } from '../app/utils/sessionState';
 
+type SessionWithRawUpdatedAt = Omit<IRetroSession, 'updatedAt'> & {
+  updatedAt: string;
+};
+
 function makeSession(): IRetroSession {
   return {
     id: 'session-1',
@@ -93,18 +97,25 @@ describe('mergeSessionSnapshot()', () => {
   });
 
   test('ignores stale session snapshots so newer group titles are not reset', () => {
-    const current = makeSession();
+    const current: SessionWithRawUpdatedAt = {
+      ...makeSession(),
+      updatedAt: '2026-03-09T10:05:00.000Z',
+    };
     current.groups[0]!.title = 'Renamed Group';
-    current.updatedAt = '2026-03-09T10:05:00.000Z' as unknown as Date;
 
-    const incoming = makeSession();
+    const incoming: SessionWithRawUpdatedAt = {
+      ...makeSession(),
+      updatedAt: '2026-03-09T10:04:00.000Z',
+    };
     incoming.groups[0]!.title = 'Communication';
-    incoming.updatedAt = '2026-03-09T10:04:00.000Z' as unknown as Date;
 
-    const merged = mergeSessionSnapshot(current, incoming);
+    const merged = mergeSessionSnapshot(
+      current as unknown as IRetroSession,
+      incoming as unknown as IRetroSession
+    );
 
     expect(merged).toBe(current);
     expect(merged.groups[0]!.title).toBe('Renamed Group');
-    expect(merged.updatedAt).toBe('2026-03-09T10:05:00.000Z' as unknown as Date);
+    expect(current.updatedAt).toBe('2026-03-09T10:05:00.000Z');
   });
 });
