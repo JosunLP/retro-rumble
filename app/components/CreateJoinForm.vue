@@ -84,7 +84,7 @@ watch(
   { immediate: true }
 );
 
-function handleJoinCodeInput(event: InputEvent): void {
+function handleJoinCodeInput(event: Event): void {
   const target = event.target;
 
   if (!(target instanceof HTMLInputElement)) {
