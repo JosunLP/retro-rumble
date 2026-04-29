@@ -5,7 +5,12 @@
  * Form for creating a new retro session or joining an existing one.
  */
 
-import { isValidJoinCode, MAX_MAX_VOTES_PER_USER, MIN_MAX_VOTES_PER_USER } from '~/types';
+import {
+  isValidJoinCode,
+  JOIN_CODE_LENGTH,
+  MAX_MAX_VOTES_PER_USER,
+  MIN_MAX_VOTES_PER_USER,
+} from '~/types';
 import { getBrowserStorage } from '~/utils/browserStorage';
 import {
   getMatchingStoredSessionIdentity,
@@ -92,6 +97,33 @@ function handleJoinCodeInput(event: Event): void {
   }
 
   joinCode.value = normalizeJoinCode(target.value);
+}
+
+function handleJoinCodeBeforeInput(event: Event): void {
+  const target = event.target;
+
+  if (!(target instanceof HTMLInputElement) || !(event instanceof InputEvent)) {
+    return;
+  }
+
+  if (!event.inputType.startsWith('insert') || event.data === null) {
+    return;
+  }
+
+  const selectionStart = target.selectionStart ?? target.value.length;
+  const selectionEnd = target.selectionEnd ?? selectionStart;
+  const nextValue = `${target.value.slice(0, selectionStart)}${event.data}${target.value.slice(selectionEnd)}`;
+  const normalizedValue = normalizeJoinCode(nextValue);
+
+  if (
+    event.data === normalizedValue
+    && normalizedValue.length <= JOIN_CODE_LENGTH
+  ) {
+    return;
+  }
+
+  event.preventDefault();
+  joinCode.value = normalizedValue;
 }
 
 function handleCreate(): void {
@@ -239,7 +271,9 @@ function switchMode(newMode: 'create' | 'join'): void {
             type="text"
             class="input font-mono text-center text-lg tracking-widest uppercase"
             :placeholder="t('form.joinCodePlaceholder')"
+            :maxlength="JOIN_CODE_LENGTH"
             required
+            @beforeinput="handleJoinCodeBeforeInput"
             @input="handleJoinCodeInput"
           >
         </div>

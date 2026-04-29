@@ -335,6 +335,7 @@ export function useRetroSession() {
       if (storage) {
         clearStoredSessionIdentity(storage, state.value.joinCode ?? undefined);
       }
+      clearPendingRejoinRequest();
       state.value = {
         session: null,
         currentParticipant: null,
