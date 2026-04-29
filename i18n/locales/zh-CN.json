@@ -166,6 +166,7 @@
   "errors": {
     "fillAllFields": "请填写所有字段。",
     "joinCodeLength": "访问码必须为 6 个字符。",
+    "invalidJoinCode": "请输入有效的访问码。",
     "enterYourName": "请输入你的姓名。",
     "connectionFailed": "无法连接到服务器。",
     "clipboardFailed": "无法复制到剪贴板。请手动复制。",
