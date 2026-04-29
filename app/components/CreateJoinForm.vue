@@ -5,7 +5,7 @@
  * Form for creating a new retro session or joining an existing one.
  */
 
-import { MAX_MAX_VOTES_PER_USER, MIN_MAX_VOTES_PER_USER } from '~/types';
+import { isValidJoinCode, MAX_MAX_VOTES_PER_USER, MIN_MAX_VOTES_PER_USER } from '~/types';
 import { getBrowserStorage } from '~/utils/browserStorage';
 import {
   getMatchingStoredSessionIdentity,
@@ -46,11 +46,10 @@ const timerDuration = ref(300);
 // Join form
 const joinCode = ref(props.prefilledJoinCode);
 const joinName = ref('');
+const normalizedJoinCode = computed(() => normalizeJoinCode(joinCode.value));
 
 const matchingStoredJoinIdentity = computed(() => {
-  const normalizedJoinCode = normalizeJoinCode(joinCode.value);
-
-  if (!normalizedJoinCode) {
+  if (!isValidJoinCode(normalizedJoinCode.value)) {
     return null;
   }
 
@@ -61,8 +60,8 @@ const matchingStoredJoinIdentity = computed(() => {
   }
 
   return getMatchingStoredSessionIdentity(
-    normalizedJoinCode,
-    readStoredSessionIdentity(storage, normalizedJoinCode)
+    normalizedJoinCode.value,
+    readStoredSessionIdentity(storage, normalizedJoinCode.value)
   );
 });
 
@@ -77,13 +76,17 @@ const isJoinDisabled = computed(
 watch(
   () => props.prefilledJoinCode,
   (newJoinCode) => {
-    joinCode.value = newJoinCode;
+    joinCode.value = normalizeJoinCode(newJoinCode);
     if (newJoinCode) {
       mode.value = 'join';
     }
   },
   { immediate: true }
 );
+
+function handleJoinCodeInput(event: Event): void {
+  joinCode.value = normalizeJoinCode((event.target as HTMLInputElement).value);
+}
 
 function handleCreate(): void {
   emit(
@@ -230,8 +233,8 @@ function switchMode(newMode: 'create' | 'join'): void {
             type="text"
             class="input font-mono text-center text-lg tracking-widest uppercase"
             :placeholder="t('form.joinCodePlaceholder')"
-            maxlength="6"
             required
+            @input="handleJoinCodeInput"
           >
         </div>
 
