@@ -13,10 +13,9 @@ import type {
 } from '~/types';
 import {
   countGroupVotesForParticipant,
-  formatJoinCode,
-  JOIN_CODE_LENGTH,
   normalizePhase,
 } from '~/types';
+import { normalizeValidJoinCode } from '~/utils/joinCode';
 import type {
     ParticipantJoinedPayload,
     ParticipantLeftPayload,
@@ -476,8 +475,8 @@ export function useRetroSession() {
     code: string,
     participantName: string
   ): Promise<void> {
-    const normalizedCode = formatJoinCode(code);
-    if (normalizedCode.length !== JOIN_CODE_LENGTH) {
+    const normalizedCode = normalizeValidJoinCode(code);
+    if (!normalizedCode) {
       state.value = {
         ...state.value,
         error: t('errors.joinCodeLength'),

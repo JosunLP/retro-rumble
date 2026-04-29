@@ -46,20 +46,34 @@ const timerDuration = ref(300);
 const joinCode = ref(props.prefilledJoinCode);
 const joinName = ref('');
 
-const matchingStoredJoinIdentity = computed(() => {
-  if (typeof window === 'undefined') {
+function getBrowserStorage(): Storage | null {
+  if (!import.meta.client) {
     return null;
   }
 
+  try {
+    return window.localStorage;
+  } catch {
+    return null;
+  }
+}
+
+const matchingStoredJoinIdentity = computed(() => {
   const normalizedJoinCode = normalizeJoinCode(joinCode.value);
 
   if (!normalizedJoinCode) {
     return null;
   }
 
+  const storage = getBrowserStorage();
+
+  if (!storage) {
+    return null;
+  }
+
   return getMatchingStoredSessionIdentity(
     normalizedJoinCode,
-    readStoredSessionIdentity(window.localStorage, normalizedJoinCode)
+    readStoredSessionIdentity(storage, normalizedJoinCode)
   );
 });
 
