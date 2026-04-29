@@ -103,7 +103,7 @@ export function useRetroSession() {
     joinCodeValue: string,
     participantId: string
   ): string {
-    return `${joinCodeValue}:${participantId}`;
+    return JSON.stringify([joinCodeValue, participantId]);
   }
 
   function clearPendingRejoinRequest(): void {
