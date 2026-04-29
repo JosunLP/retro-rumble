@@ -116,7 +116,7 @@ function handleJoinCodeBeforeInput(event: Event): void {
   const normalizedValue = normalizeJoinCode(nextValue);
 
   if (
-    event.data === normalizedValue
+    nextValue === normalizedValue
     && normalizedValue.length <= JOIN_CODE_LENGTH
   ) {
     return;
