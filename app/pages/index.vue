@@ -176,7 +176,7 @@ function handleJoinSession(code: string, participantName: string): void {
         </div>
 
         <CreateJoinForm
-          :initial-join-code="prefilledJoinCode"
+          :prefilled-join-code="prefilledJoinCode"
           @create="handleCreateSession"
           @join="handleJoinSession"
         />

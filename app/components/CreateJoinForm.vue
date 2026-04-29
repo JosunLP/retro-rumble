@@ -10,12 +10,12 @@ import { MAX_MAX_VOTES_PER_USER, MIN_MAX_VOTES_PER_USER } from '~/types';
 const { t } = useI18n();
 
 interface Props {
-  /** Initial join code (from URL) */
-  initialJoinCode?: string;
+  /** Prefilled join code (from URL) */
+  prefilledJoinCode?: string;
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  initialJoinCode: '',
+  prefilledJoinCode: '',
 });
 
 const emit = defineEmits<{
@@ -28,7 +28,7 @@ const emit = defineEmits<{
   join: [code: string, participantName: string];
 }>();
 
-const mode = ref<'create' | 'join'>(props.initialJoinCode ? 'join' : 'create');
+const mode = ref<'create' | 'join'>(props.prefilledJoinCode ? 'join' : 'create');
 
 // Create form
 const sessionName = ref('');
@@ -37,11 +37,11 @@ const maxVotes = ref(5);
 const timerDuration = ref(300);
 
 // Join form
-const joinCode = ref(props.initialJoinCode);
+const joinCode = ref(props.prefilledJoinCode);
 const joinName = ref('');
 
 watch(
-  () => props.initialJoinCode,
+  () => props.prefilledJoinCode,
   (newJoinCode) => {
     joinCode.value = newJoinCode;
     if (newJoinCode) {
